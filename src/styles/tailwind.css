@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Core Colors */
+    --color-background: #FAFAFA; /* warm off-white */
+    --color-foreground: #1F2937; /* deep charcoal */
+    --color-card: #FFFFFF; /* pure white */
+    --color-card-foreground: #1F2937; /* deep charcoal */
+    --color-popover: #FFFFFF; /* pure white */
+    --color-popover-foreground: #1F2937; /* deep charcoal */
+    --color-muted: #F3F4F6; /* light gray */
+    --color-muted-foreground: #6B7280; /* medium gray */
+    --color-border: #E5E7EB; /* light gray */
+    --color-input: #FFFFFF; /* pure white */
+    --color-ring: #005051; /* deep teal-green */
+
+    /* Brand Colors */
+    --color-primary: #005051; /* deep teal-green */
+    --color-primary-foreground: #FFFFFF; /* white */
+    --color-secondary: #2563EB; /* clear blue */
+    --color-secondary-foreground: #FFFFFF; /* white */
+    --color-accent: #0891B2; /* bright cyan */
+    --color-accent-foreground: #FFFFFF; /* white */
+
+    /* Status Colors */
+    --color-success: #059669; /* forest green */
+    --color-success-foreground: #FFFFFF; /* white */
+    --color-warning: #D97706; /* amber orange */
+    --color-warning-foreground: #FFFFFF; /* white */
+    --color-error: #DC2626; /* strong red */
+    --color-error-foreground: #FFFFFF; /* white */
+    --color-destructive: #DC2626; /* strong red */
+    --color-destructive-foreground: #FFFFFF; /* white */
+
+    /* Typography */
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-caption: 'Inter', sans-serif;
+    --font-data: 'JetBrains Mono', monospace;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+    /* Border Radius */
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  .font-data {
+    font-family: var(--font-data);
+  }
+}
+
+@layer components {
+  .nav-transition {
+    @apply transition-all duration-250 ease-out;
+  }
+
+  .micro-interaction {
+    @apply transition-all duration-150 ease-in-out;
+  }
+
+  .spring-animation {
+    transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .operations-shadow {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .critical-shadow {
+    box-shadow: var(--shadow-lg);
+  }
+}

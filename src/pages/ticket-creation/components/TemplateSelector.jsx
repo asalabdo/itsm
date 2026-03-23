@@ -1,0 +1,164 @@
+import React, { useState } from 'react';
+import Icon from '../../../components/AppIcon';
+import Button from '../../../components/ui/Button';
+
+const TemplateSelector = ({ category, onTemplateSelect }) => {
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  const templates = {
+    incident: [
+      {
+        id: 'login-issue',
+        name: 'Login Issues',
+        icon: 'LogIn',
+        description: 'User unable to access account or authenticate',
+        fields: {
+          subject: 'Unable to login to account',
+          description: `User is experiencing login difficulties.\n\nSteps to reproduce:\n1. Navigate to login page\n2. Enter credentials\n3. Click login button\n\nExpected: Successful login\nActual: Error message displayed`,
+          priority: 'high',
+        },
+      },
+      {
+        id: 'performance',
+        name: 'Performance Issues',
+        icon: 'Gauge',
+        description: 'System running slow or unresponsive',
+        fields: {
+          subject: 'Application performance degradation',
+          description: `System is experiencing significant slowdown.\n\nAffected areas:\n- Page load times\n- API response times\n- Database queries\n\nImpact: Multiple users affected`,
+          priority: 'urgent',
+        },
+      },
+      {
+        id: 'data-loss',
+        name: 'Data Loss',
+        icon: 'Database',
+        description: 'Missing or corrupted data',
+        fields: {
+          subject: 'Data integrity issue detected',
+          description: `Data appears to be missing or corrupted.\n\nAffected data:\n- Records count\n- Time period\n- Affected users\n\nUrgent investigation required`,
+          priority: 'urgent',
+        },
+      },
+    ],
+    problem: [
+      {
+        id: 'recurring-error',
+        name: 'Recurring Error',
+        icon: 'RefreshCw',
+        description: 'Repeated system errors requiring investigation',
+        fields: {
+          subject: 'Recurring error pattern identified',
+          description: `Multiple incidents reported with similar symptoms.\n\nError pattern:\n- Frequency\n- Affected components\n- Common factors\n\nRoot cause analysis needed`,
+          priority: 'high',
+        },
+      },
+      {
+        id: 'capacity',
+        name: 'Capacity Planning',
+        icon: 'TrendingUp',
+        description: 'Resource utilization concerns',
+        fields: {
+          subject: 'Resource capacity concerns',
+          description: `System resources approaching limits.\n\nMetrics:\n- CPU utilization\n- Memory usage\n- Storage capacity\n\nProactive planning required`,
+          priority: 'medium',
+        },
+      },
+    ],
+    change: [
+      {
+        id: 'feature-request',
+        name: 'Feature Request',
+        icon: 'Sparkles',
+        description: 'New functionality or enhancement',
+        fields: {
+          subject: 'Feature enhancement request',
+          description: `Proposed feature enhancement.\n\nBusiness justification:\n- User benefit\n- Expected impact\n- Priority rationale\n\nImplementation considerations needed`,
+          priority: 'medium',
+        },
+      },
+      {
+        id: 'config-change',
+        name: 'Configuration Change',
+        icon: 'Settings',
+        description: 'System configuration modification',
+        fields: {
+          subject: 'Configuration change request',
+          description: `System configuration modification required.\n\nProposed changes:\n- Configuration items\n- Expected outcome\n- Rollback plan\n\nApproval and testing needed`,
+          priority: 'medium',
+        },
+      },
+      {
+        id: 'deployment',
+        name: 'Deployment Request',
+        icon: 'Rocket',
+        description: 'Software deployment or update',
+        fields: {
+          subject: 'Deployment request',
+          description: `Software deployment required.\n\nDeployment details:\n- Version/build number\n- Target environment\n- Deployment window\n- Rollback strategy\n\nChange approval required`,
+          priority: 'high',
+        },
+      },
+    ],
+  };
+
+  const categoryTemplates = templates?.[category] || [];
+
+  const handleTemplateClick = (template) => {
+    onTemplateSelect(template?.fields);
+    setShowTemplates(false);
+  };
+
+  if (categoryTemplates?.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-foreground">
+          Use Template (Optional)
+        </label>
+        <Button
+          variant="ghost"
+          size="sm"
+          iconName={showTemplates ? 'ChevronUp' : 'ChevronDown'}
+          iconPosition="right"
+          onClick={() => setShowTemplates(!showTemplates)}
+        >
+          {showTemplates ? 'Hide' : 'Show'} Templates
+        </Button>
+      </div>
+      {showTemplates && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {categoryTemplates?.map((template) => (
+            <button
+              key={template?.id}
+              type="button"
+              onClick={() => handleTemplateClick(template)}
+              className="p-4 bg-card border border-border rounded-lg hover:border-primary/50 hover:shadow-elevation-2 transition-smooth text-left"
+            >
+              <div className="flex items-start gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Icon name={template?.icon} size={20} color="var(--color-primary)" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm text-foreground mb-1">
+                    {template?.name}
+                  </h4>
+                  <p className="text-xs text-muted-foreground line-clamp-2 caption">
+                    {template?.description}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-primary caption">
+                <Icon name="FileText" size={14} />
+                <span>Use this template</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TemplateSelector;

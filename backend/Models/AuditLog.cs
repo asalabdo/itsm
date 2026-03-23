@@ -1,0 +1,17 @@
+namespace ITSMBackend.Models;
+
+public class AuditLog
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string EntityType { get; set; } = string.Empty;
+    public int EntityId { get; set; }
+    public string Action { get; set; } = string.Empty; // Create, Update, Delete, View
+    public string? OldValues { get; set; }
+    public string? NewValues { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string? IpAddress { get; set; }
+    public string? Changes { get; set; }
+    
+    public virtual User User { get; set; } = null!;
+}

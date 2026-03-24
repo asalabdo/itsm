@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import Icon from '../../../components/AppIcon';
+import { ticketsAPI } from '../../../services/api';
 
 const IncidentCreationWizard = ({ onIncidentCreated }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     // Step 1: Basic Information
     title: '',
@@ -77,17 +77,17 @@ const IncidentCreationWizard = ({ onIncidentCreated }) => {
       const urgencyLevel = formData?.urgency === 'High' ? 3 : formData?.urgency === 'Medium' ? 2 : 1;
       const priority = Math.max(impactLevel, urgencyLevel);
       
-      return priority === 3 ? 'P1' : priority === 2 ? 'P2' : priority === 1 ? 'P3' : 'P4';
+      return priority === 3 ? 'Critical' : priority === 2 ? 'High' : 'Medium';
     }
     return '';
   };
 
   const getSLATarget = (priority, category) => {
     const slaMatrix = {
-      'P1': { response: '15m', resolution: '4h' },
-      'P2': { response: '30m', resolution: '8h' },
-      'P3': { response: '2h', resolution: '24h' },
-      'P4': { response: '4h', resolution: '72h' }
+      'Critical': { response: '15m', resolution: '4h' },
+      'High': { response: '30m', resolution: '8h' },
+      'Medium': { response: '2h', resolution: '24h' },
+      'Low': { response: '4h', resolution: '72h' }
     };
     
     return slaMatrix?.[priority] || { response: '4h', resolution: '72h' };
@@ -121,19 +121,28 @@ const IncidentCreationWizard = ({ onIncidentCreated }) => {
     }
   };
 
-  const handleSubmit = () => {
-    const newIncident = {
-      id: `INC-2025-${String(Math.floor(Math.random() * 1000))?.padStart(3, '0')}`,
-      ...formData,
-      status: 'New',
-      createdAt: new Date(),
-      slaDeadline: new Date(Date.now() + (formData.priority === 'P1' ? 4 : formData.priority === 'P2' ? 8 : 24) * 60 * 60 * 1000),
-      affectedUsers: Math.floor(Math.random() * 500) + 1,
-      estimatedResolution: formData?.priority === 'P1' ? '4 hours' : formData?.priority === 'P2' ? '8 hours' : '1-2 days'
-    };
-    
-    onIncidentCreated(newIncident);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        priority: formData.priority || 'Medium',
+        category: formData.category,
+        urgency: formData.urgency === 'High' ? 0.9 : formData.urgency === 'Medium' ? 0.5 : 0.1,
+        impact: formData.impact === 'High' ? 0.9 : formData.impact === 'Medium' ? 0.5 : 0.1
+      };
+      
+      const response = await ticketsAPI.create(payload);
+      onIncidentCreated(response.data);
+    } catch (err) {
+      console.error('Failed to create incident:', err);
+      alert('Failed to create incident. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
 
   const isStepValid = (step) => {
     switch (step) {
@@ -529,11 +538,20 @@ const IncidentCreationWizard = ({ onIncidentCreated }) => {
                 Next
               </button>
             ) : (
-              <button
+            <button
                 onClick={handleSubmit}
-                className="px-6 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors"
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors flex items-center"
               >
-                Create Incident
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating...
+                  </>
+                ) : 'Create Incident'}
               </button>
             )}
           </div>

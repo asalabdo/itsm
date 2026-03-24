@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-import Icon from '../../../components/AppIcon';
+import { ticketsAPI } from '../../../services/api';
 
-const IncidentDetailsCard = ({ incident }) => {
+const IncidentDetailsCard = ({ incident, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [editData, setEditData] = useState({ ...incident });
   const [showEscalation, setShowEscalation] = useState(false);
 
-  const statusOptions = ['New', 'Assigned', 'In Progress', 'Pending', 'Resolved', 'Closed'];
-  const priorityOptions = ['P1', 'P2', 'P3', 'P4'];
+  const statusOptions = ['Open', 'In Progress', 'Resolved', 'Closed'];
+  const priorityOptions = ['Critical', 'High', 'Medium', 'Low'];
 
-  const getSeverityColor = (severity) => {
-    switch (severity?.toLowerCase()) {
+  const getSeverityColor = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case 'critical':
       case 'high': return 'text-error bg-error/10 border-error';
       case 'medium': return 'text-warning bg-warning/10 border-warning';
       case 'low': return 'text-blue-500 bg-blue-500/10 border-blue-500';
@@ -20,6 +21,7 @@ const IncidentDetailsCard = ({ incident }) => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
+      case 'open':
       case 'new': return 'text-blue-500 bg-blue-500/10';
       case 'assigned': return 'text-warning bg-warning/10';
       case 'in progress': return 'text-primary bg-primary/10';
@@ -30,9 +32,10 @@ const IncidentDetailsCard = ({ incident }) => {
   };
 
   const calculateSLAStatus = () => {
+    if (!incident.slaDueDate) return { status: 'none', text: 'No SLA', color: 'text-muted-foreground' };
     const now = new Date();
-    const deadline = new Date(incident.slaDeadline);
-    const diff = deadline?.getTime() - now?.getTime();
+    const deadline = new Date(incident.slaDueDate);
+    const diff = deadline.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     
@@ -47,15 +50,22 @@ const IncidentDetailsCard = ({ incident }) => {
     }
   };
 
-  const handleSave = () => {
-    // Simulate save operation
-    Object.assign(incident, editData);
-    setIsEditing(false);
-    console.log('Incident updated:', editData);
+  const handleSave = async (data = editData) => {
+    setIsUpdating(true);
+    try {
+      const response = await ticketsAPI.update(incident.id, data);
+      setIsEditing(false);
+      if (onUpdate) onUpdate(response.data);
+    } catch (err) {
+      console.error('Failed to update incident:', err);
+      alert('Failed to update incident.');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleEscalate = (escalationType) => {
-    console.log(`Escalating incident ${incident?.id} to ${escalationType}`);
+    console.log(`Escalating incident ${incident?.ticketNumber} to ${escalationType}`);
     setShowEscalation(false);
   };
 
@@ -67,17 +77,14 @@ const IncidentDetailsCard = ({ incident }) => {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-2">
-              {incident?.id}: {incident?.title}
+              {incident?.ticketNumber}: {incident?.title}
             </h2>
             <div className="flex items-center space-x-3">
-              <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityColor(incident?.severity)}`}>
-                {incident?.severity} Severity
+              <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityColor(incident?.priority)}`}>
+                {incident?.priority} Priority
               </span>
               <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(incident?.status)}`}>
                 {incident?.status}
-              </span>
-              <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded border border-primary">
-                {incident?.priority}
               </span>
             </div>
           </div>
@@ -87,7 +94,7 @@ const IncidentDetailsCard = ({ incident }) => {
               <Icon name="Clock" size={16} className="inline mr-1" />
               <span className="font-medium">{slaStatus?.text}</span>
               <p className="text-xs text-muted-foreground mt-1">
-                SLA Deadline: {new Date(incident.slaDeadline)?.toLocaleString()}
+                SLA Deadline: {incident.slaDueDate ? new Date(incident.slaDueDate).toLocaleString() : 'N/A'}
               </p>
             </div>
             
@@ -181,22 +188,22 @@ const IncidentDetailsCard = ({ incident }) => {
             {/* Key Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
-                <h4 className="font-medium text-foreground mb-2">Assignment</h4>
+                <h4 className="font-medium text-foreground mb-2">Detailed Info</h4>
                 <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">Assigned to:</p>
-                  <p className="font-medium text-foreground">{incident?.assignedTo}</p>
+                  <p className="text-muted-foreground">Requested by:</p>
+                  <p className="font-medium text-foreground">{incident?.requestedBy?.firstName} {incident?.requestedBy?.lastName}</p>
                   <p className="text-muted-foreground">Category:</p>
                   <p className="font-medium text-foreground">{incident?.category}</p>
                 </div>
               </div>
               
               <div>
-                <h4 className="font-medium text-foreground mb-2">Impact</h4>
+                <h4 className="font-medium text-foreground mb-2">Priority & SLA</h4>
                 <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">Affected Users:</p>
-                  <p className="font-medium text-foreground">{incident?.affectedUsers}</p>
-                  <p className="text-muted-foreground">Business Impact:</p>
-                  <p className="font-medium text-foreground">{incident?.impact}</p>
+                  <p className="text-muted-foreground">Priority:</p>
+                  <p className="font-medium text-foreground">{incident?.priority}</p>
+                  <p className="text-muted-foreground">SLA Status:</p>
+                  <p className="font-medium text-foreground">{incident?.slaStatus?.replace('_', ' ')}</p>
                 </div>
               </div>
               
@@ -205,10 +212,10 @@ const IncidentDetailsCard = ({ incident }) => {
                 <div className="space-y-1 text-sm">
                   <p className="text-muted-foreground">Created:</p>
                   <p className="font-medium text-foreground">
-                    {incident?.createdAt?.toLocaleString()}
+                    {incident.createdAt ? new Date(incident.createdAt).toLocaleString() : 'N/A'}
                   </p>
-                  <p className="text-muted-foreground">Est. Resolution:</p>
-                  <p className="font-medium text-foreground">{incident?.estimatedResolution}</p>
+                  <p className="text-muted-foreground">Reference:</p>
+                  <p className="font-medium text-foreground">{incident?.ticketNumber}</p>
                 </div>
               </div>
               
@@ -216,12 +223,8 @@ const IncidentDetailsCard = ({ incident }) => {
                 <h4 className="font-medium text-foreground mb-2">Progress</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Completion:</span>
-                    <span className="font-medium text-foreground">
-                      {incident?.status === 'Resolved' ? '100%' : 
-                       incident?.status === 'In Progress' ? '60%' : 
-                       incident?.status === 'Assigned' ? '25%' : '0%'}
-                    </span>
+                    <span className="text-muted-foreground">Status:</span>
+                    <span className="font-medium text-foreground">{incident?.status}</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div 
@@ -229,7 +232,7 @@ const IncidentDetailsCard = ({ incident }) => {
                       style={{ 
                         width: `${incident?.status === 'Resolved' ? '100' : 
                                   incident?.status === 'In Progress' ? '60' : 
-                                  incident?.status === 'Assigned' ? '25' : '0'}%` 
+                                  incident?.status === 'Open' ? '10' : '0'}%` 
                       }}
                     />
                   </div>

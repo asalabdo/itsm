@@ -1,28 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { ticketsAPI, dashboardAPI } from '../../../services/api';
 
 const IncidentAgingHeatmap = () => {
   const [heatmapData, setHeatmapData] = useState([]);
   const [selectedBucket, setSelectedBucket] = useState(null);
   const [viewMode, setViewMode] = useState('heatmap'); // 'heatmap' or 'list'
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Mock heatmap data - time buckets with incident counts
-    const mockData = [
-      { bucket: '0-15m', count: 23, severity: 'low', incidents: ['INC-001', 'INC-002', 'INC-003'] },
-      { bucket: '15-30m', count: 18, severity: 'low', incidents: ['INC-004', 'INC-005'] },
-      { bucket: '30-1h', count: 12, severity: 'medium', incidents: ['INC-006', 'INC-007'] },
-      { bucket: '1-2h', count: 8, severity: 'medium', incidents: ['INC-008'] },
-      { bucket: '2-4h', count: 15, severity: 'high', incidents: ['INC-009', 'INC-010'] },
-      { bucket: '4-8h', count: 6, severity: 'high', incidents: ['INC-011'] },
-      { bucket: '8-24h', count: 4, severity: 'critical', incidents: ['INC-012'] },
-      { bucket: '1-3d', count: 2, severity: 'critical', incidents: ['INC-013'] },
-      { bucket: '3-7d', count: 1, severity: 'critical', incidents: ['INC-014'] },
-      { bucket: '>7d', count: 0, severity: 'critical', incidents: [] }
-    ];
-    setHeatmapData(mockData);
+    const fetchHeatmapData = async () => {
+      try {
+        setLoading(true);
+        // Try to fetch aging data from dashboard API
+        const res = await dashboardAPI.getPerformanceMetrics('aging');
+        const data = res.data || {};
+        
+        if (data.heatmapData && Array.isArray(data.heatmapData)) {
+          setHeatmapData(data.heatmapData);
+        } else {
+          // Use fallback mock data
+          setHeatmapData(getDefaultHeatmapData());
+        }
+      } catch (error) {
+        console.error('Failed to fetch incident aging data:', error);
+        // Use fallback mock data
+        setHeatmapData(getDefaultHeatmapData());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHeatmapData();
   }, []);
+
+  const getDefaultHeatmapData = () => [
+    { bucket: '0-15m', count: 23, severity: 'low', incidents: ['INC-001', 'INC-002', 'INC-003'] },
+    { bucket: '15-30m', count: 18, severity: 'low', incidents: ['INC-004', 'INC-005'] },
+    { bucket: '30-1h', count: 12, severity: 'medium', incidents: ['INC-006', 'INC-007'] },
+    { bucket: '1-2h', count: 8, severity: 'medium', incidents: ['INC-008'] },
+    { bucket: '2-4h', count: 15, severity: 'high', incidents: ['INC-009', 'INC-010'] },
+    { bucket: '4-8h', count: 6, severity: 'high', incidents: ['INC-011'] },
+    { bucket: '8-24h', count: 4, severity: 'critical', incidents: ['INC-012'] },
+    { bucket: '1-3d', count: 2, severity: 'critical', incidents: ['INC-013'] },
+    { bucket: '3-7d', count: 1, severity: 'critical', incidents: ['INC-014'] },
+    { bucket: '>7d', count: 0, severity: 'critical', incidents: [] }
+  ];
 
   const getSeverityColor = (severity, count) => {
     if (count === 0) return 'bg-muted';

@@ -8,7 +8,7 @@ import DataTable from './components/DataTable';
 import QuickActionsBar from './components/QuickActionsBar';
 import Icon from '../../components/AppIcon';
 
-import { dashboardAPI } from '../../services/api';
+import reportingService from '../../services/reportingService';
 
 const ReportingAndAnalyticsHub = () => {
   const [selectedReport, setSelectedReport] = useState(null);
@@ -16,89 +16,13 @@ const ReportingAndAnalyticsHub = () => {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleString());
-  const [stats, setStats] = useState({
-    kpiData: [],
-    tableData: [],
-    ticketVolumeData: [],
-    workflowPerformanceData: []
-  });
+  const [analytics, setAnalytics] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = async (days = 30) => {
     try {
       setLoading(true);
-      const [summaryRes, metricsRes, deptRes, trendRes] = await Promise.all([
-        dashboardAPI.getSummary(),
-        dashboardAPI.getAllMetrics(),
-        dashboardAPI.getPerformanceMetrics('Department'),
-        dashboardAPI.getPerformanceMetrics('IncidentTrend')
-      ]);
-
-      const summary = summaryRes.data;
-      const metrics = metricsRes.data || [];
-      const depts = deptRes.data || [];
-      const trends = (trendRes.data || []).reverse();
-
-      // Map KPI data
-      const kpis = [
-        {
-          title: 'Total Tickets',
-          value: summary?.totalTickets?.toLocaleString() || '0',
-          change: '+5.2%',
-          changeType: 'positive',
-          icon: 'Ticket',
-          trend: 'vs last month',
-          subtitle: `${summary?.openTickets || 0} open, ${summary?.resolvedTickets || 0} resolved`
-        },
-        {
-          title: 'Active Assets',
-          value: summary?.activeAssets?.toLocaleString() || '0',
-          change: '+2.1%',
-          changeType: 'positive',
-          icon: 'Package',
-          trend: 'vs last month',
-          subtitle: `$${((summary?.totalAssets || 0) * 1500 / 1000000).toFixed(1)}M total value`
-        },
-        {
-          title: 'SLA Compliance',
-          value: '96.8%', // Placeholder as backend doesn't have SLA yet
-          change: '-1.2%',
-          changeType: 'negative',
-          icon: 'Clock',
-          trend: 'vs last month',
-          subtitle: 'System wide average'
-        },
-        {
-          title: 'Avg Resolution',
-          value: `${summary?.averageResolutionTime?.toFixed(1) || '0'} hrs`,
-          change: '-15%',
-          changeType: 'positive',
-          icon: 'Activity',
-          trend: 'faster vs last month',
-          subtitle: 'Across all departments'
-        }
-      ];
-
-      // Map table data (Dept performance)
-      const mappedDepts = depts.map(d => ({
-        department: d.metricName,
-        tickets: Math.floor(Math.random() * 100) + 50,
-        avgResolution: (Math.random() * 5 + 2).toFixed(1),
-        satisfaction: Number(d.value) * 20, // Value is 0-5, convert to %
-        status: d.value >= 4.5 ? 'Excellent' : d.value >= 4 ? 'Good' : 'Average'
-      }));
-
-      // Map trend data
-      const mappedTrends = trends.map(t => ({
-        name: t.metricName,
-        value: Number(t.value)
-      }));
-
-      setStats({
-        kpiData: kpis,
-        tableData: mappedDepts.length > 0 ? mappedDepts : [],
-        ticketVolumeData: mappedTrends,
-        workflowPerformanceData: mappedTrends.map(t => ({ name: t.name, value: 85 + Math.random() * 10 }))
-      });
+      const data = await reportingService.getOverview(days);
+      setAnalytics(data);
       setLastUpdated(new Date().toLocaleString());
     } catch (err) {
       console.error('Failed to fetch reporting data:', err);
@@ -111,155 +35,130 @@ const ReportingAndAnalyticsHub = () => {
     fetchData();
   }, []);
 
-  const ticketVolumeData = stats.ticketVolumeData.length > 0 ? stats.ticketVolumeData : [
-    { name: 'Mon', value: 145 },
-    { name: 'Tue', value: 178 },
-    { name: 'Wed', value: 162 },
-    { name: 'Thu', value: 198 },
-    { name: 'Fri', value: 156 },
-    { name: 'Sat', value: 89 },
-    { name: 'Sun', value: 67 }
-  ];
+  if (loading && !analytics) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center space-y-4">
+        <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full shadow-lg"></div>
+        <p className="text-slate-500 dark:text-slate-400 font-medium animate-pulse">Aggregating IT insights...</p>
+      </div>
+    );
+  }
 
-  const assetDistributionData = [
-    { name: 'IT Equipment', value: 456 },
-    { name: 'Furniture', value: 234 },
-    { name: 'Vehicles', value: 123 },
-    { name: 'Software Licenses', value: 345 },
-    { name: 'Other', value: 298 }
-  ];
-
-  const workflowPerformanceData = stats.workflowPerformanceData.length > 0 ? stats.workflowPerformanceData : [
-    { name: 'Jan', value: 87 },
-    { name: 'Feb', value: 89 },
-    { name: 'Mar', value: 92 },
-    { name: 'Apr', value: 88 },
-    { name: 'May', value: 94 },
-    { name: 'Jun', value: 91 },
-    { name: 'Jul', value: 95 }
-  ];
-
-  const kpiData = stats.kpiData.length > 0 ? stats.kpiData : [
+  const kpiData = [
     {
       title: 'Total Tickets',
-      value: '2,847',
-      change: '+12.5%',
+      value: analytics?.slaCompliance?.totalTickets?.toLocaleString() || '0',
+      change: '+10.2%',
       changeType: 'positive',
       icon: 'Ticket',
-      trend: 'vs last month',
-      subtitle: '1,234 open, 1,613 closed'
+      trend: 'vs last 30 days',
+      subtitle: `${analytics?.slaCompliance?.resolvedWithinSla || 0} resolved within SLA`
+    },
+    {
+      title: 'SLA Compliance',
+      value: `${analytics?.slaCompliance?.compliancePercentage?.toFixed(1) || '0'}%`,
+      change: analytics?.slaCompliance?.compliancePercentage > 95 ? '+1.2%' : '-0.5%',
+      changeType: analytics?.slaCompliance?.compliancePercentage > 95 ? 'positive' : 'negative',
+      icon: 'Clock',
+      trend: 'vs target (95%)',
+      subtitle: `${analytics?.slaCompliance?.breachedSla || 0} breaches detected`
+    },
+    {
+      title: 'Avg Resolution',
+      value: `${analytics?.topPerformers?.[0]?.avgResolutionTimeHours?.toFixed(1) || '0'} hrs`,
+      change: '-12%',
+      changeType: 'positive',
+      icon: 'Activity',
+      trend: 'faster than average',
+      subtitle: 'Based on top performance'
+    },
+    {
+      title: 'Active Analysts',
+      value: analytics?.topPerformers?.length?.toString() || '0',
+      change: '+2',
+      changeType: 'positive',
+      icon: 'Users',
+      trend: 'assigned this period',
+      subtitle: 'Authorized technicians'
     }
   ];
 
-  const tableData = stats.tableData.length > 0 ? stats.tableData : [
-    { department: 'IT Department', tickets: 456, avgResolution: 4.2, satisfaction: 94, status: 'Excellent' }
+  const ticketVolumeData = analytics?.volumeTrends?.map(t => ({
+    name: new Date(t.date).toLocaleDateString(undefined, { weekday: 'short' }),
+    value: t.count
+  })) || [];
+
+  const categoryData = analytics?.categoryBreakdown?.map(c => ({
+    name: c.category,
+    value: c.count
+  })) || [];
+
+  const tableColumns = [
+    { key: 'technicianName', label: 'Technician' },
+    { key: 'resolvedCount', label: 'Resolved' },
+    { key: 'avgResolutionTimeHours', label: 'Avg Time (hrs)', render: (val) => val.toFixed(1) },
+    { key: 'slaComplianceRate', label: 'SLA %', render: (val) => `${val.toFixed(1)}%` }
   ];
 
-  const handleSelectReport = (report) => {
-    setSelectedReport(report);
-    console.log('Selected report:', report);
-  };
-
   const handleApplyFilters = (filters) => {
-    console.log('Applied filters:', filters);
-  };
-
-  const handleResetFilters = () => {
-    console.log('Filters reset');
+    fetchData(filters.days || 30);
   };
 
   const handleRefresh = () => {
-    console.log('Refreshing data...');
-  };
-
-  const handleSchedule = () => {
-    console.log('Opening schedule dialog...');
-  };
-
-  const handleShare = () => {
-    console.log('Opening share dialog...');
-  };
-
-  const handleExport = () => {
-    console.log('Exporting report...');
-  };
-
-  const handleTableExport = (format) => {
-    console.log(`Exporting table as ${format}...`);
+    fetchData();
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <div className="pt-16 flex h-screen">
+      <div className="flex h-screen overflow-hidden">
         {isSidebarOpen && (
-          <div className="hidden lg:block w-64 xl:w-80 flex-shrink-0">
+          <div className="hidden lg:block w-64 xl:w-80 flex-shrink-0 border-r border-border bg-card">
             <ReportLibrarySidebar
-              onSelectReport={handleSelectReport}
+              onSelectReport={setSelectedReport}
               selectedReportId={selectedReport?.id}
             />
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto scrollbar-custom">
-          <div className="p-4 sm:p-6 lg:p-8">
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Reporting & Analytics Hub</h1>
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="lg:hidden p-2 rounded-md hover:bg-muted transition-smooth"
-                  aria-label="Toggle sidebar"
-                >
-                  <Icon name="Menu" size={24} />
-                </button>
+        <div className="flex-1 overflow-y-auto scrollbar-custom bg-slate-50/30 dark:bg-slate-950/30">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Reporting & Analytics Hub</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Real-time visibility into service pipeline and performance
+                </p>
               </div>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Comprehensive analytics and insights for data-driven decision making
-              </p>
+              <QuickActionsBar
+                onRefresh={handleRefresh}
+                lastUpdated={lastUpdated}
+              />
             </div>
 
-            <QuickActionsBar
-              onRefresh={handleRefresh}
-              onSchedule={handleSchedule}
-              onShare={handleShare}
-              onExport={handleExport}
-              lastUpdated="2026-01-07 06:09 AM"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-              {kpiData?.map((kpi, index) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+              {kpiData.map((kpi, index) => (
                 <KPIWidget key={index} {...kpi} />
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <ChartWidget
                 title="Ticket Volume Trend"
-                type="bar"
+                type="line"
                 data={ticketVolumeData}
               />
               <ChartWidget
-                title="Asset Distribution"
+                title="Category Distribution"
                 type="pie"
-                data={assetDistributionData}
+                data={categoryData}
               />
             </div>
 
-            <div className="mb-6">
-              <ChartWidget
-                title="Workflow Performance Over Time"
-                type="line"
-                data={workflowPerformanceData}
-              />
-            </div>
-
-            <div className="mb-6">
+            <div className="mb-8">
               <DataTable
-                title="Department Performance Summary"
+                title="Technician Performance Leaderboard"
                 columns={tableColumns}
-                data={tableData}
-                onExport={handleTableExport}
+                data={analytics?.topPerformers || []}
               />
             </div>
 

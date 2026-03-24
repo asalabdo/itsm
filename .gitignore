@@ -6,3 +6,14 @@ package-lock.json
 .vscode/
 .idea/
 vite.config.*s.*
+
+# Local developer secrets - NEVER commit these
+backend/appsettings.Local.json
+appsettings.Local.json
+
+# .NET build artifacts
+backend/bin/
+backend/obj/
+
+# Frontend build output
+dist/

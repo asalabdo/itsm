@@ -12,6 +12,7 @@ import EmployeeLookup from './components/EmployeeLookup';
 import TemplateSelector from './components/TemplateSelector';
 import FileUploader from './components/FileUploader';
 import RoutingPreview from './components/RoutingPreview';
+import { ticketsAPI } from '../../services/api';
 
 const TicketCreation = () => {
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ const TicketCreation = () => {
     return Object.keys(newErrors)?.length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e?.preventDefault();
 
     if (!validateForm()) {
@@ -149,13 +150,22 @@ const TicketCreation = () => {
     }
 
     setIsSubmitting(true);
-
-    setTimeout(() => {
-      const ticketId = `TKT-${Date.now()?.toString()?.slice(-6)}`;
-      setGeneratedTicketId(ticketId);
-      setIsSubmitting(false);
+    try {
+      const res = await ticketsAPI.create({
+        title: formData.subject,
+        description: formData.description,
+        priority: formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1),
+        category: formData.category,
+        urgency: formData.urgency === 'immediate' ? 1.0 : formData.urgency === 'high' ? 0.8 : formData.urgency === 'medium' ? 0.5 : 0.2,
+        impact: formData.impact === 'critical' ? 1.0 : formData.impact === 'high' ? 0.8 : formData.impact === 'medium' ? 0.5 : 0.2,
+      });
+      setGeneratedTicketId(res.data?.ticketNumber || `TKT-${res.data?.id}`);
       setShowSuccessModal(true);
-    }, 2000);
+    } catch (err) {
+      console.error('Failed to create ticket:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleModalClose = () => {

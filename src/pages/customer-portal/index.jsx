@@ -11,12 +11,28 @@ import Icon from '../../components/AppIcon';
 const CustomerPortal = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
+  const [stats, setStats] = useState([
+    { label: 'Active Tickets', value: '--', change: '', trend: 'up', icon: 'Ticket', color: 'var(--color-primary)', bgColor: 'bg-primary/10' },
+    { label: 'Resolved This Month', value: '--', change: '', trend: 'up', icon: 'CheckCircle', color: 'var(--color-success)', bgColor: 'bg-success/10' },
+    { label: 'Avg. Response Time', value: '--', change: '', trend: 'down', icon: 'Clock', color: 'var(--color-warning)', bgColor: 'bg-warning/10' },
+    { label: 'Total Tickets', value: '--', change: '', trend: 'up', icon: 'Star', color: 'var(--color-accent)', bgColor: 'bg-accent/10' },
+  ]);
 
   useEffect(() => {
     const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeBanner');
-    if (hasSeenWelcome) {
-      setShowWelcomeBanner(false);
-    }
+    if (hasSeenWelcome) setShowWelcomeBanner(false);
+
+    import('../../services/api').then(({ dashboardAPI }) => {
+      dashboardAPI.getSummary().then(res => {
+        const s = res.data;
+        if (s) setStats([
+          { label: 'Active Tickets', value: String(s.openTickets ?? '--'), change: '', trend: 'up', icon: 'Ticket', color: 'var(--color-primary)', bgColor: 'bg-primary/10' },
+          { label: 'Resolved This Month', value: String(s.resolvedTickets ?? '--'), change: '', trend: 'up', icon: 'CheckCircle', color: 'var(--color-success)', bgColor: 'bg-success/10' },
+          { label: 'Avg. Response Time', value: s.averageResolutionTime != null ? `${Number(s.averageResolutionTime).toFixed(1)}h` : '--', change: '', trend: 'down', icon: 'Clock', color: 'var(--color-warning)', bgColor: 'bg-warning/10' },
+          { label: 'Total Tickets', value: String(s.totalTickets ?? '--'), change: '', trend: 'up', icon: 'Star', color: 'var(--color-accent)', bgColor: 'bg-accent/10' },
+        ]);
+      }).catch(console.error);
+    });
   }, []);
 
   const handleDismissWelcome = () => {
@@ -29,45 +45,6 @@ const CustomerPortal = () => {
     { id: 'tickets', label: 'My Tickets', icon: 'Ticket' },
     { id: 'knowledge', label: 'Knowledge Base', icon: 'Book' },
     { id: 'settings', label: 'Settings', icon: 'Settings' },
-  ];
-
-  const stats = [
-    {
-      label: 'Active Tickets',
-      value: '6',
-      change: '+2',
-      trend: 'up',
-      icon: 'Ticket',
-      color: 'var(--color-primary)',
-      bgColor: 'bg-primary/10',
-    },
-    {
-      label: 'Resolved This Month',
-      value: '12',
-      change: '+4',
-      trend: 'up',
-      icon: 'CheckCircle',
-      color: 'var(--color-success)',
-      bgColor: 'bg-success/10',
-    },
-    {
-      label: 'Avg. Response Time',
-      value: '2.4h',
-      change: '-0.6h',
-      trend: 'down',
-      icon: 'Clock',
-      color: 'var(--color-warning)',
-      bgColor: 'bg-warning/10',
-    },
-    {
-      label: 'Satisfaction Score',
-      value: '4.8',
-      change: '+0.2',
-      trend: 'up',
-      icon: 'Star',
-      color: 'var(--color-accent)',
-      bgColor: 'bg-accent/10',
-    },
   ];
 
   return (

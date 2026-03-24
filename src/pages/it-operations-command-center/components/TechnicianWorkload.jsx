@@ -8,102 +8,22 @@ const TechnicianWorkload = () => {
   const [selectedTechnician, setSelectedTechnician] = useState(null);
 
   useEffect(() => {
-    // Mock technician workload data
-    const mockTechnicians = [
-      {
-        id: 1,
-        name: 'Sarah Chen',
-        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-        status: 'available',
-        currentLoad: 8,
-        maxCapacity: 12,
-        specialties: ['Email', 'Network'],
-        activeTickets: ['INC-001847', 'INC-001851', 'REQ-002341'],
-        avgResolutionTime: '2.3h',
-        satisfactionScore: 4.8
-      },
-      {
-        id: 2,
-        name: 'Mike Rodriguez',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-        status: 'busy',
-        currentLoad: 11,
-        maxCapacity: 12,
-        specialties: ['Database', 'Application'],
-        activeTickets: ['INC-001853', 'INC-001855', 'REQ-002342', 'REQ-002343'],
-        avgResolutionTime: '1.8h',
-        satisfactionScore: 4.9
-      },
-      {
-        id: 3,
-        name: 'Alex Kumar',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        status: 'away',
-        currentLoad: 5,
-        maxCapacity: 12,
-        specialties: ['Security', 'Infrastructure'],
-        activeTickets: ['INC-001857'],
-        avgResolutionTime: '3.1h',
-        satisfactionScore: 4.6
-      },
-      {
-        id: 4,
-        name: 'Lisa Wang',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-        status: 'available',
-        currentLoad: 6,
-        maxCapacity: 12,
-        specialties: ['Application', 'Mobile'],
-        activeTickets: ['REQ-002344', 'REQ-002345'],
-        avgResolutionTime: '2.1h',
-        satisfactionScore: 4.7
-      },
-      {
-        id: 5,
-        name: 'David Park',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-        status: 'available',
-        currentLoad: 9,
-        maxCapacity: 12,
-        specialties: ['Network', 'VPN'],
-        activeTickets: ['INC-001859', 'REQ-002346'],
-        avgResolutionTime: '2.7h',
-        satisfactionScore: 4.5
+    const fetchWorkloadData = async () => {
+      try {
+        const { ticketsAPI } = await import('../../../services/api');
+        const [techniciansRes, queueRes] = await Promise.all([
+          ticketsAPI.getTechnicians?.() || Promise.resolve({ data: [] }),
+          ticketsAPI.getAssignmentQueue?.() || Promise.resolve({ data: [] })
+        ]);
+        setTechnicians(techniciansRes?.data || []);
+        setAssignmentQueue(queueRes?.data || []);
+      } catch (error) {
+        console.error('Failed to fetch workload data:', error);
+        setTechnicians([]);
+        setAssignmentQueue([]);
       }
-    ];
-
-    const mockQueue = [
-      {
-        id: 'INC-2024-001861',
-        title: 'Printer Connectivity Issues',
-        priority: 'P3',
-        category: 'Hardware',
-        estimatedEffort: '1h',
-        requiredSkills: ['Hardware', 'Network'],
-        age: '15m'
-      },
-      {
-        id: 'REQ-2024-002347',
-        title: 'New User Account Setup',
-        priority: 'P4',
-        category: 'Access Management',
-        estimatedEffort: '30m',
-        requiredSkills: ['Active Directory'],
-        age: '8m'
-      },
-      {
-        id: 'INC-2024-001863',
-        title: 'Application Crash Reports',
-        priority: 'P2',
-        category: 'Application',
-        estimatedEffort: '2h',
-        requiredSkills: ['Application', 'Debugging'],
-        age: '22m'
-      }
-    ];
-
-    setTechnicians(mockTechnicians);
-    setAssignmentQueue(mockQueue);
+    };
+    fetchWorkloadData();
   }, []);
 
   const getStatusColor = (status) => {

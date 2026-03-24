@@ -15,19 +15,17 @@ const MyWorkDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState({
-    name: 'Sarah Support',
-    role: 'IT Support Agent',
-    id: 3, // Assuming agent2 from seed
-    shift: 'Day Shift',
-    skillset: ['Support', 'Customer Service', 'Troubleshooting']
+  const [currentUser, setCurrentUser] = useState(() => {
+    const stored = localStorage.getItem('user');
+    return stored ? JSON.parse(stored) : { firstName: 'User', lastName: '', role: 'Agent', id: null };
   });
 
   const fetchWorkData = async () => {
     try {
       setLoading(true);
-      // For demo, we use user ID 3 (agent2)
-      const res = await ticketsAPI.getByAssignee(3);
+      const userId = currentUser?.id;
+      if (!userId) return;
+      const res = await ticketsAPI.getByAssignee(userId);
       setTickets(res.data || []);
       setLastUpdated(new Date());
     } catch (err) {
@@ -78,11 +76,11 @@ const MyWorkDashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">
-                  {currentUser?.name?.split(' ')?.map(n => n?.[0])?.join('')}
+                  {currentUser?.name || `${currentUser?.firstName} ${currentUser?.lastName}`}
                 </div>
                 <div>
-                  <h2 className="font-semibold text-foreground">{currentUser?.name}</h2>
-                  <p className="text-sm text-muted-foreground">{currentUser?.role} • {currentUser?.id}</p>
+                  <h2 className="font-semibold text-foreground">{currentUser?.name || `${currentUser?.firstName} ${currentUser?.lastName}`}</h2>
+                  <p className="text-sm text-muted-foreground">{currentUser?.role} • ID: {currentUser?.id}</p>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="inline-flex items-center px-2 py-1 text-xs bg-success/10 text-success rounded-full">
                       {currentUser?.shift}

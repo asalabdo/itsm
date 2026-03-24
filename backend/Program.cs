@@ -1,18 +1,50 @@
 using Microsoft.EntityFrameworkCore;
 using ITSMBackend.Data;
 using ITSMBackend.Services;
+using Asp.Versioning;
 using ITSMBackend.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using ITSMBackend.Models;
+using BCrypt.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the DI container
+// Configuration hierarchy (highest wins):
+// 1. Environment variables (e.g. ConnectionStrings__DefaultConnection)
+// 2. appsettings.Local.json  (git-ignored; developer-specific secrets)
+// 3. appsettings.{Environment}.json  (e.g. appsettings.Development.json)
+// 4. appsettings.json  (committed defaults)
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+// Add logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Configure Serilog if available (optional enhancement)
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.SetMinimumLevel(LogLevel.Debug);
+}
+else
+{
+    builder.Logging.SetMinimumLevel(LogLevel.Information);
+}
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure(
+        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null
+            errorCodesToAdd: null
         )
     )
 );
@@ -26,14 +58,84 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChangeRequestService, ChangeRequestService>();
+builder.Services.AddScoped<IReportingService, ReportingService>();
 builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
 builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+builder.Services.AddScoped<IWorkflowEngineService, WorkflowEngineService>();
+builder.Services.AddScoped<IPredictiveAnalyticsService, PredictiveAnalyticsService>();
+builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
+
+// Register ManageEngine integration service
+builder.Services.Configure<ManageEngineSettings>(builder.Configuration.GetSection("ManageEngine"));
+builder.Services.AddHttpClient<ManageEngineService>();
+
+// JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "ITSMSystem",
+        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "ITSMUsers",
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "your-super-secret-key-here-make-it-long-and-secure"))
+    };
+});
+
+// Authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("ManagerOrAdmin", policy => policy.RequireRole("Manager", "Admin"));
+    options.AddPolicy("AgentOrAbove", policy => policy.RequireRole("Agent", "Manager", "Admin"));
+});
 
 builder.Services.AddControllers();
 
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "ITSM Analytics Hub API",
+        Version = "v1",
+        Description = "API for IT Service Management system with analytics and workflow automation"
+    });
+
+    // Add JWT Bearer token support in Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // CORS configuration
 builder.Services.AddCors(options =>
@@ -41,7 +143,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", corsPolicyBuilder =>
     {
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:5173" };
-        
+
         corsPolicyBuilder
             .WithOrigins(allowedOrigins)
             .AllowAnyMethod()
@@ -50,18 +152,70 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add response caching
+builder.Services.AddResponseCaching();
+
+// Add output caching
+builder.Services.AddOutputCache();
+
+// Add health checks
+builder.Services.AddHealthChecks();
+
+// Add API versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+});
+
+// Add problem details
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ITSM Analytics Hub API v1");
+        c.RoutePrefix = "swagger";
+    });
+}
 
-app.UseHttpsRedirection();
+// Global exception handling
+app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
+{
+    var ex = ctx.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+    Console.WriteLine($"UNHANDLED: {ex?.Message}\n{ex?.StackTrace}");
+    ctx.Response.StatusCode = 500;
+    ctx.Response.ContentType = "application/json";
+    await ctx.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = ex?.Message ?? "Unknown error" }));
+}));
 
+// Health checks
+app.MapHealthChecks("/health");
+
+// CORS
 app.UseCors("AllowFrontend");
 
+// Response caching
+app.UseResponseCaching();
+
+// Output caching
+app.UseOutputCache();
+
+// Authentication & Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
+// API versioning
+// Use standard ApiVersioning usage
+// app.UseApiVersioning(); // Not strictly needed for .NET 8+ if using Minimal APIs or correctly configured versioning
+
+// Map controllers
 app.MapControllers();
 
 // Initialize database (with error handling for unavailable database)
@@ -92,18 +246,30 @@ async Task SeedDataAsync(ApplicationDbContext context)
 {
     Console.WriteLine("Starting database seeding...");
 
-    // 1. Seed Users
+    // 1. Seed Service Catalog
+    if (!context.ServiceCatalogItems.Any())
+    {
+        context.ServiceCatalogItems.AddRange(
+            new ServiceCatalogItem { Name = "MacBook Pro M3", Description = "High-performance laptop for developers and power users.", Category = "Hardware", Icon = "Laptop", RequiresApproval = true, DefaultSlaHours = 48, FormConfigJson = "[{\"label\": \"Reason for request\", \"type\": \"text\"}]", IsActive = true },
+            new ServiceCatalogItem { Name = "Adobe Creative Cloud", Description = "Access to full suite of Adobe applications.", Category = "Software", Icon = "FileCode", RequiresApproval = true, DefaultSlaHours = 24, FormConfigJson = "[{\"label\": \"Department\", \"type\": \"select\", \"options\": [\"Creative\", \"Marketing\", \"Product\"]}]", IsActive = true },
+            new ServiceCatalogItem { Name = "Guest Wi-Fi Access", Description = "Temporary internet access for visitors.", Category = "Access", Icon = "Wifi", RequiresApproval = false, DefaultSlaHours = 2, FormConfigJson = "[{\"label\": \"Visitor Name\", \"type\": \"text\"}, {\"label\": \"Expiry Date\", \"type\": \"date\"}]", IsActive = true },
+            new ServiceCatalogItem { Name = "VPN Access", Description = "Secure remote access to company internal network.", Category = "Access", Icon = "ShieldCheck", RequiresApproval = true, DefaultSlaHours = 8, FormConfigJson = "[{\"label\": \"Justification\", \"type\": \"text\"}]", IsActive = true }
+        );
+        await context.SaveChangesAsync();
+    }
+
+    // 2. Seed Users
     if (!context.Users.Any())
     {
         Console.WriteLine("Seeding users...");
         var users = new[]
         {
-            new ITSMBackend.Models.User { Username = "admin", Email = "admin@itsm.com", FirstName = "Admin", LastName = "User", Role = "Admin", Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new ITSMBackend.Models.User { Username = "agent1", Email = "agent1@itsm.com", FirstName = "John", LastName = "Agent", Role = "Agent", Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new ITSMBackend.Models.User { Username = "agent2", Email = "agent2@itsm.com", FirstName = "Sarah", LastName = "Support", Role = "Agent", Department = "Support", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new ITSMBackend.Models.User { Username = "manager1", Email = "manager1@itsm.com", FirstName = "Jane", LastName = "Manager", Role = "Manager", Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new ITSMBackend.Models.User { Username = "user1", Email = "user1@company.com", FirstName = "Robert", LastName = "Employee", Role = "User", Department = "Finance", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new ITSMBackend.Models.User { Username = "user2", Email = "user2@company.com", FirstName = "Emma", LastName = "Staff", Role = "User", Department = "HR", IsActive = true, CreatedAt = DateTime.UtcNow }
+            new User { Username = "admin", Email = "admin@itsm.com", FirstName = "Admin", LastName = "User", Role = UserRole.Administrator, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"), Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow },
+            new User { Username = "agent1", Email = "agent1@itsm.com", FirstName = "John", LastName = "Agent", Role = UserRole.Technician, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Agent123!"), Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow },
+            new User { Username = "agent2", Email = "agent2@itsm.com", FirstName = "Sarah", LastName = "Support", Role = UserRole.Technician, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Agent123!"), Department = "Support", IsActive = true, CreatedAt = DateTime.UtcNow },
+            new User { Username = "manager1", Email = "manager1@itsm.com", FirstName = "Jane", LastName = "Manager", Role = UserRole.Manager, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Manager123!"), Department = "IT", IsActive = true, CreatedAt = DateTime.UtcNow },
+            new User { Username = "user1", Email = "user1@company.com", FirstName = "Robert", LastName = "Employee", Role = UserRole.EndUser, PasswordHash = BCrypt.Net.BCrypt.HashPassword("User123!"), Department = "Finance", IsActive = true, CreatedAt = DateTime.UtcNow },
+            new User { Username = "user2", Email = "user2@company.com", FirstName = "Emma", LastName = "Staff", Role = UserRole.EndUser, PasswordHash = BCrypt.Net.BCrypt.HashPassword("User123!"), Department = "HR", IsActive = true, CreatedAt = DateTime.UtcNow }
         };
 
         context.Users.AddRange(users);
@@ -132,19 +298,19 @@ async Task SeedDataAsync(ApplicationDbContext context)
 
     Console.WriteLine($"Using {allUsers.Count} users for seeding (admin={admin.Username}, user1={user1.Username}).");
 
-    // 2. Seed Assets
+    // 3. Seed Assets
     if (!context.Assets.Any())
     {
         Console.WriteLine("Seeding assets...");
         var assets = new List<ITSMBackend.Models.Asset>
         {
-            new ITSMBackend.Models.Asset { AssetTag = "LAPTOP-001", Name = "Dell Latitude 5420", AssetType = "Hardware", Status = "Active", SerialNumber = "DL1234567", Model = "Latitude 5420", Manufacturer = "Dell", CostAmount = 1200, PurchaseDate = DateTime.Now.AddYears(-2), Location = "Office Building A", OwnerId = admin.Id, Description = "Laptop for IT Manager", CreatedAt = DateTime.UtcNow },
-            new ITSMBackend.Models.Asset { AssetTag = "SERVER-001", Name = "Dell PowerEdge R750", AssetType = "Hardware", Status = "Active", SerialNumber = "DPS111222333", Model = "PowerEdge R750", Manufacturer = "Dell", CostAmount = 15000, PurchaseDate = DateTime.Now.AddYears(-3), Location = "Data Center", OwnerId = admin.Id, Description = "Production Database Server", CreatedAt = DateTime.UtcNow },
-            new ITSMBackend.Models.Asset { AssetTag = "SOFTWARE-001", Name = "Microsoft Office 365 Pro Plus", AssetType = "Software", Status = "Active", SerialNumber = "MS-OFFICE-365-001", Model = "Office 365", Manufacturer = "Microsoft", CostAmount = 120, PurchaseDate = DateTime.Now.AddYears(-1), Location = "Cloud", Description = "Office productivity suite", CreatedAt = DateTime.UtcNow }
+            new ITSMBackend.Models.Asset { AssetTag = "LAPTOP-001", Name = "Dell Latitude 5420", AssetType = "Hardware", Status = "Active", SerialNumber = "DL1234567", Model = "Latitude 5420", Manufacturer = "Dell", CostAmount = 1200, PurchaseDate = DateTime.UtcNow.AddYears(-2), Location = "Office Building A", OwnerId = admin.Id, Description = "Laptop for IT Manager", CreatedAt = DateTime.UtcNow },
+            new ITSMBackend.Models.Asset { AssetTag = "SERVER-001", Name = "Dell PowerEdge R750", AssetType = "Hardware", Status = "Active", SerialNumber = "DPS111222333", Model = "PowerEdge R750", Manufacturer = "Dell", CostAmount = 15000, PurchaseDate = DateTime.UtcNow.AddYears(-3), Location = "Data Center", OwnerId = admin.Id, Description = "Production Database Server", CreatedAt = DateTime.UtcNow },
+            new ITSMBackend.Models.Asset { AssetTag = "SOFTWARE-001", Name = "Microsoft Office 365 Pro Plus", AssetType = "Software", Status = "Active", SerialNumber = "MS-OFFICE-365-001", Model = "Office 365", Manufacturer = "Microsoft", CostAmount = 120, PurchaseDate = DateTime.UtcNow.AddYears(-1), Location = "Cloud", Description = "Office productivity suite", CreatedAt = DateTime.UtcNow }
         };
 
         if (agent1 != null) {
-            assets.Add(new ITSMBackend.Models.Asset { AssetTag = "LAPTOP-002", Name = "HP Pavilion 15", AssetType = "Hardware", Status = "Active", SerialNumber = "HP9876543", Model = "Pavilion 15", Manufacturer = "HP", CostAmount = 800, PurchaseDate = DateTime.Now.AddYears(-1), Location = "Office Building B", OwnerId = agent1.Id, Description = "Laptop for Support Agent", CreatedAt = DateTime.UtcNow });
+            assets.Add(new ITSMBackend.Models.Asset { AssetTag = "LAPTOP-002", Name = "HP Pavilion 15", AssetType = "Hardware", Status = "Active", SerialNumber = "HP9876543", Model = "Pavilion 15", Manufacturer = "HP", CostAmount = 800, PurchaseDate = DateTime.UtcNow.AddYears(-1), Location = "Office Building B", OwnerId = agent1.Id, Description = "Laptop for Support Agent", CreatedAt = DateTime.UtcNow });
         }
 
         context.Assets.AddRange(assets);
@@ -152,7 +318,7 @@ async Task SeedDataAsync(ApplicationDbContext context)
         Console.WriteLine($"Seeded {assets.Count} assets.");
     }
 
-    // 3. Seed Tickets
+    // 4. Seed Tickets
     if (!context.Tickets.Any())
     {
         Console.WriteLine("Seeding tickets...");
@@ -171,7 +337,7 @@ async Task SeedDataAsync(ApplicationDbContext context)
         Console.WriteLine($"Seeded {tickets.Count} tickets.");
     }
 
-    // 4. Seed Service Requests
+    // 5. Seed Service Requests
     if (!context.ServiceRequests.Any())
     {
         Console.WriteLine("Seeding service requests...");
@@ -188,7 +354,7 @@ async Task SeedDataAsync(ApplicationDbContext context)
         Console.WriteLine($"Seeded {srs.Count} service requests.");
     }
 
-    // 5. Seed Dashboard Metrics
+    // 6. Seed Dashboard Metrics
     if (!context.DashboardMetrics.Any())
     {
         Console.WriteLine("Seeding dashboard metrics...");
@@ -204,7 +370,7 @@ async Task SeedDataAsync(ApplicationDbContext context)
         Console.WriteLine($"Seeded {metrics.Count} dashboard metrics.");
     }
 
-    // 6. Seed Performance Metrics
+    // 7. Seed Performance Metrics
     if (!context.PerformanceMetrics.Any())
     {
         Console.WriteLine("Seeding performance metrics...");

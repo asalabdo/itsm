@@ -11,6 +11,7 @@ import ApprovalHistoryPanel from './components/ApprovalHistoryPanel';
 import ActionSidebar from './components/ActionSidebar';
 import FilterPanel from './components/FilterPanel';
 import ApprovalModal from './components/ApprovalModal';
+import { approvalsAPI } from '../../services/api';
 
 const ApprovalQueueManager = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,138 +35,20 @@ const ApprovalQueueManager = () => {
     requestId: ''
   });
 
-  const approvalRequests = [
-    {
-      id: 'APR-2850',
-      type: 'Software License Purchase',
-      requester: 'Sarah Johnson',
-      department: 'Information Technology',
-      submissionDate: '01/07/2026',
-      slaHoursRemaining: 2,
-      urgency: 'critical',
-      status: 'pending',
-      value: '$2,500',
-      description: 'Request for Adobe Creative Cloud licenses for the design team. Current licenses expire on 01/15/2026 and renewal is critical for ongoing projects.',
-      justification: 'Essential for maintaining design team productivity. Current projects require uninterrupted access to Adobe tools. Budget approved in Q1 allocation.',
-      documents: [
-        { id: 1, name: 'License_Quote.pdf', size: '245 KB', uploadDate: '01/06/2026' },
-        { id: 2, name: 'Budget_Approval.pdf', size: '180 KB', uploadDate: '01/06/2026' }
-      ],
-      history: [
-        { action: 'Request submitted', user: 'Sarah Johnson', timestamp: '01/07/2026 08:30 AM', icon: 'FileText' },
-        { action: 'Assigned to approver', user: 'System', timestamp: '01/07/2026 08:31 AM', icon: 'UserPlus' },
-        { action: 'Documents uploaded', user: 'Sarah Johnson', timestamp: '01/07/2026 09:15 AM', icon: 'Paperclip' }
-      ]
-    },
-    {
-      id: 'APR-2849',
-      type: 'Equipment Procurement',
-      requester: 'Michael Chen',
-      department: 'Operations',
-      submissionDate: '01/06/2026',
-      slaHoursRemaining: 8,
-      urgency: 'high',
-      status: 'pending',
-      value: '$15,000',
-      description: 'Procurement of 10 new workstations for the operations team expansion. Specifications include Intel i7 processors, 32GB RAM, and dual monitors.',
-      justification: 'Supporting team expansion approved in annual planning. New hires starting 01/20/2026 require fully equipped workstations. Vendor quote attached with competitive pricing.',
-      documents: [
-        { id: 1, name: 'Equipment_Specifications.pdf', size: '320 KB', uploadDate: '01/06/2026' },
-        { id: 2, name: 'Vendor_Quote.pdf', size: '280 KB', uploadDate: '01/06/2026' },
-        { id: 3, name: 'Comparison_Analysis.xlsx', size: '156 KB', uploadDate: '01/06/2026' }
-      ],
-      history: [
-        { action: 'Request submitted', user: 'Michael Chen', timestamp: '01/06/2026 02:45 PM', icon: 'FileText' },
-        { action: 'Assigned to approver', user: 'System', timestamp: '01/06/2026 02:46 PM', icon: 'UserPlus' }
-      ]
-    },
-    {
-      id: 'APR-2848',
-      type: 'Travel Authorization',
-      requester: 'Emily Rodriguez',
-      department: 'Marketing',
-      submissionDate: '01/06/2026',
-      slaHoursRemaining: 16,
-      urgency: 'medium',
-      status: 'pending',
-      value: '$3,200',
-      description: 'Travel authorization for attending Marketing Summit 2026 in San Francisco. Conference dates: 02/15/2026 to 02/18/2026. Includes airfare, hotel, and conference registration.',
-      justification: 'Industry-leading conference with key sessions on digital marketing trends. Networking opportunities with potential partners. Knowledge transfer to team upon return.',
-      documents: [
-        { id: 1, name: 'Conference_Agenda.pdf', size: '420 KB', uploadDate: '01/06/2026' },
-        { id: 2, name: 'Travel_Estimate.pdf', size: '195 KB', uploadDate: '01/06/2026' }
-      ],
-      history: [
-        { action: 'Request submitted', user: 'Emily Rodriguez', timestamp: '01/06/2026 10:20 AM', icon: 'FileText' },
-        { action: 'Assigned to approver', user: 'System', timestamp: '01/06/2026 10:21 AM', icon: 'UserPlus' }
-      ]
-    },
-    {
-      id: 'APR-2847',
-      type: 'Budget Reallocation',
-      requester: 'David Kim',
-      department: 'Finance',
-      submissionDate: '01/05/2026',
-      slaHoursRemaining: 24,
-      urgency: 'medium',
-      status: 'pending',
-      value: '$8,500',
-      description: 'Request to reallocate budget from Q1 training to Q1 software tools. Training postponed to Q2 due to scheduling conflicts. Funds needed for critical software upgrades.',
-      justification: 'Training sessions rescheduled to Q2 per department heads agreement. Software upgrades cannot be delayed without impacting operations. Budget neutral reallocation.',
-      documents: [
-        { id: 1, name: 'Budget_Analysis.xlsx', size: '245 KB', uploadDate: '01/05/2026' },
-        { id: 2, name: 'Department_Approval.pdf', size: '180 KB', uploadDate: '01/05/2026' }
-      ],
-      history: [
-        { action: 'Request submitted', user: 'David Kim', timestamp: '01/05/2026 03:30 PM', icon: 'FileText' },
-        { action: 'Assigned to approver', user: 'System', timestamp: '01/05/2026 03:31 PM', icon: 'UserPlus' },
-        { action: 'Comment added', user: 'David Kim', timestamp: '01/06/2026 09:00 AM', icon: 'MessageSquare', comment: 'Added department head approval documentation' }
-      ]
-    },
-    {
-      id: 'APR-2846',
-      type: 'Contractor Hiring',
-      requester: 'Lisa Anderson',
-      department: 'Human Resources',
-      submissionDate: '01/05/2026',
-      slaHoursRemaining: -4,
-      urgency: 'high',
-      status: 'pending',
-      value: '$12,000',
-      description: 'Hiring approval for 3-month contract developer to support Q1 project deliverables. Specialized skills in React and Node.js required. Start date: 01/15/2026.',
-      justification: 'Critical project milestone at risk without additional development resources. Internal team at capacity. Contractor with proven track record identified. Fixed-term engagement.',
-      documents: [
-        { id: 1, name: 'Contractor_Resume.pdf', size: '380 KB', uploadDate: '01/05/2026' },
-        { id: 2, name: 'Project_Timeline.pdf', size: '290 KB', uploadDate: '01/05/2026' },
-        { id: 3, name: 'Rate_Comparison.xlsx', size: '145 KB', uploadDate: '01/05/2026' }
-      ],
-      history: [
-        { action: 'Request submitted', user: 'Lisa Anderson', timestamp: '01/05/2026 11:15 AM', icon: 'FileText' },
-        { action: 'Assigned to approver', user: 'System', timestamp: '01/05/2026 11:16 AM', icon: 'UserPlus' },
-        { action: 'SLA breach notification', user: 'System', timestamp: '01/07/2026 03:16 AM', icon: 'AlertTriangle' }
-      ]
-    },
-    {
-      id: 'APR-2845',
-      type: 'Asset Transfer',
-      requester: 'Robert Martinez',
-      department: 'Operations',
-      submissionDate: '01/04/2026',
-      slaHoursRemaining: 32,
-      urgency: 'low',
-      status: 'pending',
-      value: '$5,200',
-      description: 'Transfer of 5 laptops from Operations to Marketing department. Assets in good condition, meeting Marketing team requirements. Transfer includes warranty and licenses.',
-      justification: 'Operations team upgraded to new equipment. Marketing team expansion requires additional laptops. Cost-effective internal transfer versus new purchase.',
-      documents: [
-        { id: 1, name: 'Asset_Inventory.xlsx', size: '210 KB', uploadDate: '01/04/2026' },
-        { id: 2, name: 'Condition_Report.pdf', size: '340 KB', uploadDate: '01/04/2026' }
-      ],
-      history: [
-        { action: 'Request submitted', user: 'Robert Martinez', timestamp: '01/04/2026 02:00 PM', icon: 'FileText' },
-        { action: 'Assigned to approver', user: 'System', timestamp: '01/04/2026 02:01 PM', icon: 'UserPlus' }
-      ]
-    }
+  const [approvalRequests, setApprovalRequests] = useState([]);
+  const [loadingApprovals, setLoadingApprovals] = useState(true);
+
+  useEffect(() => {
+    approvalsAPI.getPending().then(res => {
+      setApprovalRequests(res.data || []);
+    }).catch(console.error).finally(() => setLoadingApprovals(false));
+  }, []);
+
+  const stats = [
+    { label: 'Pending Approvals', value: approvalRequests.length.toString(), icon: 'Clock', color: 'text-warning' },
+    { label: 'Overdue', value: approvalRequests.filter(r => r.isOverdue).length.toString(), icon: 'AlertTriangle', color: 'text-error' },
+    { label: 'Approved Today', value: '0', icon: 'CheckCircle', color: 'text-success' },
+    { label: 'Total Value', value: '--', icon: 'DollarSign', color: 'text-primary' }
   ];
 
   const sortOptions = [
@@ -266,13 +149,6 @@ const ApprovalQueueManager = () => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [selectedRequest, approvalRequests]);
-
-  const stats = [
-    { label: 'Pending Approvals', value: '6', icon: 'Clock', color: 'text-warning' },
-    { label: 'Overdue', value: '1', icon: 'AlertTriangle', color: 'text-error' },
-    { label: 'Approved Today', value: '4', icon: 'CheckCircle', color: 'text-success' },
-    { label: 'Total Value', value: '$46.4K', icon: 'DollarSign', color: 'text-primary' }
-  ];
 
   return (
     <>

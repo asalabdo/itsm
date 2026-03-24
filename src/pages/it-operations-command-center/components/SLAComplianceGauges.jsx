@@ -1,101 +1,130 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { dashboardAPI } from '../../../services/api';
 
 const SLAComplianceGauges = () => {
   const [slaMetrics, setSlaMetrics] = useState([]);
   const [breachPredictions, setBreachPredictions] = useState([]);
   const [selectedMetric, setSelectedMetric] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Mock SLA compliance data
-    const mockMetrics = [
-      {
-        id: 'response_time',
-        name: 'Response Time',
-        current: 87.3,
-        target: 95,
-        trend: 'up',
-        trendValue: 2.1,
-        breachRisk: 'low',
-        details: {
-          p1: { current: 94.2, target: 98, breaches: 2 },
-          p2: { current: 89.1, target: 95, breaches: 8 },
-          p3: { current: 85.7, target: 90, breaches: 12 },
-          p4: { current: 82.3, target: 85, breaches: 15 }
+    const fetchSLAData = async () => {
+      try {
+        setLoading(true);
+        // Try to fetch SLA metrics from dashboard API
+        const res = await dashboardAPI.getPerformanceMetrics('sla');
+        const data = res.data || {};
+        
+        if (data.metrics && Array.isArray(data.metrics)) {
+          setSlaMetrics(data.metrics);
+        } else {
+          // Use fallback mock data
+          setSlaMetrics(getDefaultSLAMetrics());
         }
-      },
-      {
-        id: 'resolution_time',
-        name: 'Resolution Time',
-        current: 92.1,
-        target: 90,
-        trend: 'up',
-        trendValue: 1.8,
-        breachRisk: 'low',
-        details: {
-          p1: { current: 89.5, target: 95, breaches: 3 },
-          p2: { current: 91.8, target: 90, breaches: 5 },
-          p3: { current: 93.2, target: 88, breaches: 7 },
-          p4: { current: 94.7, target: 85, breaches: 4 }
+        
+        if (data.predictions && Array.isArray(data.predictions)) {
+          setBreachPredictions(data.predictions);
+        } else {
+          setBreachPredictions(getDefaultPredictions());
         }
-      },
-      {
-        id: 'first_call_resolution',
-        name: 'First Call Resolution',
-        current: 78.9,
-        target: 85,
-        trend: 'down',
-        trendValue: -1.2,
-        breachRisk: 'medium',
-        details: {
-          p1: { current: 72.1, target: 80, breaches: 18 },
-          p2: { current: 79.3, target: 85, breaches: 14 },
-          p3: { current: 81.7, target: 88, breaches: 11 },
-          p4: { current: 82.9, target: 90, breaches: 8 }
-        }
-      },
-      {
-        id: 'customer_satisfaction',
-        name: 'Employee Satisfaction',
-        current: 94.6,
-        target: 90,
-        trend: 'up',
-        trendValue: 0.8,
-        breachRisk: 'low',
-        details: {
-          p1: { current: 91.2, target: 88, breaches: 1 },
-          p2: { current: 94.8, target: 90, breaches: 2 },
-          p3: { current: 96.1, target: 92, breaches: 1 },
-          p4: { current: 97.3, target: 95, breaches: 0 }
-        }
+      } catch (error) {
+        console.error('Failed to fetch SLA metrics:', error);
+        // Use fallback mock data
+        setSlaMetrics(getDefaultSLAMetrics());
+        setBreachPredictions(getDefaultPredictions());
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    const mockPredictions = [
-      {
-        id: 'PRED-001',
-        metric: 'Response Time',
-        priority: 'P2',
-        predictedBreach: '2h 15m',
-        confidence: 87,
-        impact: 'Medium',
-        recommendation: 'Reassign 3 P2 tickets to available technicians'
-      },
-      {
-        id: 'PRED-002',
-        metric: 'First Call Resolution',
-        priority: 'P1',
-        predictedBreach: '45m',
-        confidence: 92,
-        impact: 'High',
-        recommendation: 'Escalate to senior technician immediately'
-      }
-    ];
-
-    setSlaMetrics(mockMetrics);
-    setBreachPredictions(mockPredictions);
+    fetchSLAData();
   }, []);
+
+  const getDefaultSLAMetrics = () => [
+    {
+      id: 'response_time',
+      name: 'Response Time',
+      current: 87.3,
+      target: 95,
+      trend: 'up',
+      trendValue: 2.1,
+      breachRisk: 'low',
+      details: {
+        p1: { current: 94.2, target: 98, breaches: 2 },
+        p2: { current: 89.1, target: 95, breaches: 8 },
+        p3: { current: 85.7, target: 90, breaches: 12 },
+        p4: { current: 82.3, target: 85, breaches: 15 }
+      }
+    },
+    {
+      id: 'resolution_time',
+      name: 'Resolution Time',
+      current: 92.1,
+      target: 90,
+      trend: 'up',
+      trendValue: 1.8,
+      breachRisk: 'low',
+      details: {
+        p1: { current: 89.5, target: 95, breaches: 3 },
+        p2: { current: 91.8, target: 90, breaches: 5 },
+        p3: { current: 93.2, target: 88, breaches: 7 },
+        p4: { current: 94.7, target: 85, breaches: 4 }
+      }
+    },
+    {
+      id: 'first_call_resolution',
+      name: 'First Call Resolution',
+      current: 78.9,
+      target: 85,
+      trend: 'down',
+      trendValue: -1.2,
+      breachRisk: 'medium',
+      details: {
+        p1: { current: 72.1, target: 80, breaches: 18 },
+        p2: { current: 79.3, target: 85, breaches: 14 },
+        p3: { current: 81.7, target: 88, breaches: 11 },
+        p4: { current: 82.9, target: 90, breaches: 8 }
+      }
+    },
+    {
+      id: 'customer_satisfaction',
+      name: 'Employee Satisfaction',
+      current: 94.6,
+      target: 90,
+      trend: 'up',
+      trendValue: 0.8,
+      breachRisk: 'low',
+      details: {
+        p1: { current: 91.2, target: 88, breaches: 1 },
+        p2: { current: 94.8, target: 90, breaches: 2 },
+        p3: { current: 96.1, target: 92, breaches: 1 },
+        p4: { current: 97.3, target: 95, breaches: 0 }
+      }
+    }
+  ];
+
+  const getDefaultPredictions = () => [
+    {
+      id: 'PRED-001',
+      metric: 'Response Time',
+      priority: 'P2',
+      predictedBreach: '2h 15m',
+      confidence: 87,
+      impact: 'Medium',
+      recommendation: 'Reassign 3 P2 tickets to available technicians'
+    },
+    {
+      id: 'PRED-002',
+      metric: 'First Call Resolution',
+      priority: 'P1',
+      predictedBreach: '45m',
+      confidence: 92,
+      impact: 'High',
+      recommendation: 'Escalate to senior technician immediately'
+    }
+  ];
 
   const getGaugeColor = (current, target) => {
     const percentage = (current / target) * 100;

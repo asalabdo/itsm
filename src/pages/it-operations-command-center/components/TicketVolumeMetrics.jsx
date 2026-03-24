@@ -1,34 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Icon from '../../../components/AppIcon';
+import { ticketsAPI, dashboardAPI } from '../../../services/api';
 
 const TicketVolumeMetrics = () => {
   const [volumeData, setVolumeData] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState('24h');
   const [totalTickets, setTotalTickets] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Mock ticket volume data
-    const mockData = [
-      { time: '00:00', open: 12, inProgress: 8, resolved: 15, priority: { P1: 2, P2: 8, P3: 15, P4: 10 } },
-      { time: '02:00', open: 8, inProgress: 12, resolved: 18, priority: { P1: 1, P2: 6, P3: 18, P4: 13 } },
-      { time: '04:00', open: 15, inProgress: 6, resolved: 12, priority: { P1: 3, P2: 9, P3: 12, P4: 9 } },
-      { time: '06:00', open: 22, inProgress: 18, resolved: 25, priority: { P1: 4, P2: 15, P3: 25, P4: 21 } },
-      { time: '08:00', open: 35, inProgress: 28, resolved: 32, priority: { P1: 6, P2: 22, P3: 32, P4: 35 } },
-      { time: '10:00', open: 28, inProgress: 32, resolved: 38, priority: { P1: 5, P2: 18, P3: 38, P4: 37 } },
-      { time: '12:00', open: 42, inProgress: 35, resolved: 45, priority: { P1: 8, P2: 28, P3: 45, P4: 41 } },
-      { time: '14:00', open: 38, inProgress: 42, resolved: 48, priority: { P1: 7, P2: 25, P3: 48, P4: 48 } },
-      { time: '16:00', open: 32, inProgress: 38, resolved: 42, priority: { P1: 5, P2: 22, P3: 42, P4: 43 } },
-      { time: '18:00', open: 25, inProgress: 28, resolved: 35, priority: { P1: 3, P2: 18, P3: 35, P4: 32 } },
-      { time: '20:00', open: 18, inProgress: 22, resolved: 28, priority: { P1: 2, P2: 12, P3: 28, P4: 26 } },
-      { time: '22:00', open: 12, inProgress: 15, resolved: 22, priority: { P1: 1, P2: 8, P3: 22, P4: 18 } }
-    ];
+    const fetchVolumeData = async () => {
+      try {
+        setLoading(true);
+        // Try to fetch from dashboard API
+        const res = await dashboardAPI.getPerformanceMetrics('tickets');
+        const data = res.data || [];
+        
+        // Format the data or use default structure
+        const formattedData = Array.isArray(data) && data.length > 0 
+          ? data.map(d => ({
+              time: d.time || d.timestamp || '00:00',
+              open: d.open || d.openTickets || 0,
+              inProgress: d.inProgress || d.workingTickets || 0,
+              resolved: d.resolved || d.resolvedTickets || 0,
+              priority: d.priority || { P1: 0, P2: 0, P3: 0, P4: 0 }
+            }))
+          : [];
+        
+        setVolumeData(formattedData);
+        const total = formattedData.reduce((sum, item) => sum + (item?.open + item?.inProgress + item?.resolved), 0);
+        setTotalTickets(total);
+      } catch (error) {
+        console.error('Failed to fetch volume metrics:', error);
+        // Use fallback mock data
+        const mockData = [
+          { time: '00:00', open: 12, inProgress: 8, resolved: 15, priority: { P1: 2, P2: 8, P3: 15, P4: 10 } },
+          { time: '02:00', open: 8, inProgress: 12, resolved: 18, priority: { P1: 1, P2: 6, P3: 18, P4: 13 } },
+          { time: '04:00', open: 15, inProgress: 6, resolved: 12, priority: { P1: 3, P2: 9, P3: 12, P4: 9 } },
+          { time: '06:00', open: 22, inProgress: 18, resolved: 25, priority: { P1: 4, P2: 15, P3: 25, P4: 21 } },
+          { time: '08:00', open: 35, inProgress: 28, resolved: 32, priority: { P1: 6, P2: 22, P3: 32, P4: 35 } },
+          { time: '10:00', open: 28, inProgress: 32, resolved: 38, priority: { P1: 5, P2: 18, P3: 38, P4: 37 } },
+          { time: '12:00', open: 42, inProgress: 35, resolved: 45, priority: { P1: 8, P2: 28, P3: 45, P4: 41 } },
+          { time: '14:00', open: 38, inProgress: 42, resolved: 48, priority: { P1: 7, P2: 25, P3: 48, P4: 48 } },
+          { time: '16:00', open: 32, inProgress: 38, resolved: 42, priority: { P1: 5, P2: 22, P3: 42, P4: 43 } },
+          { time: '18:00', open: 25, inProgress: 28, resolved: 35, priority: { P1: 3, P2: 18, P3: 35, P4: 32 } },
+          { time: '20:00', open: 18, inProgress: 22, resolved: 28, priority: { P1: 2, P2: 12, P3: 28, P4: 26 } },
+          { time: '22:00', open: 12, inProgress: 15, resolved: 22, priority: { P1: 1, P2: 8, P3: 22, P4: 18 } }
+        ];
+        setVolumeData(mockData);
+        const total = mockData.reduce((sum, item) => sum + item.open + item.inProgress + item.resolved, 0);
+        setTotalTickets(total);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setVolumeData(mockData);
-    
-    // Calculate total tickets
-    const total = mockData?.reduce((sum, item) => sum + item?.open + item?.inProgress + item?.resolved, 0);
-    setTotalTickets(total);
+    fetchVolumeData();
   }, [selectedPeriod]);
 
   const priorityColors = {

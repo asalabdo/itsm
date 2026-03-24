@@ -20,53 +20,13 @@ const ApprovalHistoryPanel = () => {
     { value: 'denied', label: 'Denied' }
   ];
 
-  const approvalHistory = [
-    {
-      id: 'APR-2847',
-      type: 'Software License Purchase',
-      requester: 'Sarah Johnson',
-      decision: 'approved',
-      decisionDate: '01/07/2026 09:15 AM',
-      value: '$2,500',
-      comment: 'Approved as per budget allocation for Q1 2026'
-    },
-    {
-      id: 'APR-2846',
-      type: 'Equipment Procurement',
-      requester: 'Michael Chen',
-      decision: 'approved',
-      decisionDate: '01/07/2026 08:45 AM',
-      value: '$15,000',
-      comment: 'Approved with condition to use preferred vendor'
-    },
-    {
-      id: 'APR-2845',
-      type: 'Travel Authorization',
-      requester: 'Emily Rodriguez',
-      decision: 'denied',
-      decisionDate: '01/06/2026 04:30 PM',
-      value: '$3,200',
-      comment: 'Denied due to travel freeze policy. Virtual meeting recommended'
-    },
-    {
-      id: 'APR-2844',
-      type: 'Budget Reallocation',
-      requester: 'David Kim',
-      decision: 'approved',
-      decisionDate: '01/06/2026 02:15 PM',
-      value: '$8,500',
-      comment: 'Approved for marketing campaign extension'
-    },
-    {
-      id: 'APR-2843',
-      type: 'Contractor Hiring',
-      requester: 'Lisa Anderson',
-      decision: 'approved',
-      decisionDate: '01/06/2026 11:00 AM',
-      value: '$12,000',
-      comment: 'Approved for 3-month contract period'
-    }
-  ];
+  const [approvalHistory, setApprovalHistory] = React.useState([]);
+
+  React.useEffect(() => {
+    approvalsAPI.getHistory().then(res => {
+      setApprovalHistory(res.data || []);
+    }).catch(console.error);
+  }, []);
 
   const getDecisionColor = (decision) => {
     return decision === 'approved' ?'bg-success/10 text-success' :'bg-error/10 text-error';

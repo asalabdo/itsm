@@ -8,6 +8,8 @@ public class CreateTicketDto
     public string Category { get; set; } = string.Empty;
     public int? AssignedToId { get; set; }
     public DateTime? DueDate { get; set; }
+    public decimal? Urgency { get; set; }
+    public decimal? Impact { get; set; }
 }
 
 public class UpdateTicketDto
@@ -19,6 +21,9 @@ public class UpdateTicketDto
     public string? Category { get; set; }
     public int? AssignedToId { get; set; }
     public DateTime? DueDate { get; set; }
+    public string? ResolutionNotes { get; set; }
+    public decimal? Urgency { get; set; }
+    public decimal? Impact { get; set; }
 }
 
 public class TicketDto
@@ -36,6 +41,12 @@ public class TicketDto
     public DateTime UpdatedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }
     public DateTime? DueDate { get; set; }
+    public DateTime? SlaDueDate { get; set; }
+    public string? SlaStatus { get; set; }   // on_track | at_risk | breached
+    public int? SlaRemainingMinutes { get; set; }
+    public decimal? Urgency { get; set; }
+    public decimal? Impact { get; set; }
+    public string? ResolutionNotes { get; set; }
     public int CommentCount { get; set; }
     public int ActivityCount { get; set; }
 }
@@ -64,4 +75,31 @@ public class TicketActivityDto
     public string? OldValue { get; set; }
     public string? NewValue { get; set; }
     public DateTime Timestamp { get; set; }
+}
+
+public class TicketFilterDto
+{
+    public string? Status { get; set; }
+    public string? Priority { get; set; }
+    public string? Category { get; set; }
+    public int? AssignedToId { get; set; }
+    public string? Search { get; set; }
+    public string? SlaStatus { get; set; }
+    public DateTime? CreatedFrom { get; set; }
+    public DateTime? CreatedTo { get; set; }
+}
+
+public class TicketStatsDto
+{
+    public int Total { get; set; }
+    public int Open { get; set; }
+    public int InProgress { get; set; }
+    public int Resolved { get; set; }
+    public int Closed { get; set; }
+    public int SlaBreached { get; set; }
+    public int SlaAtRisk { get; set; }
+    public int Critical { get; set; }
+    public int High { get; set; }
+    public int Medium { get; set; }
+    public int Low { get; set; }
 }

@@ -11,6 +11,9 @@ export const ticketsAPI = {
   getByAssignee: (userId) => apiClient.get(`/tickets/assignee/${userId}`),
   addComment: (id, comment) => apiClient.post(`/tickets/${id}/comments`, { comment }),
   getOpenCount: () => apiClient.get('/tickets/statistics/open-count'),
+  getStatistics: () => apiClient.get('/tickets/statistics'),
+  search: (params) => apiClient.get('/tickets/search', { params }),
+  refreshSla: () => apiClient.post('/tickets/sla/refresh'),
 };
 
 // Assets API
@@ -80,4 +83,15 @@ export const workflowsAPI = {
   delete: (id) => apiClient.delete(`/workflows/${id}`),
   createInstance: (id) => apiClient.post(`/workflows/${id}/instances`),
   getInstances: (id) => apiClient.get(`/workflows/${id}/instances`),
+};
+
+// ManageEngine Integration API
+export const manageEngineAPI = {
+  syncIncidents: () => apiClient.post('/manageengine/sync'),
+  testConnection: () => apiClient.post('/manageengine/test-connection'),
+  getIncidents: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiClient.get(`/manageengine/incidents${queryString ? `?${queryString}` : ''}`);
+  },
+  getSyncStatus: () => apiClient.get('/manageengine/sync-status'),
 };

@@ -21,6 +21,8 @@ public class Asset
     
     public virtual User? Owner { get; set; }
     public virtual ICollection<AssetHistory> History { get; set; } = new List<AssetHistory>();
+    public virtual ICollection<AssetRelationship> RelationshipsAsSource { get; set; } = new List<AssetRelationship>();
+    public virtual ICollection<AssetRelationship> RelationshipsAsTarget { get; set; } = new List<AssetRelationship>();
 }
 
 public class AssetHistory

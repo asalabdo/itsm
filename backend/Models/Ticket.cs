@@ -18,6 +18,11 @@ public class Ticket
     public decimal? Urgency { get; set; } // 0-1 scale
     public decimal? Impact { get; set; } // 0-1 scale
     public string? ResolutionNotes { get; set; }
+    public DateTime? SlaDueDate { get; set; }
+    public string? SlaStatus { get; set; } // on_track, at_risk, breached
+    public string? ExternalId { get; set; }
+    public string? ExternalSystem { get; set; }
+    public string? Subcategory { get; set; }
     
     public virtual User? AssignedTo { get; set; }
     public virtual User? RequestedBy { get; set; }

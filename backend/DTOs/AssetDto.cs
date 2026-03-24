@@ -17,6 +17,18 @@ public class AssetDto
     public string Location { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public string? Description { get; set; }
+    public List<AssetRelationshipDto> Relationships { get; set; } = new();
+    public List<AssetHistoryDto> History { get; set; } = new();
+}
+
+public class AssetHistoryDto
+{
+    public int Id { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public string? OldValue { get; set; }
+    public string? NewValue { get; set; }
+    public DateTime Timestamp { get; set; }
+    public string Username { get; set; } = string.Empty;
 }
 
 public class CreateAssetDto

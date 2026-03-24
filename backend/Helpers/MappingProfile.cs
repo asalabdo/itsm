@@ -9,9 +9,17 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         // User mappings
-        CreateMap<User, UserDto>().ReverseMap();
-        CreateMap<CreateUserDto, User>();
-        CreateMap<UpdateUserDto, User>();
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
+            .ReverseMap()
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => Enum.Parse<UserRole>(src.Role)));
+
+        CreateMap<CreateUserDto, User>()
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => Enum.Parse<UserRole>(src.Role)));
+
+        CreateMap<UpdateUserDto, User>()
+            .ForMember(dest => dest.Role, opt => opt.Condition(src => !string.IsNullOrEmpty(src.Role)))
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => Enum.Parse<UserRole>(src.Role!)));
 
         // Ticket mappings
         CreateMap<Ticket, TicketDto>()
@@ -28,10 +36,37 @@ public class MappingProfile : Profile
         CreateMap<TicketComment, TicketCommentDto>();
         CreateMap<TicketActivity, TicketActivityDto>();
 
+        // Service Request mappings
+        CreateMap<ServiceCatalogItem, ServiceCatalogItemDto>();
+        CreateMap<ServiceRequest, ServiceRequestDto>()
+            .ForMember(dest => dest.CatalogItemName, opt => opt.MapFrom(src => src.CatalogItem != null ? src.CatalogItem.Name : "General"));
+        CreateMap<ApprovalRequest, ApprovalRequestDto>()
+            .ForMember(dest => dest.ApproverName, opt => opt.MapFrom(src => src.Approver != null ? src.Approver.Username : "System"));
+        CreateMap<FulfillmentTask, FulfillmentTaskDto>()
+            .ForMember(dest => dest.AssignedToName, opt => opt.MapFrom(src => src.AssignedTo != null ? src.AssignedTo.Username : "Unassigned"));
+        CreateMap<CreateServiceRequestDto, ServiceRequest>();
+
         // Asset mappings
-        CreateMap<Asset, AssetDto>().ReverseMap();
+        CreateMap<Asset, AssetDto>()
+            .ForMember(dest => dest.History, opt => opt.MapFrom(src => src.History))
+            .ReverseMap();
         CreateMap<CreateAssetDto, Asset>();
         CreateMap<UpdateAssetDto, Asset>();
+        
+        CreateMap<AssetHistory, AssetHistoryDto>()
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username));
+
+        CreateMap<AssetRelationship, AssetRelationshipDto>()
+            .ForMember(dest => dest.SourceAssetName, opt => opt.MapFrom(src => src.SourceAsset.Name))
+            .ForMember(dest => dest.TargetAssetName, opt => opt.MapFrom(src => src.TargetAsset.Name));
+
+        CreateMap<CreateAssetRelationshipDto, AssetRelationship>();
+
+        // Automation mappings
+        CreateMap<AutomationRule, AutomationRuleDto>().ReverseMap();
+        CreateMap<CreateAutomationRuleDto, AutomationRule>();
+        CreateMap<AutomationExecutionLog, AutomationExecutionLogDto>()
+            .ForMember(dest => dest.RuleName, opt => opt.MapFrom(src => src.Rule.Name));
 
         // ChangeRequest mappings
         CreateMap<ChangeRequest, ChangeRequestDto>().ReverseMap();

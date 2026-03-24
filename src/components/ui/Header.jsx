@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
+import notificationService from '../../services/notificationService';
 
 const Header = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState('connected');
   const [criticalAlerts, setCriticalAlerts] = useState(0);
   const [userRole, setUserRole] = useState('IT Service Manager');
@@ -20,6 +23,34 @@ const Header = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await notificationService.getNotifications();
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      // Use empty array - notificationService provides fallback internally
+      setNotifications([]);
+    }
+  };
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await notificationService.markAsRead(id);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   // Simulate critical alerts
   useEffect(() => {
@@ -176,6 +207,64 @@ const Header = () => {
               <Button variant="ghost" size="sm" title="Refresh Data">
                 <Icon name="RefreshCw" size={18} />
               </Button>
+              
+              {/* Notification Bell */}
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  title="Notifications"
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  className="relative"
+                >
+                  <Icon name="Bell" size={18} className={unreadCount > 0 ? 'text-blue-600 animate-pulse' : ''} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 border-2 border-white rounded-full"></span>
+                  )}
+                </Button>
+
+                {isNotificationsOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-3xl shadow-2xl overflow-hidden z-50 animate-slide-up">
+                    <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                      <h3 className="font-bold text-gray-900">Notifications</h3>
+                      <button 
+                        onClick={() => notificationService.markAllAsRead().then(fetchNotifications)}
+                        className="text-xs font-bold text-blue-600 hover:text-blue-700"
+                      >
+                        Mark all as read
+                      </button>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400">
+                          <Icon name="Inbox" size={32} className="mx-auto mb-2 opacity-20" />
+                          <p className="text-sm italic">All caught up!</p>
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div 
+                            key={n.id} 
+                            className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!n.isRead ? 'bg-blue-50/30' : ''}`}
+                            onClick={() => handleMarkAsRead(n.id)}
+                          >
+                            <div className="flex gap-3">
+                              <div className={`mt-1 p-1.5 rounded-full ${n.type === 'Success' ? 'bg-green-100 text-green-600' : n.type === 'Warning' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                                <Icon name={n.type === 'Success' ? 'CheckCircle' : n.type === 'Warning' ? 'AlertCircle' : 'Info'} size={14} />
+                              </div>
+                              <div className="flex-1">
+                                <p className={`text-sm ${!n.isRead ? 'font-bold' : 'font-medium'} text-gray-900`}>{n.title}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{n.message}</p>
+                                <p className="text-[10px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Button variant="ghost" size="sm" title="Export Report">
                 <Icon name="Download" size={18} />
               </Button>

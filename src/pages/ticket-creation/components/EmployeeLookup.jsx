@@ -9,51 +9,27 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
 
-  const mockEmployees = [
-  {
-    id: 1,
-    name: 'Abdelrahman Salem',
-    email: 'a.salem@gfsa.gov.sa',
-    company: 'GFSA',
-    phone: '9007',
-    avatar: "https://www.gfsa.gov.sa/web/image/10824-729e91b9/gfsa%20logo.svg#1cd76b3a7-1763291706254.png",
-    avatarAlt: 'Professional headshot of Caucasian man with short brown hair wearing navy blue business suit',
-    ticketCount: 12,
-    lastContact: '2026-01-05'
-  },
-  {
-    id: 2,
-    name: 'Sarah Alrashidi',
-    email: 's.alrashedi@gfsa.gov.sa',
-    company: 'GFSA',
-    phone: '5524',
-    avatar: "https://www.gfsa.gov.sa/web/image/10824-729e91b9/gfsa%20logo.svg#1f15f8eab-1763300157173.png",
-    avatarAlt: 'Professional headshot of African American woman with long black hair in gray blazer',
-    ticketCount: 8,
-    lastContact: '2026-01-04'
-  },
-  {
-    id: 3,
-    name: 'Thamer Almazini',
-    email: 't.almazini@gfsa.gov.sa',
-    company: 'GFSA',
-    phone: '4555',
-    avatar: "https://www.gfsa.gov.sa/web/image/10824-729e91b9/gfsa%20logo.svg#1ffeb43ad-1763298672388.png",
-    avatarAlt: 'Professional headshot of Asian man with black hair and glasses wearing white shirt',
-    ticketCount: 15,
-    lastContact: '2026-01-06'
-  },
-  {
-    id: 4,
-    name: 'Abdullah Mubarak',
-    email: 'a.mubarak@gfsa.gov.sa',
-    company: 'GFSA',
-    phone: '4433',
-    avatar: "https://www.gfsa.gov.sa/web/image/10824-729e91b9/gfsa%20logo.svg#19dd7eb8c-1763293980389.png",
-    avatarAlt: 'Professional headshot of Hispanic woman with brown hair in red business attire',
-    ticketCount: 5,
-    lastContact: '2026-01-03'
-  }];
+  const [employees, setEmployees] = React.useState([]);
+  const [loadingEmployees, setLoadingEmployees] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoadingEmployees(true);
+      try {
+        const { usersAPI } = await import('../../../services/api');
+        const res = await usersAPI.getAll();
+        setEmployees(res.data || []);
+      } catch (error) {
+        console.error('Failed to fetch employees:', error);
+        setEmployees([]);
+      } finally {
+        setLoadingEmployees(false);
+      }
+    };
+    fetchEmployees();
+  }, []);
+
+  const mockEmployees = employees;
 
 
   useEffect(() => {

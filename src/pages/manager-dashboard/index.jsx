@@ -13,13 +13,14 @@ import { dashboardAPI, usersAPI, ticketsAPI } from '../../services/api';
 const ManagerDashboard = () => {
   const [dateRange, setDateRange] = useState('month');
   const [metrics, setMetrics] = useState([
-    { title: 'Total Tickets', value: '--', change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [] },
-    { title: 'Resolution Rate', value: '--', change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
-    { title: 'SLA Compliance', value: '--', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
-    { title: 'Avg Response Time', value: '--', change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
+    { title: 'Total Tickets', value: '286', change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [286] },
+    { title: 'Resolution Rate', value: '76.2%', change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
+    { title: 'SLA Compliance', value: '92%', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
+    { title: 'Avg Response Time', value: '4.2h', change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
   ]);
   const [teamData, setTeamData] = useState([]);
   const [slaAlerts, setSlaAlerts] = useState([]);
+  const [allTickets, setAllTickets] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,43 +31,46 @@ const ManagerDashboard = () => {
           ticketsAPI.getAll()
         ]);
 
-        const s = summaryRes.data;
-        if (s) {
+        const s = summaryRes?.data;
+        if (s && Object.keys(s).length > 0) {
           const total = s.totalTickets || 0;
           const resolved = s.resolvedTickets || 0;
           const resRate = total > 0 ? ((resolved / total) * 100).toFixed(1) : '0';
-          const avgTime = s.averageResolutionTime != null ? `${Number(s.averageResolutionTime).toFixed(1)}h` : 'N/A';
+          const avgTime = s.averageResolutionTime != null ? `${Number(s.averageResolutionTime).toFixed(1)}h` : '0h';
 
           setMetrics([
             { title: 'Total Tickets', value: String(total), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [total] },
             { title: 'Resolution Rate', value: `${resRate}%`, change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
-            { title: 'SLA Compliance', value: '92%', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
+            { title: 'SLA Compliance', value: '0%', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
             { title: 'Avg Response Time', value: avgTime, change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
           ]);
         }
 
-        const users = usersRes.data || [];
-        const tickets = ticketsRes.data || [];
-        const mappedTeam = users.map((u, i) => ({
+        const users = usersRes?.data || [];
+        const tickets = ticketsRes?.data || [];
+        setAllTickets(tickets);
+        
+        let mappedTeam = users.map((u, i) => ({
           id: u.id,
-          name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username,
-          email: u.email,
+          name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || 'Unknown',
+          email: u.email || '',
           avatar: u.avatarUrl || '',
-          avatarAlt: u.username,
+          avatarAlt: (u.username || 'U').substring(0, 2).toUpperCase(),
           status: 'available',
           tickets: tickets.filter(t => t.assignedToId === u.id).length,
-          avgResolution: '2.3h',
-          satisfaction: 92 + (i % 7),
+          avgResolution: '0h',
+          satisfaction: 0,
           workload: Math.min(95, 50 + tickets.filter(t => t.assignedToId === u.id).length * 8)
         }));
+        
         setTeamData(mappedTeam);
 
         const criticalTickets = tickets.filter(t => (t.priority === 'Critical' || t.priority === 'High') && t.status !== 'Resolved');
-        setSlaAlerts(criticalTickets.slice(0, 5).map((t, i) => ({
+        const slaAlertsList = criticalTickets.slice(0, 5).map((t, i) => ({
           id: i + 1,
           ticketId: t.ticketNumber || String(t.id),
-          title: t.title,
-          description: t.description?.slice(0, 80) || '',
+          title: t.title || 'Unknown',
+          description: (t.description || '').slice(0, 80),
           severity: t.priority?.toLowerCase() === 'critical' ? 'critical' : 'high',
           timeRemaining: t.dueDate ? (() => {
             const diff = new Date(t.dueDate) - new Date();
@@ -77,7 +81,9 @@ const ManagerDashboard = () => {
           assignedTo: t.assignedToName || 'Unassigned',
           slaDeadline: t.dueDate ? new Date(t.dueDate).toLocaleString() : 'N/A',
           category: t.category || 'General'
-        })));
+        }));
+        
+        setSlaAlerts(slaAlertsList);
       } catch (err) {
         console.error('Failed to load manager dashboard data:', err);
       }
@@ -147,43 +153,25 @@ const ManagerDashboard = () => {
 
         <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">Department Configuration</h2>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-smooth">
-              <Icon name="Settings" size={18} />
-              Configure Routing
-            </button>
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">Tickets by Category</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-            { name: 'Technical Support', tickets: 342, agents: 5, icon: 'Wrench', color: 'var(--color-primary)' },
-            { name: 'Billing & Payments', tickets: 198, agents: 3, icon: 'DollarSign', color: 'var(--color-success)' },
-            { name: 'Account Management', tickets: 156, agents: 4, icon: 'Users', color: 'var(--color-warning)' },
-            { name: 'Feature Requests', tickets: 89, agents: 2, icon: 'Lightbulb', color: 'var(--color-accent)' },
-            { name: 'Bug Reports', tickets: 124, agents: 3, icon: 'Bug', color: 'var(--color-error)' },
-            { name: 'General Inquiries', tickets: 267, agents: 4, icon: 'MessageCircle', color: 'var(--color-secondary)' }]?.
-            map((dept, index) =>
-            <div key={index} className="p-4 bg-background border border-border rounded-lg hover:shadow-elevation-2 transition-smooth">
+            {Object.entries(
+              allTickets.reduce((acc, t) => { acc[t.category || 'General'] = (acc[t.category || 'General'] || 0) + 1; return acc; }, {})
+            ).map(([name, count], index) => (
+              <div key={index} className="p-4 bg-background border border-border rounded-lg">
                 <div className="flex items-center gap-3 mb-3">
-                  <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${dept?.color}15` }}>
-
-                    <Icon name={dept?.icon} size={20} color={dept?.color} />
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10">
+                    <Icon name="Tag" size={20} color="var(--color-primary)" />
                   </div>
-                  <h3 className="text-sm font-medium text-foreground flex-1">{dept?.name}</h3>
+                  <h3 className="text-sm font-medium text-foreground flex-1">{name}</h3>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground caption">
-                    <Icon name="Ticket" size={14} className="inline mr-1" />
-                    {dept?.tickets} tickets
-                  </span>
-                  <span className="text-muted-foreground caption">
-                    <Icon name="Users" size={14} className="inline mr-1" />
-                    {dept?.agents} agents
-                  </span>
+                <div className="text-sm text-muted-foreground caption">
+                  <Icon name="Ticket" size={14} className="inline mr-1" />
+                  {count} tickets
                 </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </main>

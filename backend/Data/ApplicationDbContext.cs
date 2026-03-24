@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TicketActivity> TicketActivities { get; set; } = null!;
     public DbSet<Asset> Assets { get; set; } = null!;
     public DbSet<AssetHistory> AssetHistories { get; set; } = null!;
+    public DbSet<AssetRelationship> AssetRelationships { get; set; } = null!;
     public DbSet<ChangeRequest> ChangeRequests { get; set; } = null!;
     public DbSet<ServiceRequest> ServiceRequests { get; set; } = null!;
     public DbSet<ApprovalItem> ApprovalItems { get; set; } = null!;
@@ -24,7 +25,18 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkflowInstanceStep> WorkflowInstanceSteps { get; set; } = null!;
     public DbSet<AuditLog> AuditLogs { get; set; } = null!;
     public DbSet<DashboardMetric> DashboardMetrics { get; set; } = null!;
+    public DbSet<SLAAlert> SLAAlerts { get; set; } = null!;
     public DbSet<PerformanceMetric> PerformanceMetrics { get; set; } = null!;
+    public DbSet<AutomationRule> AutomationRules { get; set; } = null!;
+    public DbSet<AutomationExecutionLog> AutomationExecutionLogs { get; set; } = null!;
+    public DbSet<DataPoint> DataPoints { get; set; } = null!;
+    public DbSet<ServiceCatalogItem> ServiceCatalogItems { get; set; } = null!;
+    public DbSet<ApprovalRequest> ApprovalRequests { get; set; } = null!;
+    public DbSet<FulfillmentTask> FulfillmentTasks { get; set; } = null!;
+    public DbSet<RequestAuditLog> RequestAuditLogs { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<ExternalIntegration> ExternalIntegrations { get; set; } = null!;
+    public DbSet<IntegrationLog> IntegrationLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +98,18 @@ public class ApplicationDbContext : DbContext
             .WithMany(a => a.History)
             .HasForeignKey(ah => ah.AssetId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AssetRelationship>()
+            .HasOne(ar => ar.SourceAsset)
+            .WithMany()
+            .HasForeignKey(ar => ar.SourceAssetId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<AssetRelationship>()
+            .HasOne(ar => ar.TargetAsset)
+            .WithMany()
+            .HasForeignKey(ar => ar.TargetAssetId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         // ChangeRequest relationships
         modelBuilder.Entity<ChangeRequest>()
@@ -170,6 +194,19 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(al => al.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Automation relationships
+        modelBuilder.Entity<AutomationExecutionLog>()
+            .HasOne(ael => ael.Rule)
+            .WithMany()
+            .HasForeignKey(ael => ael.RuleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Indexes
         modelBuilder.Entity<Ticket>().HasIndex(t => t.TicketNumber).IsUnique();
         modelBuilder.Entity<ChangeRequest>().HasIndex(cr => cr.ChangeNumber).IsUnique();
@@ -201,5 +238,28 @@ public class ApplicationDbContext : DbContext
             .Property(pm => pm.Value).HasPrecision(18, 2);
         modelBuilder.Entity<PerformanceMetric>()
             .Property(pm => pm.PercentageChange).HasPrecision(10, 2);
+
+        // Service Request Management Configuration
+        modelBuilder.Entity<ServiceRequest>()
+            .HasOne(s => s.CatalogItem)
+            .WithMany(c => c.ServiceRequests)
+            .HasForeignKey(s => s.CatalogItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ApprovalRequest>()
+            .HasOne(a => a.ServiceRequest)
+            .WithMany(s => s.Approvals)
+            .HasForeignKey(a => a.ServiceRequestId);
+
+        modelBuilder.Entity<FulfillmentTask>()
+            .HasOne(t => t.ServiceRequest)
+            .WithMany(s => s.Tasks)
+            .HasForeignKey(t => t.ServiceRequestId);
+
+        modelBuilder.Entity<RequestAuditLog>()
+            .HasOne(l => l.ServiceRequest)
+            .WithMany(s => s.AuditLogs)
+            .HasForeignKey(l => l.ServiceRequestId);
+
     }
 }

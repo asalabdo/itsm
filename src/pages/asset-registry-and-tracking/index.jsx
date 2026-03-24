@@ -1,44 +1,44 @@
-import { assetsAPI } from '../../services/api';
+import assetService from '../../services/assetService';
 
 const AssetRegistryAndTracking = () => {
-  const [userRole] = useState('admin');
-  const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState(null);
-  const [selectedAssets, setSelectedAssets] = useState([]);
-  const [showScanner, setShowScanner] = useState(false);
-  const [filters, setFilters] = useState({});
-  const [showDetailPanel, setShowDetailPanel] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [assets, setAssets] = useState([]);
+    const [userRole] = useState('admin');
+    const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
+    const [selectedAsset, setSelectedAsset] = useState(null);
+    const [selectedAssets, setSelectedAssets] = useState([]);
+    const [showScanner, setShowScanner] = useState(false);
+    const [filters, setFilters] = useState({});
+    const [showDetailPanel, setShowDetailPanel] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [assets, setAssets] = useState([]);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await assetsAPI.getAll();
-      const mappedAssets = (response.data || []).map(asset => ({
-        id: asset.id,
-        assetId: asset.assetTag,
-        description: asset.name,
-        category: asset.assetType,
-        currentOwner: asset.owner ? `${asset.owner.firstName} ${asset.owner.lastName}` : 'Unassigned',
-        ownerAvatar: asset.owner ? `https://ui-avatars.com/api/?name=${asset.owner.firstName}+${asset.owner.lastName}` : null,
-        ownerAvatarAlt: asset.owner ? `${asset.owner.firstName} ${asset.owner.lastName}` : 'Unassigned',
-        location: asset.location,
-        status: (asset.status || 'Active').toLowerCase(),
-        value: asset.costAmount ? `$${asset.costAmount.toLocaleString()}` : '$0.00',
-        maintenance: asset.purchaseDate ? new Date(new Date(asset.purchaseDate).setFullYear(new Date(asset.purchaseDate).getFullYear() + 1)).toLocaleDateString() : 'N/A',
-        maintenanceDaysUntil: asset.purchaseDate ? Math.floor((new Date(new Date(asset.purchaseDate).setFullYear(new Date(asset.purchaseDate).getFullYear() + 1)) - new Date()) / (1000 * 60 * 60 * 24)) : 0,
-        icon: asset.assetType === 'Hardware' ? 'Laptop' : asset.assetType === 'Software' ? 'FileText' : 'Package',
-        serialNumber: asset.serialNumber,
-        barcode: `BC-${asset.assetTag}`
-      }));
-      setAssets(mappedAssets);
-    } catch (error) {
-      console.error('Error fetching assets:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const data = await assetService.getAll();
+            const mappedAssets = data.map(asset => ({
+                id: asset.id,
+                assetId: asset.assetTag,
+                description: asset.name,
+                category: asset.assetType,
+                currentOwner: asset.owner ? `${asset.owner.username}` : 'Unassigned',
+                location: asset.location,
+                status: (asset.status || 'Active').toLowerCase(),
+                value: asset.costAmount ? `$${asset.costAmount.toLocaleString()}` : '$0.00',
+                costAmount: asset.costAmount,
+                manufacturer: asset.manufacturer,
+                model: asset.model,
+                serialNumber: asset.serialNumber,
+                purchaseDate: asset.purchaseDate,
+                icon: asset.assetType === 'Hardware' ? 'Laptop' : asset.assetType === 'Software' ? 'FileText' : 'Package',
+                barcode: `BC-${asset.assetTag}`
+            }));
+            setAssets(mappedAssets);
+        } catch (error) {
+            console.error('Error fetching assets:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
   useEffect(() => {
     fetchData();
@@ -113,10 +113,22 @@ const AssetRegistryAndTracking = () => {
     setSelectedAssets(checked ? filteredAssets?.map((a) => a?.id) : []);
   };
 
-  const handleAssetClick = (asset) => {
-    setSelectedAsset(asset);
-    setShowDetailPanel(true);
-  };
+    const handleAssetClick = async (asset) => {
+        try {
+            setLoading(true);
+            const fullAsset = await assetService.getById(asset.id);
+            setSelectedAsset({
+                ...asset,
+                history: fullAsset.history || [],
+                relationships: fullAsset.relationships || []
+            });
+            setShowDetailPanel(true);
+        } catch (error) {
+            console.error('Error fetching asset details:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
   const handleBulkAction = (action) => {
     console.log(`Performing bulk action: ${action} on ${selectedAssets?.length} assets`);

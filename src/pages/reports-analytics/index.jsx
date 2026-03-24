@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
@@ -13,49 +13,32 @@ import ResolutionTimeChart from './components/ResolutionTimeChart';
 import CategoryDistributionChart from './components/CategoryDistributionChart';
 import SLAPerformanceChart from './components/SLAPerformanceChart';
 import AgentPerformanceTable from './components/AgentPerformanceTable';
+import { dashboardAPI } from '../../services/api';
+import apiClient from '../../services/apiClient';
 
 const ReportsAnalytics = () => {
   const [chartType, setChartType] = useState('line');
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [summary, setSummary] = useState(null);
+  const [topAgents, setTopAgents] = useState([]);
 
-  const metrics = [
-  {
-    title: "Total Tickets",
-    value: "1,847",
-    change: "+12.5%",
-    changeType: "positive",
-    icon: "Ticket",
-    iconColor: "var(--color-primary)",
-    trend: "Increasing"
-  },
-  {
-    title: "Avg Resolution Time",
-    value: "3.2h",
-    change: "-8.3%",
-    changeType: "positive",
-    icon: "Clock",
-    iconColor: "var(--color-success)",
-    trend: "Improving"
-  },
-  {
-    title: "SLA Compliance",
-    value: "94.8%",
-    change: "+2.1%",
-    changeType: "positive",
-    icon: "Target",
-    iconColor: "var(--color-warning)",
-    trend: "On Track"
-  },
-  {
-    title: "Employee Satisfaction",
-    value: "4.7/5",
-    change: "+0.3",
-    changeType: "positive",
-    icon: "Star",
-    iconColor: "var(--color-accent)",
-    trend: "Excellent"
-  }];
+  useEffect(() => {
+    dashboardAPI.getSummary().then(r => setSummary(r.data)).catch(console.error);
+    apiClient.get('/reports/technicians').then(r => setTopAgents((r.data || []).slice(0, 3))).catch(console.error);
+  }, []);
+
+  const metrics = summary ? [
+    { title: 'Total Tickets', value: String(summary.totalTickets ?? '--'), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: '' },
+    { title: 'Avg Resolution Time', value: summary.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '--', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-success)', trend: '' },
+    { title: 'SLA Compliance', value: '--', change: '', changeType: 'positive', icon: 'Target', iconColor: 'var(--color-warning)', trend: '' },
+    { title: 'Open Tickets', value: String(summary.openTickets ?? '--'), change: '', changeType: 'positive', icon: 'Star', iconColor: 'var(--color-accent)', trend: '' },
+  ] : [
+    { title: 'Total Tickets', value: '--', change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: '' },
+    { title: 'Avg Resolution Time', value: '--', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-success)', trend: '' },
+    { title: 'SLA Compliance', value: '--', change: '', changeType: 'positive', icon: 'Target', iconColor: 'var(--color-warning)', trend: '' },
+    { title: 'Open Tickets', value: '--', change: '', changeType: 'positive', icon: 'Star', iconColor: 'var(--color-accent)', trend: '' },
+  ];
 
 
   const chartTypeOptions = [
@@ -221,23 +204,23 @@ const ReportsAnalytics = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-border">
                       <span className="text-sm text-muted-foreground caption">Open Tickets</span>
-                      <span className="text-sm font-medium text-foreground data-text">342</span>
+                      <span className="text-sm font-medium text-foreground data-text">{summary?.openTickets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
                       <span className="text-sm text-muted-foreground caption">Resolved Today</span>
-                      <span className="text-sm font-medium text-success data-text">58</span>
+                      <span className="text-sm font-medium text-success data-text">{summary?.resolvedTickets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">Overdue</span>
-                      <span className="text-sm font-medium text-error data-text">12</span>
+                      <span className="text-sm text-muted-foreground caption">Total Assets</span>
+                      <span className="text-sm font-medium text-error data-text">{summary?.totalAssets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">Active Agents</span>
-                      <span className="text-sm font-medium text-foreground data-text">24</span>
+                      <span className="text-sm text-muted-foreground caption">Active Assets</span>
+                      <span className="text-sm font-medium text-foreground data-text">{summary?.activeAssets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground caption">Avg Response Time</span>
-                      <span className="text-sm font-medium text-foreground data-text">1.8h</span>
+                      <span className="text-sm text-muted-foreground caption">Avg Resolution Time</span>
+                      <span className="text-sm font-medium text-foreground data-text">{summary?.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '--'}</span>
                     </div>
                   </div>
                 </div>
@@ -248,19 +231,15 @@ const ReportsAnalytics = () => {
                     <h3 className="text-lg font-semibold text-foreground">Top Performers</h3>
                   </div>
                   <div className="space-y-3">
-                    {[
-                  { name: 'Abdelrahman Salem', tickets: 48, avatar: "https://www.gfsa.gov.sa/web/image/10824-729e91b9/gfsa%20logo.svg#1a1d535ba-1763301900823.png", avatarAlt: 'Professional headshot of Asian man with black hair in navy suit' },
-                  { name: 'Abdullah Aldosri', tickets: 47, avatar: "https://www.gfsa.gov.sa/web/image/10824-729e91b9/gfsa%20logo.svg#110d6e0d8-1763301538824.png", avatarAlt: 'Professional headshot of Indian woman with black hair in professional attire' },
-                  { name: 'Sarah Alrashedea', tickets: 45, avatar: "https://www.gfsa.gov.sa/web/image/10824-729e91b9/gfsa%20logo.svg#141e51895-1763296519617.png", avatarAlt: 'Professional headshot of woman with brown hair in business attire' }]?.
-                  map((agent, index) =>
+                    {topAgents.map((agent, index) =>
                   <div key={index} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
                             {index + 1}
                           </div>
-                          <span className="text-sm text-foreground">{agent?.name}</span>
+                          <span className="text-sm text-foreground">{agent?.technicianName}</span>
                         </div>
-                        <span className="text-sm font-medium text-success data-text">{agent?.tickets}</span>
+                        <span className="text-sm font-medium text-success data-text">{agent?.resolvedTickets}</span>
                       </div>
                   )}
                   </div>

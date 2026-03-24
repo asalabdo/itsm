@@ -10,7 +10,10 @@ const Sidebar = ({ collapsed = false, onToggle }) => {
   const navigationItems = [
     { label: 'My Tickets', path: '/agent-dashboard', icon: 'Ticket' },
     { label: 'New Ticket', path: '/ticket-creation', icon: 'Plus' },
-    { label: 'Analytics', path: '/manager-dashboard', icon: 'BarChart3' },
+    { label: 'Advanced Analytics', path: '/advanced-analytics', icon: 'BarChart3' },
+    { label: 'Service Catalog', path: '/service-catalog', icon: 'ShoppingBag' },
+    { label: 'Fulfillment Center', path: '/fulfillment-center', icon: 'ClipboardCheck' },
+    { label: 'Analytics', path: '/manager-dashboard', icon: 'LineChart' },
     { label: 'Employee Portal', path: '/customer-portal', icon: 'Users' },
     { label: 'Approval Queue', path: '/approval-queue-manager', icon: 'CheckCircle' },
     { label: 'Workflow Builder', path: '/workflow-builder-studio', icon: 'GitBranch' },
@@ -18,6 +21,9 @@ const Sidebar = ({ collapsed = false, onToggle }) => {
     { label: 'Reports & Analytics', path: '/reporting-and-analytics-hub', icon: 'PieChart' },
     { label: 'My Work', path: '/my-work', icon: 'FileText' },
     { label: 'Asset Registry', path: '/asset-registry-and-tracking', icon: 'Package' },
+    { label: 'Change Management', path: '/change-management', icon: 'GitPullRequest' },
+    { label: 'Automation Rules', path: '/automation-rules', icon: 'Cpu' },
+    { label: 'User Management', path: '/user-management', icon: 'UserCircle' },
   ];
 
   const isActive = (path) => location.pathname === path;

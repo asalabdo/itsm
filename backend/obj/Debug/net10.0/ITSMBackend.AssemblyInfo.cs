@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ITSMBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e3cf7d192d713ede3664979d59d35a45b07dd311")]
 [assembly: System.Reflection.AssemblyProductAttribute("ITSMBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ITSMBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

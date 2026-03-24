@@ -53,20 +53,23 @@ const AgentDashboard = () => {
           ticketsAPI.getAll(),
           dashboardAPI.getSummary()
         ]);
-        const mapped = (ticketsRes.data || []).map(mapTicket);
+        
+        const mapped = (ticketsRes?.data || []).map(mapTicket);
         setAllTickets(mapped);
         setTickets(mapped);
-        const summary = summaryRes.data;
-        if (summary) {
+        
+        const summary = summaryRes?.data;
+        if (summary && Object.keys(summary).length > 0) {
           setMetricsData([
-            { icon: 'Ticket', iconColor: 'var(--color-primary)', title: 'Open Tickets', value: String(summary.openTickets ?? '--'), subtitle: `${summary.totalTickets ?? '--'} total`, trend: '', trendDirection: null },
-            { icon: 'Clock', iconColor: 'var(--color-warning)', title: 'Avg. Resolution Time', value: summary.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '--', subtitle: 'Last 7 days', trend: '', trendDirection: null },
-            { icon: 'AlertTriangle', iconColor: 'var(--color-error)', title: 'Pending Approvals', value: String(summary.pendingApprovals ?? '--'), subtitle: 'Awaiting action', trend: '', trendDirection: null },
-            { icon: 'CheckCircle', iconColor: 'var(--color-success)', title: 'Resolved', value: String(summary.resolvedTickets ?? '--'), subtitle: `${summary.activeAssets ?? '--'} active assets`, trend: '', trendDirection: null }
+            { icon: 'Ticket', iconColor: 'var(--color-primary)', title: 'Open Tickets', value: String(summary.openTickets ?? 0), subtitle: `${summary.totalTickets ?? 0} total`, trend: '', trendDirection: null },
+            { icon: 'Clock', iconColor: 'var(--color-warning)', title: 'Avg. Resolution Time', value: summary.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '0h', subtitle: 'Last 7 days', trend: '', trendDirection: null },
+            { icon: 'AlertTriangle', iconColor: 'var(--color-error)', title: 'Pending Approvals', value: String(summary.pendingApprovals ?? 0), subtitle: 'Awaiting action', trend: '', trendDirection: null },
+            { icon: 'CheckCircle', iconColor: 'var(--color-success)', title: 'Resolved', value: String(summary.resolvedTickets ?? 0), subtitle: `${summary.activeAssets ?? 0} active assets`, trend: '', trendDirection: null }
           ]);
         }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
+        setMetricsData([]);
       } finally {
         setLoading(false);
       }

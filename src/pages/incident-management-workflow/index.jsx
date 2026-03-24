@@ -7,49 +7,50 @@ import RelatedInformationCard from './components/RelatedInformationCard';
 import TimelineVisualization from './components/TimelineVisualization';
 import RootCauseAnalysis from './components/RootCauseAnalysis';
 import VolumeTrackingDashboard from './components/VolumeTrackingDashboard';
+import ManageEngineIntegration from './components/ManageEngineIntegration';
+import ExternalSystemBadge from '../../components/ui/ExternalSystemBadge';
+
+import { ticketsAPI } from '../../services/api';
 
 const IncidentManagementWorkflow = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedIncident, setSelectedIncident] = useState(null);
-  const [activeIncidents, setActiveIncidents] = useState([
-    {
-      id: 'INC-2025-008',
-      title: 'Email Server Outage',
-      severity: 'High',
-      impact: 'High',
-      priority: 'P1',
-      status: 'In Progress',
-      assignedTo: 'Alex Rodriguez',
-      category: 'Infrastructure',
-      subcategory: 'Email Services',
-      createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-      slaDeadline: new Date(Date.now() + 1 * 60 * 60 * 1000),
-      affectedUsers: 250,
-      estimatedResolution: '2 hours'
-    },
-    {
-      id: 'INC-2025-009',
-      title: 'Database Performance Issues',
-      severity: 'Medium',
-      impact: 'High',
-      priority: 'P2',
-      status: 'Assigned',
-      assignedTo: 'Sarah Johnson',
-      category: 'Database',
-      subcategory: 'Performance',
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      slaDeadline: new Date(Date.now() + 4 * 60 * 60 * 1000),
-      affectedUsers: 45,
-      estimatedResolution: '4 hours'
-    }
-  ]);
+  const [activeIncidents, setActiveIncidents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [filters, setFilters] = useState({
     status: 'all',
     priority: 'all',
     category: 'all',
-    assignedTo: 'all'
+    search: ''
   });
+
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  useEffect(() => {
+    fetchIncidents();
+  }, [filters, refreshTrigger]);
+
+  const fetchIncidents = async () => {
+    setLoading(true);
+    try {
+      const params = {};
+      if (filters.status !== 'all') params.status = filters.status;
+      if (filters.priority !== 'all') params.priority = filters.priority;
+      if (filters.category !== 'all') params.category = filters.category;
+      if (filters.search) params.search = filters.search;
+
+      const response = await ticketsAPI.search(params);
+      setActiveIncidents(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch incidents:', err);
+      setError('Failed to load incidents. Please check your connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleViewChange = (view) => {
     setCurrentView(view);
@@ -58,17 +59,27 @@ const IncidentManagementWorkflow = () => {
     }
   };
 
-  const handleIncidentSelect = (incident) => {
-    setSelectedIncident(incident);
-    setCurrentView('details');
+  const handleIncidentSelect = async (incident) => {
+    try {
+      const response = await ticketsAPI.getById(incident.id);
+      setSelectedIncident(response.data);
+      setCurrentView('details');
+    } catch (err) {
+      console.error('Failed to fetch incident details:', err);
+    }
   };
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({ ...prev, [filterType]: value }));
   };
 
-  const getSeverityColor = (severity) => {
-    switch (severity?.toLowerCase()) {
+  const handleSyncComplete = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const getSeverityColor = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case 'critical':
       case 'high': return 'text-error bg-error/10 border-error';
       case 'medium': return 'text-warning bg-warning/10 border-warning';
       case 'low': return 'text-blue-500 bg-blue-500/10 border-blue-500';
@@ -78,6 +89,7 @@ const IncidentManagementWorkflow = () => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
+      case 'open':
       case 'new': return 'text-blue-500 bg-blue-500/10';
       case 'assigned': return 'text-warning bg-warning/10';
       case 'in progress': return 'text-primary bg-primary/10';
@@ -88,21 +100,17 @@ const IncidentManagementWorkflow = () => {
   };
 
   const formatSLATime = (deadline) => {
-    const diff = deadline?.getTime() - Date.now();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (!deadline) return '--';
+    const diff = new Date(deadline).getTime() - Date.now();
     
     if (diff < 0) return 'Overdue';
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
   };
 
-  const filteredIncidents = activeIncidents?.filter(incident => {
-    if (filters?.status !== 'all' && incident?.status?.toLowerCase() !== filters?.status) return false;
-    if (filters?.priority !== 'all' && incident?.priority !== filters?.priority) return false;
-    if (filters?.category !== 'all' && incident?.category?.toLowerCase() !== filters?.category) return false;
-    if (filters?.assignedTo !== 'all' && incident?.assignedTo !== filters?.assignedTo) return false;
-    return true;
-  });
+  const filteredIncidents = activeIncidents; // Already filtered via API
+
 
   return (
     <>
@@ -142,6 +150,14 @@ const IncidentManagementWorkflow = () => {
               >
                 Volume Analytics
               </button>
+              <button
+                onClick={() => handleViewChange('integration')}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  currentView === 'integration' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
+              >
+                ManageEngine
+              </button>
               {selectedIncident && (
                 <button
                   onClick={() => handleViewChange('details')}
@@ -162,6 +178,14 @@ const IncidentManagementWorkflow = () => {
                 {/* Filters */}
                 <div className="bg-card border border-border rounded-lg p-4">
                   <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex-1 min-w-[200px]">
+                      <input
+                        type="text"
+                        placeholder="Search by ID, title or description..."
+                        className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                      />
+                    </div>
                     <div className="flex items-center space-x-2">
                       <label className="text-sm font-medium text-foreground">Status:</label>
                       <select
@@ -170,10 +194,10 @@ const IncidentManagementWorkflow = () => {
                         className="px-3 py-1 bg-background border border-border rounded text-sm text-foreground"
                       >
                         <option value="all">All</option>
-                        <option value="new">New</option>
-                        <option value="assigned">Assigned</option>
-                        <option value="in progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
                       </select>
                     </div>
                     
@@ -185,10 +209,10 @@ const IncidentManagementWorkflow = () => {
                         className="px-3 py-1 bg-background border border-border rounded text-sm text-foreground"
                       >
                         <option value="all">All</option>
-                        <option value="P1">P1</option>
-                        <option value="P2">P2</option>
-                        <option value="P3">P3</option>
-                        <option value="P4">P4</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
                       </select>
                     </div>
                     
@@ -200,84 +224,117 @@ const IncidentManagementWorkflow = () => {
                         className="px-3 py-1 bg-background border border-border rounded text-sm text-foreground"
                       >
                         <option value="all">All</option>
-                        <option value="infrastructure">Infrastructure</option>
-                        <option value="database">Database</option>
-                        <option value="application">Application</option>
-                        <option value="network">Network</option>
+                        <option value="Email">Email</option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Network">Network</option>
+                        <option value="Software">Software</option>
+                        <option value="Access">Access</option>
                       </select>
                     </div>
+                    <button 
+                      onClick={() => setRefreshTrigger(t => t + 1)}
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                      title="Refresh"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
                 {/* Active Incidents */}
-                <div className="bg-card border border-border rounded-lg">
-                  <div className="p-6 border-b border-border">
+                <div className="bg-card border border-border rounded-lg min-h-[400px]">
+                  <div className="p-6 border-b border-border flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-foreground">
                       Active Incidents ({filteredIncidents?.length})
                     </h2>
+                    {loading && (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                    )}
                   </div>
                   
                   <div className="divide-y divide-border">
-                    {filteredIncidents?.map((incident) => (
-                      <div
-                        key={incident?.id}
-                        className="p-6 hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => handleIncidentSelect(incident)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-3">
-                              <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityColor(incident?.severity)}`}>
-                                {incident?.severity} Severity
-                              </span>
-                              <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(incident?.status)}`}>
-                                {incident?.status}
-                              </span>
-                              <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
-                                {incident?.priority}
-                              </span>
+                    {error ? (
+                      <div className="p-12 text-center">
+                        <p className="text-error mb-4">{error}</p>
+                        <button 
+                          onClick={() => setRefreshTrigger(t => t + 1)}
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    ) : filteredIncidents?.length === 0 ? (
+                      <div className="p-12 text-center text-muted-foreground">
+                        {loading ? 'Loading incidents...' : 'No incidents found matching your filters.'}
+                      </div>
+                    ) : (
+                      filteredIncidents?.map((incident) => (
+                        <div
+                          key={incident?.id}
+                          className="p-6 hover:bg-muted/30 transition-colors cursor-pointer"
+                          onClick={() => handleIncidentSelect(incident)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityColor(incident?.priority)}`}>
+                                  {incident?.priority} Priority
+                                </span>
+                                <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(incident?.status)}`}>
+                                  {incident?.status}
+                                </span>
+                                <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
+                                  {incident?.category}
+                                </span>
+                                <ExternalSystemBadge
+                                  externalSystem={incident?.externalSystem}
+                                  externalId={incident?.externalId}
+                                />
+                              </div>
+                              
+                              <h3 className="text-lg font-semibold text-foreground mb-2">
+                                {incident?.ticketNumber}: {incident?.title}
+                              </h3>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <span className="text-muted-foreground">Assigned to:</span>
+                                  <p className="font-medium text-foreground">{incident?.assignedTo?.firstName ? `${incident.assignedTo.firstName} ${incident.assignedTo.lastName}` : 'Unassigned'}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Requested by:</span>
+                                  <p className="font-medium text-foreground">{incident?.requestedBy?.firstName} {incident?.requestedBy?.lastName}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Category:</span>
+                                  <p className="font-medium text-foreground">{incident?.category}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Updated:</span>
+                                  <p className="font-medium text-foreground">{new Date(incident?.updatedAt).toLocaleDateString()}</p>
+                                </div>
+                              </div>
                             </div>
                             
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                              {incident?.id}: {incident?.title}
-                            </h3>
-                            
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Assigned to:</span>
-                                <p className="font-medium text-foreground">{incident?.assignedTo}</p>
+                            <div className="text-right ml-6">
+                              <div className="text-sm">
+                                <span className="text-muted-foreground">SLA Remaining:</span>
+                                <p className={`font-semibold ${
+                                  formatSLATime(incident?.slaDueDate) === 'Overdue' ? 'text-error' : 'text-foreground'
+                                }`}>
+                                  {formatSLATime(incident?.slaDueDate)}
+                                </p>
                               </div>
-                              <div>
-                                <span className="text-muted-foreground">Affected Users:</span>
-                                <p className="font-medium text-foreground">{incident?.affectedUsers}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Category:</span>
-                                <p className="font-medium text-foreground">{incident?.category}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Est. Resolution:</span>
-                                <p className="font-medium text-foreground">{incident?.estimatedResolution}</p>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="text-right ml-6">
-                            <div className="text-sm">
-                              <span className="text-muted-foreground">SLA Remaining:</span>
-                              <p className={`font-semibold ${
-                                formatSLATime(incident?.slaDeadline) === 'Overdue' ?'text-error' :'text-foreground'
-                              }`}>
-                                {formatSLATime(incident?.slaDeadline)}
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Created {new Date(incident?.createdAt).toLocaleTimeString()}
                               </p>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Created {incident?.createdAt?.toLocaleTimeString()}
-                            </p>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
@@ -293,7 +350,13 @@ const IncidentManagementWorkflow = () => {
             {currentView === 'details' && selectedIncident && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                  <IncidentDetailsCard incident={selectedIncident} />
+                  <IncidentDetailsCard 
+                    incident={selectedIncident} 
+                    onUpdate={(updated) => {
+                      setSelectedIncident(updated);
+                      setActiveIncidents(prev => prev.map(inc => inc.id === updated.id ? updated : inc));
+                    }}
+                  />
                   <TimelineVisualization incident={selectedIncident} />
                   <RootCauseAnalysis incident={selectedIncident} />
                 </div>
@@ -305,6 +368,10 @@ const IncidentManagementWorkflow = () => {
 
             {currentView === 'analytics' && (
               <VolumeTrackingDashboard incidents={activeIncidents} />
+            )}
+
+            {currentView === 'integration' && (
+              <ManageEngineIntegration onSyncComplete={handleSyncComplete} />
             )}
           </div>
         </main>

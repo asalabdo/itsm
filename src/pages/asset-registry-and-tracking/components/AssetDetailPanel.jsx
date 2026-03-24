@@ -18,76 +18,11 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
   }
 
   const tabs = [
-  { id: 'details', label: 'Details', icon: 'Info' },
-  { id: 'history', label: 'History', icon: 'History' },
-  { id: 'maintenance', label: 'Maintenance', icon: 'Wrench' },
-  { id: 'financial', label: 'Financial', icon: 'DollarSign', roleRequired: ['admin', 'finance'] }];
-
-
-  const transferHistory = [
-  {
-    id: 1,
-    from: "John Smith",
-    fromAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1aef10a9f-1763294632369.png",
-    fromAvatarAlt: "Professional headshot of Caucasian man with short brown hair in navy suit",
-    to: "Sarah Johnson",
-    toAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1f15f8eab-1763300157173.png",
-    toAvatarAlt: "Professional headshot of African American woman with long black hair in gray blazer",
-    date: "01/05/2026",
-    reason: "Department transfer",
-    approvedBy: "Michael Chen"
-  },
-  {
-    id: 2,
-    from: "David Wilson",
-    fromAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_157aec79d-1763301412520.png",
-    fromAvatarAlt: "Professional headshot of Asian man with glasses and short black hair in white shirt",
-    to: "John Smith",
-    toAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1aef10a9f-1763294632369.png",
-    toAvatarAlt: "Professional headshot of Caucasian man with short brown hair in navy suit",
-    date: "11/20/2025",
-    reason: "Project assignment",
-    approvedBy: "Lisa Anderson"
-  }];
-
-
-  const maintenanceRecords = [
-  {
-    id: 1,
-    type: "Routine Inspection",
-    date: "12/15/2025",
-    technician: "Tech Support Team",
-    status: "completed",
-    notes: "All systems functioning normally. Battery health at 87%."
-  },
-  {
-    id: 2,
-    type: "Hardware Upgrade",
-    date: "09/10/2025",
-    technician: "IT Department",
-    status: "completed",
-    notes: "RAM upgraded from 8GB to 16GB. Performance improved significantly."
-  },
-  {
-    id: 3,
-    type: "Preventive Maintenance",
-    date: "01/20/2026",
-    technician: "Scheduled",
-    status: "scheduled",
-    notes: "Quarterly maintenance check scheduled."
-  }];
-
-
-  const financialData = {
-    purchasePrice: "$1,299.00",
-    purchaseDate: "03/15/2024",
-    currentValue: "$899.00",
-    depreciationRate: "20% annually",
-    totalDepreciation: "$400.00",
-    warrantyExpiry: "03/15/2027",
-    insuranceValue: "$950.00",
-    maintenanceCost: "$125.00"
-  };
+    { id: 'details', label: 'Details', icon: 'Info' },
+    { id: 'relationships', label: 'Relationships', icon: 'Link' },
+    { id: 'history', label: 'History', icon: 'History' },
+    { id: 'maintenance', label: 'Maintenance', icon: 'Wrench' },
+    { id: 'financial', label: 'Financial', icon: 'DollarSign', roleRequired: ['admin', 'finance'] }];
 
   const isTabVisible = (tab) => {
     if (!tab?.roleRequired) return true;
@@ -97,7 +32,7 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
   const getStatusColor = (status) => {
     const colors = {
       active: 'bg-success/10 text-success',
-      inactive: 'bg-muted text-muted-foreground',
+      retired: 'bg-muted text-muted-foreground',
       maintenance: 'bg-warning/10 text-warning',
       completed: 'bg-success/10 text-success',
       scheduled: 'bg-primary/10 text-primary'
@@ -113,7 +48,6 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
           onClick={onClose}
           className="p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring"
           aria-label="Close details">
-
           <Icon name="X" size={20} />
         </button>
       </div>
@@ -134,14 +68,12 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
       <div className="border-b border-border">
         <div className="flex overflow-x-auto scrollbar-custom">
           {tabs?.filter(isTabVisible)?.map((tab) =>
-          <button
-            key={tab?.id}
-            onClick={() => setActiveTab(tab?.id)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-smooth whitespace-nowrap ${
-            activeTab === tab?.id ?
-            'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`
-            }>
-
+            <button
+              key={tab?.id}
+              onClick={() => setActiveTab(tab?.id)}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-smooth whitespace-nowrap ${activeTab === tab?.id ?
+                  'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`
+              }>
               <Icon name={tab?.icon} size={16} />
               {tab?.label}
             </button>
@@ -150,7 +82,11 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-custom p-4">
         {activeTab === 'details' &&
-        <div className="space-y-4">
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Manufacturer / Model</label>
+              <p className="text-sm mt-1">{asset?.manufacturer || 'N/A'} {asset?.model}</p>
+            </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</label>
               <p className="text-sm mt-1">{asset?.category}</p>
@@ -158,11 +94,7 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Current Owner</label>
               <div className="flex items-center gap-2 mt-1">
-                <Image
-                src={asset?.ownerAvatar}
-                alt={asset?.ownerAvatarAlt}
-                className="w-8 h-8 rounded-full object-cover" />
-
+                <Icon name="User" size={16} className="text-muted-foreground" />
                 <span className="text-sm">{asset?.currentOwner}</span>
               </div>
             </div>
@@ -178,46 +110,60 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
               <p className="text-sm mt-1 data-text">{asset?.serialNumber}</p>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Barcode</label>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-sm data-text">{asset?.barcode}</p>
-                <button className="p-1 rounded hover:bg-muted transition-smooth">
-                  <Icon name="QrCode" size={16} />
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Next Maintenance</label>
-              <p className="text-sm mt-1">{asset?.maintenance}</p>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Purchase Date</label>
+              <p className="text-sm mt-1">{asset?.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : 'N/A'}</p>
             </div>
           </div>
         }
 
-        {activeTab === 'history' &&
-        <div className="space-y-4">
-            <h4 className="text-sm font-semibold">Transfer History</h4>
-            {transferHistory?.map((transfer) =>
-          <div key={transfer?.id} className="p-3 bg-muted/30 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Image
-                src={transfer?.fromAvatar}
-                alt={transfer?.fromAvatarAlt}
-                className="w-6 h-6 rounded-full object-cover" />
-
-                  <span className="text-sm">{transfer?.from}</span>
-                  <Icon name="ArrowRight" size={14} className="text-muted-foreground" />
-                  <Image
-                src={transfer?.toAvatar}
-                alt={transfer?.toAvatarAlt}
-                className="w-6 h-6 rounded-full object-cover" />
-
-                  <span className="text-sm">{transfer?.to}</span>
+        {activeTab === 'relationships' &&
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold">Asset Dependencies</h4>
+            {asset?.relationships?.length > 0 ? (
+              asset.relationships.map((rel) => (
+                <div key={rel.id} className="p-3 bg-muted/30 rounded-lg flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-primary uppercase">{rel.relationshipType}</span>
+                    <span className="text-sm">{rel.sourceAssetId === asset.id ? rel.targetAssetName : rel.sourceAssetName}</span>
+                  </div>
+                  <Icon name={rel.sourceAssetId === asset.id ? "ArrowRight" : "ArrowLeft"} size={16} className="text-muted-foreground" />
                 </div>
-                <p className="text-xs text-muted-foreground">{transfer?.date}</p>
-                <p className="text-xs mt-1">{transfer?.reason}</p>
-                <p className="text-xs text-muted-foreground mt-1">Approved by: {transfer?.approvedBy}</p>
-              </div>
-          )}
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No relationships mapped.</p>
+            )}
+            <Button variant="outline" size="sm" fullWidth iconName="Plus" iconPosition="left">
+              Link New Asset
+            </Button>
+          </div>
+        }
+
+        {activeTab === 'history' &&
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold">Audit Log</h4>
+            <div className="relative pl-4 border-l-2 border-border space-y-6">
+              {asset?.history?.length > 0 ? (
+                asset.history.map((item) => (
+                  <div key={item.id} className="relative">
+                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-primary border-2 border-card" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{item.action}</span>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {item.oldValue && <span>From <span className="text-foreground">{item.oldValue}</span> </span>}
+                        {item.newValue && <span>To <span className="text-foreground">{item.newValue}</span></span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground italic uppercase">
+                        <span>{new Date(item.timestamp).toLocaleString()}</span>
+                        <span>•</span>
+                        <span>{item.username}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground italic">No history available.</p>
+              )}
+            </div>
           </div>
         }
 

@@ -16,6 +16,9 @@ public interface IAssetService
     Task<List<AssetDto>> GetAssetsByStatusAsync(string status);
     Task<List<AssetDto>> GetAssetsByTypeAsync(string assetType);
     Task<int> GetActiveAssetsCountAsync();
+    Task<AssetRelationshipDto> AddRelationshipAsync(CreateAssetRelationshipDto dto);
+    Task<List<AssetRelationshipDto>> GetRelationshipsAsync(int assetId);
+    Task<List<AssetHistoryDto>> GetAssetHistoryAsync(int assetId);
 }
 
 public class AssetService : IAssetService
@@ -69,8 +72,37 @@ public class AssetService : IAssetService
         if (asset == null)
             throw new ArgumentException("Asset not found");
 
+        var oldStatus = asset.Status;
+        var oldOwner = asset.OwnerId;
+
         _mapper.Map(dto, asset);
         asset.UpdatedAt = DateTime.UtcNow;
+
+        if (oldStatus != asset.Status)
+        {
+            _context.AssetHistories.Add(new AssetHistory
+            {
+                AssetId = asset.Id,
+                Action = "Status Change",
+                OldValue = oldStatus,
+                NewValue = asset.Status,
+                UserId = 1, // Placeholder: Should be current user
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        if (oldOwner != asset.OwnerId)
+        {
+            _context.AssetHistories.Add(new AssetHistory
+            {
+                AssetId = asset.Id,
+                Action = "Owner Change",
+                OldValue = oldOwner?.ToString(),
+                NewValue = asset.OwnerId?.ToString(),
+                UserId = 1, // Placeholder
+                Timestamp = DateTime.UtcNow
+            });
+        }
 
         await _context.SaveChangesAsync();
 
@@ -114,5 +146,41 @@ public class AssetService : IAssetService
         return await _context.Assets
             .Where(a => a.Status == "Active")
             .CountAsync();
+    }
+
+    public async Task<AssetRelationshipDto> AddRelationshipAsync(CreateAssetRelationshipDto dto)
+    {
+        var relationship = _mapper.Map<AssetRelationship>(dto);
+        _context.AssetRelationships.Add(relationship);
+        await _context.SaveChangesAsync();
+
+        var result = await _context.AssetRelationships
+            .Include(r => r.SourceAsset)
+            .Include(r => r.TargetAsset)
+            .FirstOrDefaultAsync(r => r.Id == relationship.Id);
+
+        return _mapper.Map<AssetRelationshipDto>(result);
+    }
+
+    public async Task<List<AssetRelationshipDto>> GetRelationshipsAsync(int assetId)
+    {
+        var relationships = await _context.AssetRelationships
+            .Where(r => r.SourceAssetId == assetId || r.TargetAssetId == assetId)
+            .Include(r => r.SourceAsset)
+            .Include(r => r.TargetAsset)
+            .ToListAsync();
+
+        return _mapper.Map<List<AssetRelationshipDto>>(relationships);
+    }
+
+    public async Task<List<AssetHistoryDto>> GetAssetHistoryAsync(int assetId)
+    {
+        var history = await _context.AssetHistories
+            .Where(ah => ah.AssetId == assetId)
+            .Include(ah => ah.User)
+            .OrderByDescending(ah => ah.Timestamp)
+            .ToListAsync();
+
+        return _mapper.Map<List<AssetHistoryDto>>(history);
     }
 }

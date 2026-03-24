@@ -15,7 +15,18 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
+    [HttpPost("login")]
+    public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto dto)
+    {
+        var response = await _userService.AuthenticateAsync(dto.Username, dto.Password);
+        if (response == null)
+            return Unauthorized("Invalid username or password");
+
+        return Ok(response);
+    }
+
     [HttpGet]
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<List<UserDto>>> GetAllUsers()
     {
         var users = await _userService.GetAllUsersAsync();
@@ -23,6 +34,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<ActionResult<UserDto>> GetUserById(int id)
     {
         var user = await _userService.GetUserByIdAsync(id);
@@ -33,6 +45,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("username/{username}")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<ActionResult<UserDto>> GetUserByUsername(string username)
     {
         var user = await _userService.GetUserByUsernameAsync(username);
@@ -43,6 +56,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserDto dto)
     {
         var user = await _userService.CreateUserAsync(dto);
@@ -50,6 +64,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<UserDto>> UpdateUser(int id, [FromBody] UpdateUserDto dto)
     {
         try
@@ -64,6 +79,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("role/{role}")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<ActionResult<List<UserDto>>> GetUsersByRole(string role)
     {
         var users = await _userService.GetUsersByRoleAsync(role);

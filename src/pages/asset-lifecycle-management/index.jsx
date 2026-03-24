@@ -5,6 +5,7 @@ import AssetLifecycleFunnel from './components/AssetLifecycleFunnel';
 import PriorityAlertsPanel from './components/PriorityAlertsPanel';
 import DepartmentAssetDistribution from './components/DepartmentAssetDistribution';
 import AssetFiltersHeader from './components/AssetFiltersHeader';
+import { assetsAPI, dashboardAPI } from '../../services/api';
 
 const AssetLifecycleManagement = () => {
   const [filters, setFilters] = useState({
@@ -14,7 +15,37 @@ const AssetLifecycleManagement = () => {
     stage: 'all'
   });
   const [selectedStage, setSelectedStage] = useState(null);
-  const [alertCount] = useState(5);
+  const [alertCount, setAlertCount] = useState(5);
+  const [metricsData, setMetricsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch metrics data from API
+  useEffect(() => {
+    const fetchMetricsData = async () => {
+      try {
+        setLoading(true);
+        const res = await dashboardAPI.getPerformanceMetrics('assets');
+        const data = res.data || {};
+        
+        if (data.metrics && Array.isArray(data.metrics)) {
+          setMetricsData(data.metrics);
+        } else {
+          setMetricsData([]);
+        }
+        
+        if (data.alertCount) {
+          setAlertCount(data.alertCount);
+        }
+      } catch (error) {
+        console.error('Failed to fetch asset metrics:', error);
+        setMetricsData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMetricsData();
+  }, [filters]);
 
   // Simulate real-time data updates
   useEffect(() => {
@@ -28,48 +59,11 @@ const AssetLifecycleManagement = () => {
 
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
-    console.log('Filters updated:', newFilters);
   };
 
-  const handleStageClick = (stageData) => {
-    setSelectedStage(stageData);
-    console.log('Stage selected:', stageData);
+  const handleStageClick = (stage) => {
+    setSelectedStage(stage);
   };
-
-  const metricsData = [
-    {
-      title: 'Total Assets',
-      value: '8,196',
-      change: '+2.3%',
-      changeType: 'positive',
-      icon: 'Package',
-      color: 'primary'
-    },
-    {
-      title: 'Nearing End-of-Life',
-      value: '203',
-      change: '+12.5%',
-      changeType: 'negative',
-      icon: 'AlertTriangle',
-      color: 'warning'
-    },
-    {
-      title: 'Compliance Rate',
-      value: '94.2%',
-      change: '+1.8%',
-      changeType: 'positive',
-      icon: 'Shield',
-      color: 'success'
-    },
-    {
-      title: 'Cost Optimization',
-      value: '$2.4M',
-      change: '-8.7%',
-      changeType: 'positive',
-      icon: 'TrendingDown',
-      color: 'success'
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-background">

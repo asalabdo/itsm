@@ -7,12 +7,14 @@ import PipelineVisualization from './components/PipelineVisualization';
 import FilterControls from './components/FilterControls';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { changeRequestsAPI, dashboardAPI } from '../../services/api';
 
 const ChangeManagementDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [activeFilters, setActiveFilters] = useState({});
   const [viewMode, setViewMode] = useState('overview'); // overview, calendar, metrics, pipeline
+  const [loading, setLoading] = useState(false);
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
@@ -25,11 +27,18 @@ const ChangeManagementDashboard = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Simulate API call delay
-    setTimeout(() => {
+    try {
+      // Fetch latest change data from API
+      await Promise.all([
+        changeRequestsAPI.getAll().catch(() => null),
+        dashboardAPI.getPerformanceMetrics('changes').catch(() => null)
+      ]);
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    } finally {
       setRefreshing(false);
       setLastRefresh(new Date());
-    }, 1500);
+    }
   };
 
   const handleFiltersChange = (filters) => {
@@ -38,9 +47,8 @@ const ChangeManagementDashboard = () => {
   };
 
   const handleExport = (format) => {
-    // Simulate export functionality
+    // Export functionality
     console.log(`Exporting change management report as ${format}`);
-    // In a real application, this would trigger the export process
   };
 
   const getViewModeIcon = (mode) => {

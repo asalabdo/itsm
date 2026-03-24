@@ -8,6 +8,7 @@ import WorkflowCanvas from './components/WorkflowCanvas';
 import ConfigurationPanel from './components/ConfigurationPanel';
 import TemplateGallery from './components/TemplateGallery';
 import TestWorkflow from './components/TestWorkflow';
+import { workflowsAPI } from '../../services/api';
 
 const WorkflowBuilder = () => {
   const [selectedBlock, setSelectedBlock] = useState(null);
@@ -58,9 +59,14 @@ const WorkflowBuilder = () => {
     setShowTemplates(false);
   };
 
-  const handleSaveWorkflow = () => {
-    console.log('Saving workflow:', { name: workflowName, blocks: workflowBlocks, isActive });
-    alert('Workflow saved successfully!');
+  const handleSaveWorkflow = async () => {
+    try {
+      await workflowsAPI.create({ name: workflowName, definitionJson: JSON.stringify(workflowBlocks), isActive });
+      alert('Workflow saved successfully!');
+    } catch (err) {
+      console.error('Failed to save workflow:', err);
+      alert('Failed to save workflow.');
+    }
   };
 
   const handleClearWorkflow = () => {

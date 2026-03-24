@@ -6,6 +6,7 @@ import FilterPanel from './components/FilterPanel';
 import PerformanceChart from './components/PerformanceChart';
 import TopIssuesTable from './components/TopIssuesTable';
 import TrendAnalysisSection from './components/TrendAnalysisSection';
+import { dashboardAPI } from '../../services/api';
 
 const ServicePerformanceAnalytics = () => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
@@ -15,6 +16,8 @@ const ServicePerformanceAnalytics = () => {
     service: 'all',
     comparison: false
   });
+  const [kpiData, setKpiData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Check for saved language preference
   useEffect(() => {
@@ -22,8 +25,33 @@ const ServicePerformanceAnalytics = () => {
     setCurrentLanguage(savedLanguage);
   }, []);
 
-  // Mock KPI data with sparklines
-  const kpiData = [
+  // Fetch KPI data from API
+  useEffect(() => {
+    const fetchKPIData = async () => {
+      try {
+        setLoading(true);
+        const res = await dashboardAPI.getAllMetrics();
+        const data = res.data || {};
+        
+        if (data.kpis && Array.isArray(data.kpis)) {
+          setKpiData(data.kpis);
+        } else {
+          // Use fallback mock data
+          setKpiData(getDefaultKPIData());
+        }
+      } catch (error) {
+        console.error('Failed to fetch KPI data:', error);
+        // Use fallback mock data
+        setKpiData(getDefaultKPIData());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKPIData();
+  }, [filters]);
+
+  const getDefaultKPIData = () => [
     {
       title: "SLA Compliance",
       value: "94.8",

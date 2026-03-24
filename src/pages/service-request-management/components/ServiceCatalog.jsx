@@ -9,92 +9,19 @@ const ServiceCatalog = ({ expanded = false }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
-    // Mock service catalog data
-    const mockServices = [
-      {
-        id: 1,
-        name: 'New Employee Setup',
-        category: 'onboarding',
-        description: 'Complete setup for new employee including accounts, equipment, and access',
-        icon: 'UserPlus',
-        approvalRequired: true,
-        fulfillmentTime: '2-3 business days',
-        cost: '$250',
-        popularity: 95,
-        requestCount: 847,
-        fields: ['employee_name', 'department', 'role', 'start_date', 'manager']
-      },
-      {
-        id: 2,
-        name: 'Hardware Request',
-        category: 'equipment',
-        description: 'Request laptops, monitors, peripherals, and other hardware',
-        icon: 'Monitor',
-        approvalRequired: true,
-        fulfillmentTime: '3-5 business days',
-        cost: 'Varies',
-        popularity: 88,
-        requestCount: 623,
-        fields: ['equipment_type', 'specifications', 'business_justification', 'urgency']
-      },
-      {
-        id: 3,
-        name: 'Software License',
-        category: 'software',
-        description: 'Request access to software applications and license renewals',
-        icon: 'Package',
-        approvalRequired: true,
-        fulfillmentTime: '1-2 business days',
-        cost: 'License dependent',
-        popularity: 92,
-        requestCount: 1205,
-        fields: ['software_name', 'license_type', 'duration', 'team_members']
-      },
-      {
-        id: 4,
-        name: 'Access Request',
-        category: 'security',
-        description: 'Request access to systems, applications, or data repositories',
-        icon: 'Key',
-        approvalRequired: true,
-        fulfillmentTime: '1 business day',
-        cost: 'Free',
-        popularity: 87,
-        requestCount: 934,
-        fields: ['system_name', 'access_level', 'business_justification', 'duration']
-      },
-      {
-        id: 5,
-        name: 'Meeting Room Booking',
-        category: 'facilities',
-        description: 'Reserve conference rooms and meeting spaces',
-        icon: 'Calendar',
-        approvalRequired: false,
-        fulfillmentTime: 'Immediate',
-        cost: 'Free',
-        popularity: 76,
-        requestCount: 2341,
-        fields: ['room_preference', 'date', 'time', 'duration', 'attendees']
-      },
-      {
-        id: 6,
-        name: 'IT Support',
-        category: 'support',
-        description: 'Technical support for hardware, software, and connectivity issues',
-        icon: 'Headphones',
-        approvalRequired: false,
-        fulfillmentTime: '2-4 hours',
-        cost: 'Free',
-        popularity: 83,
-        requestCount: 1876,
-        fields: ['issue_type', 'priority', 'description', 'affected_systems']
+    const fetchServices = async () => {
+      try {
+        const { servicesAPI } = await import('../../../services/api');
+        const res = await servicesAPI.getCatalog?.() || { data: [] };
+        setServices(res.data || []);
+      } catch (error) {
+        console.error('Failed to fetch service catalog:', error);
+        setServices([]);
+      } finally {
+        setLoading(false);
       }
-    ];
-
-    setTimeout(() => {
-      setServices(mockServices);
-      setLoading(false);
-    }, 800);
+    };
+    fetchServices();
   }, []);
 
   const categories = [

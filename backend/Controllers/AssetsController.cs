@@ -1,11 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Asp.Versioning;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using ITSMBackend.DTOs;
 using ITSMBackend.Services;
 
 namespace ITSMBackend.Controllers;
 
+[Authorize]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-[Route("api/[controller]")]
 public class AssetsController : ControllerBase
 {
     private readonly IAssetService _assetService;
@@ -79,6 +85,27 @@ public class AssetsController : ControllerBase
     {
         var assets = await _assetService.GetAssetsByTypeAsync(assetType);
         return Ok(assets);
+    }
+
+    [HttpGet("{id}/relationships")]
+    public async Task<ActionResult<List<AssetRelationshipDto>>> GetRelationships(int id)
+    {
+        var relationships = await _assetService.GetRelationshipsAsync(id);
+        return Ok(relationships);
+    }
+
+    [HttpPost("relationships")]
+    public async Task<ActionResult<AssetRelationshipDto>> AddRelationship([FromBody] CreateAssetRelationshipDto dto)
+    {
+        var relationship = await _assetService.AddRelationshipAsync(dto);
+        return Ok(relationship);
+    }
+
+    [HttpGet("{id}/history")]
+    public async Task<ActionResult<List<AssetHistoryDto>>> GetHistory(int id)
+    {
+        var history = await _assetService.GetAssetHistoryAsync(id);
+        return Ok(history);
     }
 
     [HttpGet("statistics/active-count")]

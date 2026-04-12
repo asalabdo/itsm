@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ITSMBackend</name>
+    </assembly>
+    <members>
+        <member name="M:ITSMBackend.Controllers.TicketsController.GetAllTickets">
+            <summary>Get all tickets (ordered by newest first)</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.SearchTickets(System.String,System.String,System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.String,System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <summary>Search and filter tickets</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.GetStatistics">
+            <summary>Get ticket statistics / summary counts</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.GetTicketById(System.Int32)">
+            <summary>Get a single ticket with comments and activity log</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.CreateTicket(ITSMBackend.DTOs.CreateTicketDto)">
+            <summary>Create a new incident ticket</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.UpdateTicket(System.Int32,ITSMBackend.DTOs.UpdateTicketDto)">
+            <summary>Update ticket fields (partial update – only non-null fields applied)</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.DeleteTicket(System.Int32)">
+            <summary>Delete a ticket</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.GetTicketsByStatus(System.String)">
+            <summary>Get tickets by status</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.GetTicketsByAssignee(System.Int32)">
+            <summary>Get tickets assigned to a specific user</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.AddComment(System.Int32,ITSMBackend.Controllers.AddCommentRequest)">
+            <summary>Add a comment to a ticket</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.GetOpenTicketsCount">
+            <summary>Get count of open tickets</summary>
+        </member>
+        <member name="M:ITSMBackend.Controllers.TicketsController.RefreshSlaStatus">
+            <summary>Recalculate and persist SLA statuses for all active tickets</summary>
+        </member>
+        <member name="T:ITSMBackend.Migrations.Baseline">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.Baseline.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.Baseline.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.Baseline.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ITSMBackend.Migrations.UsersSchemaFix">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.UsersSchemaFix.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.UsersSchemaFix.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.UsersSchemaFix.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ITSMBackend.Migrations.SchemaSync">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.SchemaSync.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.SchemaSync.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.SchemaSync.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.AddExternalUserMappingV2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ITSMBackend.Migrations.AddExternalUserMappingV3">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.AddExternalUserMappingV3.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.AddExternalUserMappingV3.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ITSMBackend.Migrations.AddExternalUserMappingV3.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Program">
+            <summary>
+            Auto-generated public partial Program class for top-level statement apps.
+            </summary>
+        </member>
+    </members>
+</doc>

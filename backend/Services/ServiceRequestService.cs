@@ -27,11 +27,19 @@ public class ServiceRequestService : IServiceRequestService
 {
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;
+    private readonly IWorkflowRoutingService _workflowRoutingService;
+    private readonly ILogger<ServiceRequestService> _logger;
 
-    public ServiceRequestService(ApplicationDbContext context, IMapper mapper)
+    public ServiceRequestService(
+        ApplicationDbContext context,
+        IMapper mapper,
+        IWorkflowRoutingService workflowRoutingService,
+        ILogger<ServiceRequestService> logger)
     {
         _context = context;
         _mapper = mapper;
+        _workflowRoutingService = workflowRoutingService;
+        _logger = logger;
     }
 
     public async Task<List<ServiceCatalogItemDto>> GetCatalogAsync()
@@ -121,7 +129,7 @@ public class ServiceRequestService : IServiceRequestService
             _context.ApprovalRequests.Add(new ApprovalRequest
             {
                 ServiceRequestId = request.Id,
-                ApproverId = 1, // Default manager
+                ApproverId = 1,
                 Status = "Pending"
             });
         }
@@ -140,15 +148,16 @@ public class ServiceRequestService : IServiceRequestService
 
         await _context.SaveChangesAsync();
 
-        // Send Notifications
         await NotifyUserAsync(userId, "Request Submitted", $"Your request {requestNumber} has been received.", "Info", $"/service-catalog");
-        if (catalogItem.RequiresApproval)
+
+        try
         {
-            await NotifyUserAsync(1, "Approval Required", $"New approval request for {requestNumber}.", "Warning", "/fulfillment-center");
+            await _workflowRoutingService.RouteServiceRequestAsync(request, userId);
         }
-        else if (request.AssignedToId.HasValue)
+        catch (Exception ex)
         {
-            await NotifyUserAsync(request.AssignedToId.Value, "New Assignment", $"New service request {requestNumber} assigned to you.", "Info", "/fulfillment-center");
+            // Dynamic workflow routing should never block the request submission.
+            _logger.LogWarning(ex, "Dynamic workflow routing failed for service request {ServiceRequestId}", request.Id);
         }
 
         return (await GetByIdAsync(request.Id))!;

@@ -23,6 +23,7 @@ import WorkflowBuilder from './pages/workflow-builder';
 import ApprovalQueueManager from './pages/approval-queue-manager';
 import WorkflowBuilderStudio from './pages/workflow-builder-studio';
 import TicketManagementCenter from './pages/ticket-management-center';
+import TicketWorkflowCrud from './pages/ticket-workflow-crud';
 import ReportingAndAnalyticsHub from './pages/reporting-and-analytics-hub';
 import AuditTrailAndComplianceViewer from './pages/audit-trail-and-compliance-viewer';
 import AssetRegistryAndTracking from './pages/asset-registry-and-tracking';
@@ -92,6 +93,7 @@ const Routes = () => {
             <Route path="/workflow-builder" element={<ProtectedRoute><WorkflowBuilder /></ProtectedRoute>} />
             <Route path="/approval-queue-manager" element={<ProtectedRoute><ApprovalQueueManager /></ProtectedRoute>} />
             <Route path="/workflow-builder-studio" element={<ProtectedRoute><WorkflowBuilderStudio /></ProtectedRoute>} />
+            <Route path="/ticket-workflow-crud" element={<ProtectedRoute><TicketWorkflowCrud /></ProtectedRoute>} />
             <Route path="/ticket-management-center" element={<ProtectedRoute><TicketManagementCenter /></ProtectedRoute>} />
             <Route path="/reporting-and-analytics-hub" element={<ProtectedRoute><ReportingAndAnalyticsHub /></ProtectedRoute>} />
             <Route path="/my-work" element={<ProtectedRoute><MyWorkDashboard /></ProtectedRoute>} />

@@ -59,6 +59,7 @@ builder.Services.AddScoped<IProblemManagementService, ProblemManagementService>(
 builder.Services.AddScoped<IReportingService, ReportingService>();
 builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
 builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+builder.Services.AddScoped<IWorkflowRoutingService, WorkflowRoutingService>();
 builder.Services.AddScoped<IWorkflowEngineService, WorkflowEngineService>();
 builder.Services.AddScoped<IPredictiveAnalyticsService, PredictiveAnalyticsService>();
 

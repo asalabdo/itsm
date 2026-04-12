@@ -99,6 +99,20 @@ const schemas = {
       { key: 'rule', label: 'Rule', type: 'text' }
     ]
   },
+  ticket_workflow: {
+    label: 'Ticket Workflow',
+    fields: [
+      { key: 'name', label: 'Workflow Name', type: 'text', required: true },
+      { key: 'service_key', label: 'Service Key', type: 'text', required: true },
+      { key: 'organization_key', label: 'Organization Key', type: 'text', required: true },
+      { key: 'entity_kind', label: 'Entity Kind', type: 'select', options: ['ticket', 'service_request', 'change_request', 'problem', 'asset', 'maintenance'] },
+      { key: 'steps', label: 'Stages', type: 'multiselect', options: ['Intake', 'Classify', 'Assign', 'Manager review', 'ERP fan-out', 'Approval', 'ERP sync', 'Fulfill', 'Resolve', 'Close'] },
+      { key: 'manager_first', label: 'Manager First', type: 'select', options: ['true', 'false'] },
+      { key: 'integration_mode', label: 'Integration Mode', type: 'select', options: ['local', 'third-party', 'both'] },
+      { key: 'description', label: 'Description', type: 'textarea' },
+      { key: 'metadata', label: 'Metadata', type: 'json' }
+    ]
+  },
   assets: {
     label: 'Assets',
     fields: [

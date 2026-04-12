@@ -13,6 +13,7 @@ import FilterPanel from './components/FilterPanel';
 import ApprovalModal from './components/ApprovalModal';
 import { approvalsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
+import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
 
 const ApprovalQueueManager = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -272,6 +273,17 @@ const ApprovalQueueManager = () => {
   }, [approvalRequests, filters, searchQuery, sortBy]);
 
   const approvalCountLabel = filteredRequests.length.toString();
+  const workflowSteps = [
+    'Submitted',
+    'Manager review',
+    'Approval decision',
+    'ERP fan-out',
+    'Last action logged',
+    'Closed'
+  ];
+  const activeWorkflowStep = selectedRequest
+    ? Math.min(workflowSteps.length - 1, selectedRequest?.status === 'approved' ? 4 : selectedRequest?.status === 'denied' ? 2 : 1)
+    : 0;
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -357,6 +369,19 @@ const ApprovalQueueManager = () => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="mb-6">
+              <WorkflowStatusStrip
+                title="Approval Workflow"
+                subtitle="Track the active approval route, the assigned review owner, and the latest queued action."
+                service={selectedRequest?.type || 'Approval queue'}
+                organization={selectedRequest?.department || 'All departments'}
+                mode="Manager-first routing"
+                lastAction={selectedRequest ? `${selectedRequest?.status || 'Pending'} • ${selectedRequest?.requester || 'Unknown requester'}` : 'Waiting for a request to review'}
+                activeStep={activeWorkflowStep}
+                steps={workflowSteps}
+              />
             </div>
 
             {showFilters && (

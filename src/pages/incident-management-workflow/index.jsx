@@ -9,6 +9,7 @@ import RootCauseAnalysis from './components/RootCauseAnalysis';
 import VolumeTrackingDashboard from './components/VolumeTrackingDashboard';
 import ManageEngineIntegration from './components/ManageEngineIntegration';
 import ExternalSystemBadge from '../../components/ui/ExternalSystemBadge';
+import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
 
 import { ticketsAPI } from '../../services/api';
 
@@ -177,6 +178,23 @@ const IncidentManagementWorkflow = () => {
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
   };
 
+  const workflowSteps = [
+    'Capture',
+    'Classify',
+    'Route to group',
+    'ERP sync',
+    'Resolve',
+    'Close'
+  ];
+
+  const activeWorkflowStep = currentView === 'create'
+    ? 0
+    : currentView === 'integration'
+      ? 3
+      : currentView === 'details' && selectedIncident
+        ? 2
+        : 1;
+
   return (
     <>
       <Helmet>
@@ -234,6 +252,20 @@ const IncidentManagementWorkflow = () => {
                 </button>
               )}
             </div>
+          </div>
+
+          <div className="px-6 pt-6">
+            <WorkflowStatusStrip
+              title="Incident Workflow"
+              subtitle="Follow how incidents move from capture to classification, routing, ERP sync, and resolution."
+              service={selectedIncident?.ticketNumber || 'Incident lifecycle'}
+              organization={selectedIncident?.assignmentGroup || selectedIncident?.department || 'Operations'}
+              mode={currentView === 'integration' ? 'Integration view' : currentView === 'create' ? 'Create view' : 'Operational view'}
+              lastAction={selectedIncident ? `${selectedIncident?.status || 'Open'} • ${selectedIncident?.title || 'Selected incident'}` : `${filteredIncidents.length} incidents currently visible`}
+              activeStep={activeWorkflowStep}
+              steps={workflowSteps}
+              onShowAll={() => setCurrentView('dashboard')}
+            />
           </div>
 
           {/* Main Content */}

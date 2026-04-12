@@ -11,6 +11,7 @@ const entities = [
   { key: 'ticket_sla', label: 'Ticket SLA', abbrev: 'tSLA' },
   { key: 'priorities', label: 'Priorities', abbrev: 'P' },
   { key: 'escalations', label: 'Escalations', abbrev: 'E' },
+  { key: 'ticket_workflow', label: 'Ticket Workflow', abbrev: 'WF' },
   // { key: 'assets', label: 'Assets / CMDB', abbrev: 'Assets' },
   // { key: 'changes', label: 'Changes', abbrev: 'Ch' }
 ];

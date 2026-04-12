@@ -96,9 +96,10 @@ const FilterSidebar = ({
         />
       )}
       <aside
-        className={`fixed lg:static top-16 left-0 bottom-0 w-80 bg-card border-r border-border z-1100 transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } flex flex-col`}
+        aria-hidden={!isOpen}
+        className={`fixed top-16 left-0 bottom-0 w-80 bg-card border-r border-border z-1100 transition-transform duration-300 flex flex-col ${
+          isOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'
+        }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">

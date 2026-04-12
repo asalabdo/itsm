@@ -6,6 +6,7 @@ import PropertiesPanel from './components/PropertiesPanel';
 import TemplateLibrary from './components/TemplateLibrary';
 import ValidationPanel from './components/ValidationPanel';
 import WorkflowToolbar from './components/WorkflowToolbar';
+import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
 
 const WorkflowBuilderStudio = () => {
   const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
@@ -159,6 +160,19 @@ const WorkflowBuilderStudio = () => {
     }
   };
 
+  const workflowSteps = [
+    'Intake',
+    'Service + org match',
+    'Manager review',
+    'ERP user fan-out',
+    'Third-party submit',
+    'Close'
+  ];
+
+  const activeWorkflowStep = nodes.length === 0
+    ? 0
+    : Math.min(workflowSteps.length - 1, Math.max(1, Math.ceil(nodes.length / 2)));
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -175,6 +189,19 @@ const WorkflowBuilderStudio = () => {
           canRedo={historyIndex < history?.length - 1}
           isSaving={isSaving}
         />
+
+        <div className="px-4 md:px-6 pt-4">
+          <WorkflowStatusStrip
+            title="Workflow Builder"
+            subtitle="Design the route that matches service, organization, manager review, and ERP dispatch."
+            service={workflowName}
+            organization="Organization-aware routing"
+            mode="Builder mode"
+            lastAction={isSaving ? 'Saving workflow changes' : `Canvas contains ${nodes.length} node(s) and ${connections.length} connection(s)`}
+            activeStep={activeWorkflowStep}
+            steps={workflowSteps}
+          />
+        </div>
 
         <div className="flex-1 flex overflow-hidden">
           <ComponentPalette

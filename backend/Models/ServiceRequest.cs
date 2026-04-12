@@ -17,6 +17,8 @@ public class ServiceRequest
 
     public int? RequestedById { get; set; }
     public int? AssignedToId { get; set; }
+    public string? ExternalId { get; set; }
+    public string? ExternalSystem { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CompletionDate { get; set; }

@@ -15,6 +15,22 @@ import { formatLocalizedValue, getLocalizedDisplayName } from '../../services/di
 
 const normalizeText = (value) => String(value || '').trim().toLowerCase();
 const slugify = (value) => normalizeText(value).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const getDisplayName = (user) => (
+  getLocalizedDisplayName(user) ||
+  formatLocalizedValue(user?.fullName) ||
+  formatLocalizedValue(user?.displayName) ||
+  formatLocalizedValue(user?.name) ||
+  formatLocalizedValue(user?.username) ||
+  formatLocalizedValue(user?.userName) ||
+  'Unassigned'
+);
+const getDepartmentLabel = (ticket, assignedTo) => (
+  formatLocalizedValue(assignedTo?.department) ||
+  formatLocalizedValue(ticket?.department) ||
+  formatLocalizedValue(ticket?.requestedBy?.department) ||
+  formatLocalizedValue(ticket?.category) ||
+  'Unassigned'
+);
 
 const TicketManagementCenter = () => {
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
@@ -49,8 +65,9 @@ const TicketManagementCenter = () => {
     assignedToId: t.assignedToId ?? t.assignedTo?.id ?? null,
     requester: getLocalizedDisplayName(t.requestedBy) || formatLocalizedValue(t.requestedByName) || 'Unknown',
     requesterInitials: (getLocalizedDisplayName(t.requestedBy) || formatLocalizedValue(t.requestedByName) || 'U').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
-    assignee: t.assignedTo ? (getLocalizedDisplayName(t.assignedTo) || 'Unassigned') : 'Unassigned',
-    assigneeInitials: (getLocalizedDisplayName(t.assignedTo) || 'U').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+    assignee: getDisplayName(t.assignedTo),
+    assigneeInitials: getDisplayName(t.assignedTo).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+    assigneeDepartment: getDepartmentLabel(t, t.assignedTo),
     status: t.status?.toLowerCase().replace(' ', '-') || 'open',
     statusLabel: t.status || 'Open',
     priority: t.priority?.toLowerCase() || 'medium',
@@ -59,7 +76,7 @@ const TicketManagementCenter = () => {
     slaHours: t.dueDate ? Math.max(0, Math.floor((new Date(t.dueDate) - new Date()) / 3600000)) : 48,
     lastActivity: t.updatedAt ? new Date(t.updatedAt).toLocaleString() : 'N/A',
     hasAttachment: false,
-    department: formatLocalizedValue(t.requestedBy?.department) || formatLocalizedValue(t.assignedTo?.department) || formatLocalizedValue(t.category) || 'Unassigned',
+    department: getDepartmentLabel(t, t.assignedTo),
     description: t.description || ''
   });
 
@@ -346,6 +363,19 @@ const TicketManagementCenter = () => {
     }));
   };
 
+  const activeSidebarFilterCount = useMemo(() => {
+    const values = Object.values(activeFilters || {});
+    return values.reduce((count, value) => {
+      if (Array.isArray(value)) {
+        return count + value.length;
+      }
+      if (typeof value === 'string') {
+        return count + (value.trim() ? 1 : 0);
+      }
+      return count + (value ? 1 : 0);
+    }, 0);
+  }, [activeFilters]);
+
   const sidebarCounts = useMemo(() => {
     const countBy = (selector) => tickets.reduce((acc, ticket) => {
       const key = selector(ticket);
@@ -446,7 +476,23 @@ const TicketManagementCenter = () => {
                 <p className="text-sm md:text-base text-muted-foreground">Manage and track all support tickets across your organization</p>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" iconName="Filter" onClick={() => setFilterSidebarOpen(!filterSidebarOpen)} className="lg:hidden">Filters</Button>
+                <Button
+                  variant={filterSidebarOpen ? 'default' : 'outline'}
+                  iconName="Filter"
+                  onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
+                  className="whitespace-nowrap"
+                >
+                  <span className="flex items-center gap-2">
+                    Filters
+                    {activeSidebarFilterCount > 0 && (
+                      <span className={`inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1 text-[11px] font-semibold ${
+                        filterSidebarOpen ? 'bg-primary-foreground text-primary' : 'bg-primary text-primary-foreground'
+                      }`}>
+                        {activeSidebarFilterCount}
+                      </span>
+                    )}
+                  </span>
+                </Button>
                 <Button variant="ghost" iconName="RefreshCw" onClick={fetchTickets} disabled={loading}>
                   {loading ? 'Loading...' : 'Refresh'}
                 </Button>

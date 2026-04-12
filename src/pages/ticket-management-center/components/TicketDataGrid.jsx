@@ -183,7 +183,12 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                       <div className="w-6 h-6 bg-success/10 text-success rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0">
                         {ticket?.assigneeInitials}
                       </div>
-                      <span className="text-sm truncate max-w-[120px]">{ticket?.assignee}</span>
+                      <div className="min-w-0">
+                        <span className="block text-sm font-medium truncate max-w-[140px]">{ticket?.assignee}</span>
+                        <span className="block text-xs text-muted-foreground truncate max-w-[140px]">
+                          {ticket?.assigneeDepartment || ticket?.department || 'Unassigned'}
+                        </span>
+                      </div>
                     </div>
                   ) : (
                     <span className="text-sm text-muted-foreground">Unassigned</span>

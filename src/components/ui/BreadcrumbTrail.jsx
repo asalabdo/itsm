@@ -22,6 +22,7 @@ const BreadcrumbTrail = () => {
     '/ticket-sla': { label: 'Ticket SLA', parent: '/manager-dashboard' },
     '/priorities': { label: 'Priorities', parent: '/manager-dashboard' },
     '/escalations': { label: 'Escalations', parent: '/manager-dashboard' },
+    '/ticket-workflow-crud': { label: 'Ticket Workflow', parent: '/workflow-builder-studio' },
     '/monitoring-events': { label: 'Monitoring Events', parent: '/manager-dashboard' },
     '/problems': { label: 'Problems', parent: '/manager-dashboard' },
     '/knowledge-base': { label: 'Knowledge Base', parent: '/customer-portal' },

@@ -38,6 +38,7 @@ public class TicketService : ITicketService
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;
     private readonly ILogger<TicketService> _logger;
+    private readonly IWorkflowRoutingService _workflowRoutingService;
 
     // SLA hours by priority (response time targets)
     private static readonly Dictionary<string, int> SlaHours = new()
@@ -51,12 +52,19 @@ public class TicketService : ITicketService
     private readonly IWorkflowEngineService _workflowEngine;
     private readonly IUserService _userService;
 
-    public TicketService(ApplicationDbContext context, IMapper mapper, IWorkflowEngineService workflowEngine, IUserService userService, ILogger<TicketService> logger)
+    public TicketService(
+        ApplicationDbContext context,
+        IMapper mapper,
+        IWorkflowEngineService workflowEngine,
+        IUserService userService,
+        IWorkflowRoutingService workflowRoutingService,
+        ILogger<TicketService> logger)
     {
         _context = context;
         _mapper = mapper;
         _workflowEngine = workflowEngine;
         _userService = userService;
+        _workflowRoutingService = workflowRoutingService;
         _logger = logger;
     }
 
@@ -175,6 +183,15 @@ public class TicketService : ITicketService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Workflow trigger processing failed for ticket {TicketId}", ticket.Id);
+        }
+
+        try
+        {
+            await _workflowRoutingService.RouteTicketAsync(ticket, requestedById);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Dynamic workflow routing failed for ticket {TicketId}", ticket.Id);
         }
 
         return MapWithSla(ticket);
@@ -425,6 +442,24 @@ public class TicketService : ITicketService
 
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
+
+        try
+        {
+            await _workflowEngine.ProcessTriggersAsync("Ticket", "OnCreate", ticket, ticket.TicketNumber);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Workflow trigger processing failed for ticket {TicketId}", ticket.Id);
+        }
+
+        try
+        {
+            await _workflowRoutingService.RouteTicketAsync(ticket, ticket.RequestedById ?? 1, ticket.ExternalSystem);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Dynamic workflow routing failed for imported ticket {TicketId}", ticket.Id);
+        }
 
         return MapWithSla(ticket);
     }

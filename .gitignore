@@ -51,3 +51,7 @@ vite.config.*.bak
 
 # Other tool outputs
 tempout/
+backend/bin-workflowtests/
+tests/WorkflowRoutingTests/bin/
+tests/WorkflowRoutingTests/obj/
+tests/WorkflowRoutingTests/tempout/

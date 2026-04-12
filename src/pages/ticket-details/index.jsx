@@ -11,8 +11,11 @@ import TimeTracking from './components/TimeTracking';
 import AuditTrail from './components/AuditTrail';
 import CustomerSatisfaction from './components/CustomerSatisfaction';
 import ReplyComposer from './components/ReplyComposer';
+import WorkflowAdminPanel from './components/WorkflowAdminPanel';
+import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
 import { ticketsAPI } from '../../services/api';
 import { markBackendReady } from '../../services/backendAvailability';
+import { resolveWorkflowPresentationForTicket } from '../../services/workflowStages';
 
 const getCurrentUserId = () => {
   try {
@@ -172,6 +175,18 @@ const TicketDetails = () => {
   const [ticketData, setTicketData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [workflowPresentation, setWorkflowPresentation] = useState(null);
+  const [workflowRefreshKey, setWorkflowRefreshKey] = useState(0);
+  const currentUserRole = (() => {
+    try {
+      const raw = localStorage.getItem('user');
+      const parsed = raw ? JSON.parse(raw) : null;
+      return String(parsed?.role || parsed?.userType || 'Admin');
+    } catch {
+      return 'Admin';
+    }
+  })();
+  const canEditWorkflow = /admin|manager/i.test(currentUserRole);
 
   const fetchTicket = async (silent = false) => {
     try {
@@ -207,6 +222,30 @@ const TicketDetails = () => {
     slaDueDate: null,
     slaRemainingMinutes: null,
   };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadWorkflow = async () => {
+      const sourceTicket = ticketData || ticket;
+      try {
+        const presentation = await resolveWorkflowPresentationForTicket(sourceTicket);
+        if (!cancelled) {
+          setWorkflowPresentation(presentation);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setWorkflowPresentation(null);
+        }
+      }
+    };
+
+    loadWorkflow();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ticketData, ticketId, workflowRefreshKey]);
 
   const messages = mapConversationMessages(ticketData || ticket);
   const internalNotes = mapInternalNotes(ticketData || ticket);
@@ -429,6 +468,18 @@ const TicketDetails = () => {
       ? `${ticket.slaRemainingMinutes} min remaining`
       : ticket?.slaStatus || '-',
   };
+  const workflowSteps = workflowPresentation?.steps || ticket?.workflowSteps || [];
+  const workflowActiveStep = workflowPresentation?.activeStep ?? 0;
+  const workflowService = workflowPresentation?.name || ticket?.category || ticket?.type || 'Ticket workflow';
+  const workflowOrganization = workflowPresentation?.organizationKey || ticket?.assignedTo?.department || ticket?.requestedBy?.department || ticket?.department || 'Organization routing';
+  const workflowLastAction = workflowPresentation?.lastAction
+    || (ticket?.activities?.length ? ticket.activities[0]?.action : null)
+    || ticket?.status
+    || 'Waiting for next workflow action';
+
+  const handleWorkflowSaved = () => {
+    setWorkflowRefreshKey((value) => value + 1);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -447,6 +498,25 @@ const TicketDetails = () => {
         <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8 max-w-[1600px] mx-auto">
           <div className="space-y-4 md:space-y-6">
             <TicketHeader ticket={viewTicket} />
+
+            <WorkflowStatusStrip
+              title="Ticket Workflow"
+              subtitle="See the route this ticket is following across service matching, manager review, ERP assignment, and third-party submission."
+              service={workflowService}
+              organization={workflowOrganization}
+              mode="Ticket view"
+              lastAction={workflowLastAction}
+              activeStep={workflowActiveStep}
+              steps={workflowSteps.length > 0 ? workflowSteps : undefined}
+            />
+
+            {canEditWorkflow && (
+              <WorkflowAdminPanel
+                ticket={ticket}
+                workflowPresentation={workflowPresentation}
+                onSaved={handleWorkflowSaved}
+              />
+            )}
 
             {error && !ticketData && (
               <div className="rounded-lg border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">

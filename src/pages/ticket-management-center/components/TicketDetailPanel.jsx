@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import WorkflowStatusStrip from '../../../components/ui/WorkflowStatusStrip';
+import { resolveWorkflowPresentationForTicket } from '../../../services/workflowStages';
 
 const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('details');
   const [comment, setComment] = useState('');
+  const [workflowPresentation, setWorkflowPresentation] = useState(null);
 
   if (!ticket) return null;
 
@@ -82,6 +85,35 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
     return colors?.[type] || 'text-muted-foreground bg-muted';
   };
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadWorkflow = async () => {
+      try {
+        const presentation = await resolveWorkflowPresentationForTicket(ticket);
+        if (!cancelled) {
+          setWorkflowPresentation(presentation);
+        }
+      } catch {
+        if (!cancelled) {
+          setWorkflowPresentation(null);
+        }
+      }
+    };
+
+    loadWorkflow();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ticket]);
+
+  const workflowSteps = workflowPresentation?.steps || ticket?.workflowSteps || [];
+  const workflowActiveStep = workflowPresentation?.activeStep ?? 0;
+  const workflowService = workflowPresentation?.name || ticket?.category || 'Ticket workflow';
+  const workflowOrganization = workflowPresentation?.organizationKey || ticket?.assigneeDepartment || ticket?.department || 'Organization routing';
+  const workflowLastAction = workflowPresentation?.lastAction || ticket?.statusLabel || ticket?.status || 'Waiting for next action';
+
   return (
     <>
       {isOpen && (
@@ -129,6 +161,17 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto scrollbar-custom p-4">
           {activeTab === 'details' && (
             <div className="space-y-6">
+              <WorkflowStatusStrip
+                title="Ticket Workflow"
+                subtitle="Follow the current routing path for this ticket from intake to close."
+                service={workflowService}
+                organization={workflowOrganization}
+                mode="Drawer view"
+                lastAction={workflowLastAction}
+                activeStep={workflowActiveStep}
+                steps={workflowSteps.length > 0 ? workflowSteps : undefined}
+              />
+
               <div>
                 <div className="flex items-start justify-between mb-2">
                   <span className="text-sm font-medium text-primary">#{ticket?.id}</span>

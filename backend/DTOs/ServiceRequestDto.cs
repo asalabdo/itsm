@@ -60,6 +60,8 @@ public class ServiceRequestDto
     public int? CatalogItemId { get; set; }
     public int? RequestedById { get; set; }
     public int? AssignedToId { get; set; }
+    public string? ExternalId { get; set; }
+    public string? ExternalSystem { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? SlaDueDate { get; set; }
     public bool IsSlaBreached { get; set; }

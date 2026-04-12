@@ -70,6 +70,7 @@ const Sidebar = ({ collapsed = false, onToggle }) => {
         { label: 'SLA Policies', path: '/sla-policies', icon: 'ShieldCheck' },
         { label: 'Priorities', path: '/priorities', icon: 'Flag' },
         { label: 'Escalations', path: '/escalations', icon: 'ArrowUpRight' },
+        { label: 'Ticket Workflow', path: '/ticket-workflow-crud', icon: 'Workflow' },
         { label: 'Workflow Builder', path: '/workflow-builder-studio', icon: 'GitBranch' },
         { label: 'Automation Rules', path: '/automation-rules', icon: 'Cpu' },
         { label: 'Approval Queue', path: '/approval-queue-manager', icon: 'ClipboardCheck' },

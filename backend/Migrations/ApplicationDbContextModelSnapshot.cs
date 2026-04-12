@@ -1081,6 +1081,12 @@ namespace ITSMBackend.Migrations
                     b.Property<int?>("RequestedById")
                         .HasColumnType("int");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExternalSystem")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ServiceType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

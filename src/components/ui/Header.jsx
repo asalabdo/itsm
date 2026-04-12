@@ -253,6 +253,35 @@ const Header = () => {
   const bannerCount = (criticalAlerts > 0 ? 1 : 0) + (newTicketAlert ? 1 : 0);
   const progressPct = ticketProgress.total > 0 ? Math.round((ticketProgress.resolved / ticketProgress.total) * 100) : 0;
   const inProgressPct = ticketProgress.total > 0 ? Math.round((ticketProgress.inProgress / ticketProgress.total) * 100) : 0;
+  const currentPath = location?.pathname || '';
+
+  const workflowContext = (() => {
+    if (currentPath.includes('/workflow-builder-studio') || currentPath.includes('/workflow-builder')) {
+      return { label: 'Workflow Builder', path: '/workflow-builder-studio', icon: 'GitBranch' };
+    }
+
+    if (currentPath.includes('/approval-queue-manager')) {
+      return { label: 'Approval Workflow', path: '/approval-queue-manager', icon: 'ClipboardCheck' };
+    }
+
+    if (currentPath.includes('/incident-management-workflow')) {
+      return { label: 'Incident Workflow', path: '/incident-management-workflow', icon: 'Workflow' };
+    }
+
+    if (currentPath.includes('/ticket-details')) {
+      return { label: 'Ticket Workflow', path: '/ticket-details', icon: 'Workflow' };
+    }
+
+    if (currentPath.includes('/ticket-management-center')) {
+      return { label: 'Ticket Workflow', path: '/ticket-management-center', icon: 'Workflow' };
+    }
+
+    if (currentPath.includes('/service-request-management') || currentPath.includes('/fulfillment-center')) {
+      return { label: 'Service Workflow', path: '/service-request-management', icon: 'Layers3' };
+    }
+
+    return null;
+  })();
 
   return (
     <>
@@ -315,6 +344,17 @@ const Header = () => {
                 </h1>
               </div>
             </Link>
+
+            {workflowContext && (
+              <Link
+                to={workflowContext.path}
+                className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold tracking-wide hover:bg-primary/15 transition-colors"
+                title={`Open ${workflowContext.label}`}
+              >
+                <Icon name={workflowContext.icon} size={14} />
+                <span>{workflowContext.label}</span>
+              </Link>
+            )}
           </div>
 
           {/* Desktop Navigation */}
@@ -542,10 +582,20 @@ const Header = () => {
             </Button>
           </div>
 
-        {/* Mobile Navigation */}
+          {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="lg:hidden border-t border-border bg-card">
             <nav className="px-4 py-4 space-y-2">
+              {workflowContext && (
+                <Link
+                  to={workflowContext.path}
+                  className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary/10 text-primary border border-primary/20 text-sm font-semibold"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Icon name={workflowContext.icon} size={16} />
+                  <span>{workflowContext.label}</span>
+                </Link>
+              )}
               {navigationItems?.map((item) => (
                 <div key={item?.path}>
                   <Link

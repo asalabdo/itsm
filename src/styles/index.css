@@ -1,0 +1,20 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    background: var(--color-background);
+    color: var(--color-foreground);
+    transition: background-color 250ms ease, color 250ms ease;
+  }
+  
+  * {
+    box-sizing: border-box;
+    line-height: normal;
+    font-family: inherit;
+    margin: unset;
+  }
+
+  html, body, #root {
+    min-height: 100%;
+  }
+  

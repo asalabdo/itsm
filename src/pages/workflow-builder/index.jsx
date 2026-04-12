@@ -1,0 +1,241 @@
+import React, { useState } from 'react';
+import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
+import Icon from '../../components/AppIcon';
+import Button from '../../components/ui/Button';
+import ComponentLibrary from './components/ComponentLibrary';
+import WorkflowCanvas from './components/WorkflowCanvas';
+import ConfigurationPanel from './components/ConfigurationPanel';
+import TemplateGallery from './components/TemplateGallery';
+import TestWorkflow from './components/TestWorkflow';
+import { workflowsAPI } from '../../services/api';
+
+const WorkflowBuilder = () => {
+  const [selectedBlock, setSelectedBlock] = useState(null);
+  const [workflowBlocks, setWorkflowBlocks] = useState([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showTestPanel, setShowTestPanel] = useState(false);
+  const [workflowName, setWorkflowName] = useState('New Workflow');
+  const [workflowDescription, setWorkflowDescription] = useState('');
+  const [triggerType, setTriggerType] = useState('Manual');
+
+  const breadcrumbItems = [
+    { label: 'Dashboard', path: '/agent-dashboard' },
+    { label: 'Workflow Builder', path: '/workflow-builder' },
+  ];
+
+  const handleAddBlock = (block) => {
+    const newBlock = {
+      ...block,
+      id: `block-${Date.now()}-${Math.random()?.toString(36)?.substr(2, 9)}`,
+      position: { x: 100, y: workflowBlocks?.length * 120 + 50 },
+      config: {},
+    };
+    setWorkflowBlocks([...workflowBlocks, newBlock]);
+  };
+
+  const handleBlockSelect = (block) => {
+    setSelectedBlock(block);
+  };
+
+  const handleBlockUpdate = (blockId, updates) => {
+    setWorkflowBlocks(workflowBlocks?.map(block => 
+      block?.id === blockId ? { ...block, ...updates } : block
+    ));
+    if (selectedBlock?.id === blockId) {
+      setSelectedBlock({ ...selectedBlock, ...updates });
+    }
+  };
+
+  const handleBlockDelete = (blockId) => {
+    setWorkflowBlocks(workflowBlocks?.filter(block => block?.id !== blockId));
+    if (selectedBlock?.id === blockId) {
+      setSelectedBlock(null);
+    }
+  };
+
+  const handleLoadTemplate = (template) => {
+    setWorkflowBlocks(template?.blocks);
+    setWorkflowName(template?.name);
+    setWorkflowDescription(template?.description || '');
+    setShowTemplates(false);
+  };
+
+  const handleSaveWorkflow = async () => {
+    try {
+      if (!workflowName.trim()) {
+        alert('Workflow name is required.');
+        return;
+      }
+
+      await workflowsAPI.create({
+        name: workflowName.trim(),
+        description: workflowDescription.trim(),
+        workflowDefinition: JSON.stringify(workflowBlocks),
+        triggerType,
+      });
+      alert('Workflow saved successfully!');
+    } catch (err) {
+      console.error('Failed to save workflow:', err);
+      alert('Failed to save workflow.');
+    }
+  };
+
+  const handleClearWorkflow = () => {
+    if (window.confirm('Are you sure you want to clear the workflow?')) {
+      setWorkflowBlocks([]);
+      setSelectedBlock(null);
+      setWorkflowName('New Workflow');
+      setWorkflowDescription('');
+      setTriggerType('Manual');
+    }
+  };
+
+  const triggerOptions = [
+    { value: 'Manual', label: 'Manual' },
+    { value: 'TicketCreated', label: 'Ticket Created' },
+    { value: 'TicketUpdated', label: 'Ticket Updated' },
+    { value: 'Schedule', label: 'Schedule' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <BreadcrumbTrail items={breadcrumbItems} />
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              Workflow Builder
+            </h1>
+            <p className="text-muted-foreground">
+              Create and manage automated rules for ticket routing and notifications
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              iconName="Layout"
+              onClick={() => setShowTemplates(true)}
+            >
+              Templates
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              iconName="Play"
+              onClick={() => setShowTestPanel(true)}
+            >
+              Test
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              iconName="Trash2"
+              onClick={handleClearWorkflow}
+              disabled={workflowBlocks?.length === 0}
+            >
+              Clear
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              iconName="Save"
+              onClick={handleSaveWorkflow}
+            >
+              Save Workflow
+            </Button>
+          </div>
+        </div>
+
+        {/* Workflow Info Bar */}
+        <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-2">Workflow Name</label>
+              <input
+                type="text"
+                value={workflowName}
+                onChange={(e) => setWorkflowName(e?.target?.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Workflow Name"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-2">Trigger Type</label>
+              <select
+                value={triggerType}
+                onChange={(e) => setTriggerType(e?.target?.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              >
+                {triggerOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="md:col-span-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-2">Description</label>
+              <input
+                type="text"
+                value={workflowDescription}
+                onChange={(e) => setWorkflowDescription(e?.target?.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Describe what this workflow does"
+              />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <Icon name="Layers" size={16} />
+            <span>{workflowBlocks?.length} blocks</span>
+          </div>
+        </div>
+
+        {/* Main Workflow Builder Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Component Library - Left Panel */}
+          <div className="lg:col-span-3">
+            <ComponentLibrary onAddBlock={handleAddBlock} />
+          </div>
+
+          {/* Workflow Canvas - Center */}
+          <div className="lg:col-span-6">
+            <WorkflowCanvas
+              blocks={workflowBlocks}
+              selectedBlock={selectedBlock}
+              onBlockSelect={handleBlockSelect}
+              onBlockUpdate={handleBlockUpdate}
+              onBlockDelete={handleBlockDelete}
+            />
+          </div>
+
+          {/* Configuration Panel - Right Panel */}
+          <div className="lg:col-span-3">
+            <ConfigurationPanel
+              selectedBlock={selectedBlock}
+              onBlockUpdate={handleBlockUpdate}
+            />
+          </div>
+        </div>
+      </div>
+      {/* Template Gallery Modal */}
+      {showTemplates && (
+        <TemplateGallery
+          onClose={() => setShowTemplates(false)}
+          onLoadTemplate={handleLoadTemplate}
+        />
+      )}
+      {/* Test Workflow Modal */}
+      {showTestPanel && (
+        <TestWorkflow
+          workflow={{ name: workflowName, blocks: workflowBlocks }}
+          onClose={() => setShowTestPanel(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default WorkflowBuilder;

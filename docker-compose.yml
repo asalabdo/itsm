@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: itsm-sqlserver
+    environment:
+      SA_PASSWORD: "YourPassword123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - itsm-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: itsm-backend
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=ITSMDatabase;User Id=sa;Password=YourPassword123!;TrustServerCertificate=true"
+      ASPNETCORE_URLS: "http://+:5500"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    ports:
+      - "5500:5500"
+    depends_on:
+      - sqlserver
+    networks:
+      - itsm-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: itsm-frontend
+    environment:
+      REACT_APP_API_URL: "http://backend:5500/api"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - itsm-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  itsm-network:
+    driver: bridge

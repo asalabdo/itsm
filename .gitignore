@@ -1,0 +1,53 @@
+.DS_Store
+node_modules/
+build/
+dist/
+.idea/
+.vscode/
+.dotnet/
+.tmp-backend-build/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local developer secrets - NEVER commit these
+backend/appsettings.Local.json
+appsettings.Local.json
+
+# Build and debug artifacts
+*.log
+*.tmp
+*.cache
+*.cache.json
+errors.txt
+errors.log
+build.log
+build_errors*.txt
+build_errors*.log
+temp-main-section.jsx
+backend/backend.stdout.log
+backend/backend.stderr.log
+backend/bin-apphost/
+backend/bin-temp/
+backend/bin-erpfix*/
+backend/bin-verification/
+backend/obj-apphost/
+backend/obj/
+backend/bin/
+backend/tempout/
+.history
+
+# Database fix build outputs
+dbfix/bin/
+dbfix/obj/
+
+# Frontend build output
+public/*.map
+vite.config.*.tmp
+vite.config.*.swp
+vite.config.*.bak
+
+# Other tool outputs
+tempout/

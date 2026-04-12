@@ -1,0 +1,8 @@
+- [x] Fix UI "refresh" during time tracking (silent refresh)
+- [x] Implement JIT User Synchronization
+    - [x] Update `User` model with `ExternalId` and `ExternalSource`
+    - [x] Create `ErpIntegrationService` to connect to GFSA ERP
+    - [x] Add `EnsureUserExistsAsync` to `UserService`
+    - [x] Update `TicketService.UpdateTicketAsync` to use JIT sync
+    - [/] Run database migrations (resolving RoleInt conflict)
+- [ ] Verify fixes

@@ -1,0 +1,752 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import { motion } from 'framer-motion';
+import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
+import Icon from '../../components/AppIcon';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
+import CategorySelector from './components/CategorySelector';
+import EmployeeLookup from './components/EmployeeLookup';
+import FileUploader from './components/FileUploader';
+import RoutingPreview from './components/RoutingPreview';
+import { slaAPI, ticketsAPI } from '../../services/api';
+
+const DRAFT_KEY = 'itsm-ticket-creation-draft-v2';
+
+const initialFormData = {
+  module: '',
+  category: '',
+  service: null,
+  employee: null,
+  priority: '',
+  subject: '',
+  description: '',
+  dueDate: '',
+  department: '',
+  impact: '',
+  urgency: '',
+  attachments: [],
+};
+
+const priorityOptions = [
+  { value: 'urgent', label: 'Urgent' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
+];
+
+const departmentOptions = [
+  { value: 'it', label: 'IT Support' },
+  { value: 'network', label: 'Network Operations' },
+  { value: 'security', label: 'Security Team' },
+  { value: 'application', label: 'Application Support' },
+  { value: 'hr', label: 'HR' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'facilities', label: 'Facilities' },
+];
+
+const impactOptions = [
+  { value: 'critical', label: 'Critical' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
+];
+
+const urgencyOptions = [
+  { value: 'immediate', label: 'Immediate' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
+];
+
+const quickPresets = [
+  { title: 'Password reset', module: 'it-support', category: 'access-management', service: { id: 'am-reset-password', nameEn: 'Password Reset Request' }, subject: 'Reset my password', description: 'User cannot access their account and needs a verified password reset.', priority: 'high', impact: 'high', urgency: 'high', department: 'it' },
+  { title: 'New device', module: 'it-support', category: 'technical-support', service: { id: 'ts-new-device', nameEn: 'Request New Device' }, subject: 'Request new laptop', description: 'A replacement or new device is needed for the user to continue work.', priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' },
+  { title: 'Network outage', module: 'dg-assistant', category: 'noc-requests', service: { id: 'noc-service', nameEn: 'Request NOC Service' }, subject: 'Network connectivity issue', description: 'Users are reporting a network outage or major connectivity degradation.', priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'network' },
+];
+
+const serviceDefaults = (serviceId) => {
+  if (!serviceId) return null;
+  const map = {
+    'am-reset-password': { priority: 'high', impact: 'high', urgency: 'high', department: 'it' },
+    'am-new-account': { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' },
+    'ts-new-device': { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' },
+    'ts-network-connection': { priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'network' },
+    'noc-service': { priority: 'high', impact: 'high', urgency: 'high', department: 'network' },
+    'noc-ports': { priority: 'high', impact: 'high', urgency: 'high', department: 'network' },
+    'cs-data-breach': { priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'security' },
+    'sr-onboarding': { priority: 'high', impact: 'high', urgency: 'high', department: 'it' },
+    'sr-offboarding': { priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'it' },
+  };
+  if (map[serviceId]) return map[serviceId];
+  if (serviceId.startsWith('cs-')) return { priority: 'high', impact: 'high', urgency: 'high', department: 'security' };
+  if (serviceId.startsWith('noc-') || serviceId.startsWith('net-')) return { priority: 'high', impact: 'high', urgency: 'high', department: 'network' };
+  if (serviceId.startsWith('dev-') || serviceId.startsWith('qa-') || serviceId.startsWith('dt-')) return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'application' };
+  if (serviceId.startsWith('hr') || serviceId.startsWith('ehr-') || serviceId.startsWith('hrs-')) return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'hr' };
+  if (serviceId.startsWith('ms-')) return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'facilities' };
+  return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' };
+};
+
+const priorityLabelMap = { urgent: 'Urgent', high: 'High', medium: 'Medium', low: 'Low' };
+const urgencyScaleMap = {
+  immediate: 1,
+  high: 0.75,
+  medium: 0.5,
+  low: 0.25,
+};
+
+const impactScaleMap = {
+  critical: 1,
+  high: 0.75,
+  medium: 0.5,
+  low: 0.25,
+};
+
+const toDecimalScale = (value, scaleMap) => {
+  const normalizedValue = String(value || '').trim().toLowerCase();
+  if (!normalizedValue) return null;
+  return scaleMap[normalizedValue] ?? null;
+};
+
+const steps = [
+  { label: 'Scope', description: 'Pick the module, category, and service' },
+  { label: 'Details', description: 'Add the title, description, and person affected' },
+  { label: 'Priority', description: 'Tune urgency, impact, and routing' },
+  { label: 'Review', description: 'Confirm and submit' },
+];
+
+const TicketCreation = () => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [generatedTicketId, setGeneratedTicketId] = useState(null);
+  const [createdTicketId, setCreatedTicketId] = useState(null);
+  const [serviceSla, setServiceSla] = useState(null);
+  const [serviceSlaLoading, setServiceSlaLoading] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(true);
+  const [recentTickets, setRecentTickets] = useState([]);
+  const [recentTicketsLoading, setRecentTicketsLoading] = useState(false);
+  const [showQuickStart, setShowQuickStart] = useState(false);
+  const [showRecentTickets, setShowRecentTickets] = useState(false);
+
+  const selectedPriorityLabel = priorityOptions.find((option) => option.value === formData.priority)?.label || '-';
+  const selectedImpactLabel = impactOptions.find((option) => option.value === formData.impact)?.label || '-';
+  const selectedUrgencyLabel = urgencyOptions.find((option) => option.value === formData.urgency)?.label || '-';
+  const selectedDepartmentLabel = departmentOptions.find((option) => option.value === formData.department)?.label || '-';
+
+  useEffect(() => {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed?.formData) setFormData({ ...initialFormData, ...parsed.formData });
+      if (typeof parsed?.currentStep === 'number') setCurrentStep(Math.max(0, Math.min(3, parsed.currentStep)));
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData, currentStep }));
+      setDraftSaved(true);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [formData, currentStep]);
+
+  useEffect(() => {
+    const loadSla = async () => {
+      if (!formData.category && !formData.service?.id) {
+        setServiceSla(null);
+        return;
+      }
+      setServiceSlaLoading(true);
+      try {
+        const res = await slaAPI.lookup({
+          category: formData.category || undefined,
+          serviceId: formData.service?.id || undefined,
+          priority: formData.priority || undefined,
+        });
+        setServiceSla(res?.data || null);
+      } catch {
+        const defaults = serviceDefaults(formData.service?.id);
+        setServiceSla(defaults ? {
+          policyName: formData.service?.nameEn || 'Service SLA',
+          responseHours: defaults.priority === 'urgent' ? 1 : defaults.priority === 'high' ? 2 : defaults.priority === 'low' ? 24 : 8,
+          resolutionHours: defaults.priority === 'urgent' ? 4 : defaults.priority === 'high' ? 8 : defaults.priority === 'low' ? 72 : 24,
+          escalationMinutes: defaults.priority === 'urgent' ? 30 : defaults.priority === 'high' ? 120 : defaults.priority === 'low' ? 480 : 240,
+          guidance: 'Calculated from the selected service defaults.',
+        } : null);
+      } finally {
+        setServiceSlaLoading(false);
+      }
+    };
+    loadSla();
+  }, [formData.category, formData.service?.id, formData.priority]);
+
+  useEffect(() => {
+    const loadRecentTickets = async () => {
+      setRecentTicketsLoading(true);
+      try {
+        const res = await ticketsAPI.getAll();
+        const tickets = Array.isArray(res?.data) ? res.data : [];
+        const sorted = [...tickets].sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
+        setRecentTickets(sorted.slice(0, 5));
+      } catch {
+        setRecentTickets([]);
+      } finally {
+        setRecentTicketsLoading(false);
+      }
+    };
+
+    loadRecentTickets();
+  }, []);
+
+  const setField = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
+  const applyServiceDefaults = (service) => {
+    const defaults = serviceDefaults(service?.id);
+    setFormData((prev) => ({
+      ...prev,
+      service,
+      priority: defaults?.priority || prev.priority,
+      impact: defaults?.impact || prev.impact,
+      urgency: defaults?.urgency || prev.urgency,
+      department: defaults?.department || prev.department,
+    }));
+    setErrors((prev) => ({ ...prev, service: '' }));
+  };
+
+  const applyPreset = (preset) => {
+    setFormData({
+      ...initialFormData,
+      module: preset.module,
+      category: preset.category,
+      service: preset.service,
+      subject: preset.subject,
+      description: preset.description,
+      priority: preset.priority,
+      impact: preset.impact,
+      urgency: preset.urgency,
+      department: preset.department,
+    });
+    setErrors({});
+    setCurrentStep(3);
+  };
+
+  const getValidationErrors = (step) => {
+    const nextErrors = {};
+    if (step === 0) {
+      if (!formData.module) nextErrors.module = 'Choose a module.';
+      if (!formData.category) nextErrors.category = 'Choose a category.';
+      if (!formData.service?.id) nextErrors.service = 'Choose a service.';
+    }
+    if (step === 1) {
+      if (!formData.subject.trim()) nextErrors.subject = 'Add a title.';
+      if (!formData.description.trim() || formData.description.trim().length < 20) nextErrors.description = 'Add at least 20 characters.';
+    }
+    if (step === 2) {
+      if (!formData.priority) nextErrors.priority = 'Select priority.';
+      if (!formData.impact) nextErrors.impact = 'Select impact.';
+      if (!formData.urgency) nextErrors.urgency = 'Select urgency.';
+      if (!formData.department) nextErrors.department = 'Select department.';
+    }
+    return nextErrors;
+  };
+
+  const validateStep = (step) => {
+    const nextErrors = getValidationErrors(step);
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const validateAll = () => {
+    const nextErrors = {
+      ...getValidationErrors(0),
+      ...getValidationErrors(1),
+      ...getValidationErrors(2),
+    };
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const nextStep = () => {
+    const nextErrors = getValidationErrors(currentStep);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length === 0) {
+      setCurrentStep((prev) => Math.min(prev + 1, 3));
+    }
+  };
+  const previousStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
+
+  const handleReset = () => {
+    setFormData(initialFormData);
+    setErrors({});
+    setCurrentStep(0);
+    setCreatedTicketId(null);
+    setGeneratedTicketId(null);
+    setShowSuccessModal(false);
+    setDraftSaved(false);
+    setServiceSla(null);
+    localStorage.removeItem(DRAFT_KEY);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateAll()) {
+      setCurrentStep(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const urgency = toDecimalScale(formData.urgency, urgencyScaleMap);
+      const impact = toDecimalScale(formData.impact, impactScaleMap);
+      const response = await ticketsAPI.create({
+        title: formData.subject.trim(),
+        description: formData.description.trim(),
+        priority: priorityLabelMap[formData.priority] || 'Medium',
+        category: formData.category,
+        dueDate: formData.dueDate || null,
+        requestedById: formData.employee?.id ? Number(formData.employee.id) : null,
+        urgency,
+        impact,
+      });
+      const ticketId = response?.data?.id;
+      setGeneratedTicketId(response?.data?.ticketNumber || (ticketId ? `TKT-${ticketId}` : 'TKT'));
+      setCreatedTicketId(ticketId);
+      setShowSuccessModal(true);
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (err) {
+      console.error('Failed to create ticket:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    navigate(createdTicketId ? `/ticket-details/${createdTicketId}` : '/ticket-details');
+  };
+
+  const renderCard = (title, description, icon, children) => (
+    <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
+      <div className="flex items-start gap-3 mb-4">
+        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <Icon name={icon} size={20} className="text-primary" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+
+  const progressPct = ((currentStep + 1) / steps.length) * 100;
+  const templateHint = formData.service?.id === 'am-reset-password'
+    ? 'Mention identity verification and lockout details.'
+    : formData.service?.id === 'sr-onboarding'
+      ? 'Include start date, equipment, and access needs.'
+      : formData.service?.id === 'noc-service'
+        ? 'Include affected locations and start time.'
+        : null;
+  const duplicateTickets = recentTickets.filter((ticket) => {
+    const title = String(ticket?.title || ticket?.subject || '').trim().toLowerCase();
+    const query = String(formData.subject || '').trim().toLowerCase();
+    if (!query || !title) return false;
+    return title === query || title.includes(query) || query.includes(title);
+  });
+  const selectedRecentTickets = recentTickets.filter((ticket) => {
+    const sameCategory = !formData.category || String(ticket?.category || '').toLowerCase() === String(formData.category || '').toLowerCase();
+    return sameCategory;
+  });
+
+  return (
+    <>
+      <Helmet>
+        <title>Create Ticket - ITSM Hub</title>
+        <meta name="description" content="Create tickets quickly with presets, autosave, and guided review." />
+      </Helmet>
+
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <Header />
+        <BreadcrumbTrail />
+
+        <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
+          <div className="space-y-6 md:space-y-8">
+            <section className="rounded-xl border border-border bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 py-4 md:px-5 md:py-5 shadow-elevation-1">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    <Icon name="Sparkles" size={14} />
+                    Fast ticket flow
+                  </div>
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">Create New Ticket Faster</h1>
+                  <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
+                    Use presets, auto-filled defaults, and a short review step to get tickets in faster with less effort.
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl border border-border bg-card/70 px-3 py-2"><div className="text-xs text-muted-foreground">Step</div><div className="text-lg font-semibold text-foreground">{currentStep + 1}/4</div></div>
+                  <div className="rounded-xl border border-border bg-card/70 px-3 py-2"><div className="text-xs text-muted-foreground">Draft</div><div className="text-lg font-semibold text-foreground">{draftSaved ? 'Saved' : 'Ready'}</div></div>
+                  <div className="rounded-xl border border-border bg-card/70 px-3 py-2"><div className="text-xs text-muted-foreground">Mode</div><div className="text-lg font-semibold text-foreground">Fast</div></div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] items-start">
+              <aside className="space-y-6">
+                <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div>
+                      <h2 className="text-base font-semibold text-foreground">Steps</h2>
+                      <p className="text-xs text-muted-foreground">Follow the flow from top to bottom.</p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{currentStep + 1} of 4</div>
+                  </div>
+                  <div className="space-y-3">
+                    {steps.map((step, index) => {
+                      const active = index === currentStep;
+                      const complete = index < currentStep;
+                      return (
+                        <button
+                          key={step.label}
+                          type="button"
+                          onClick={() => setCurrentStep(index)}
+                          className={`w-full rounded-xl border p-3 text-left transition-all ${
+                            active
+                              ? 'border-primary bg-primary/10 shadow-elevation-2'
+                              : complete
+                                ? 'border-success/30 bg-success/5 hover:border-success/50'
+                                : 'border-border bg-background hover:border-primary/30'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                              active
+                                ? 'bg-primary text-primary-foreground'
+                                : complete
+                                  ? 'bg-success text-success-foreground'
+                                  : 'bg-muted text-muted-foreground'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold text-foreground">{step.label}</div>
+                              <div className="text-xs text-muted-foreground">{step.description}</div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
+                  <h3 className="text-base md:text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Icon name="Zap" size={18} className="text-primary" />
+                    Quick Summary
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      ['Category', formData.category || '-'],
+                      ['Service', formData.service?.nameEn || '-'],
+                      ['Assigned To', formData.employee?.name || '-'],
+                      ['Priority', selectedPriorityLabel],
+                      ['Impact', selectedImpactLabel],
+                      ['Urgency', selectedUrgencyLabel],
+                      ['Department', selectedDepartmentLabel],
+                      ['Files', `${formData.attachments.length}`],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex items-start justify-between gap-4 py-2 px-2 rounded-lg hover:bg-background/50 transition-colors">
+                        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                        <span className="text-xs font-semibold text-foreground text-right break-words max-w-[140px]">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Icon name="Sparkles" size={20} className="text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground">Fast features</h3>
+                      <p className="text-xs text-muted-foreground">Built into the new flow</p>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 text-sm text-muted-foreground">
+                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> Quick presets for common tickets</li>
+                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> Draft autosave in the browser</li>
+                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> Routing and SLA preview</li>
+                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> Review step before submit</li>
+                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> Recent-ticket reuse and duplicate warnings</li>
+                  </ul>
+                </section>
+              </aside>
+
+              <div className="space-y-6">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickStart((prev) => !prev)}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                  >
+                    <Icon name="Zap" size={16} className="text-primary" />
+                    {showQuickStart ? 'Hide Quick Start' : 'Show Quick Start'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowRecentTickets((prev) => !prev)}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                  >
+                    <Icon name="RotateCcw" size={16} className="text-primary" />
+                    {showRecentTickets ? 'Hide Recent Tickets' : 'Show Recent Tickets'}
+                  </button>
+                </div>
+
+                {showQuickStart && (
+                  <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <div>
+                        <h2 className="text-base font-semibold text-foreground">Quick Start</h2>
+                        <p className="text-xs text-muted-foreground">Pick a common ticket type and skip most of the setup.</p>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{progressPct.toFixed(0)}% complete</div>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden mb-4"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} /></div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {quickPresets.map((preset) => (
+                        <button key={preset.title} type="button" onClick={() => applyPreset(preset)} className="rounded-xl border border-border bg-background p-4 text-left hover:border-primary/40 hover:shadow-elevation-2 transition-all">
+                          <div className="flex items-center justify-between gap-2 mb-2"><div className="font-semibold text-foreground">{preset.title}</div><Icon name="Zap" size={16} className="text-primary shrink-0" /></div>
+                          <div className="text-xs text-muted-foreground line-clamp-2">{preset.subject}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {showRecentTickets && (
+                  <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                      <div>
+                        <h2 className="text-base font-semibold text-foreground">Recent Tickets</h2>
+                        <p className="text-xs text-muted-foreground">Reuse a recent request as a starting point.</p>
+                      </div>
+                      {recentTicketsLoading && <span className="text-xs text-muted-foreground">Loading...</span>}
+                    </div>
+                    <div className="space-y-2">
+                      {selectedRecentTickets.length > 0 ? selectedRecentTickets.map((ticket) => (
+                        <button
+                          key={ticket?.id}
+                          type="button"
+                          onClick={() => applyPreset({
+                            title: ticket?.title || 'Recent ticket',
+                            module: formData.module || 'it-support',
+                            category: ticket?.category || formData.category,
+                            service: formData.service || null,
+                            subject: ticket?.title || '',
+                            description: ticket?.description || '',
+                            priority: (String(ticket?.priority || '').toLowerCase() || formData.priority || 'medium'),
+                            impact: formData.impact || 'medium',
+                            urgency: formData.urgency || 'medium',
+                            department: formData.department || 'it',
+                          })}
+                          className="w-full text-left rounded-xl border border-border bg-background p-3 hover:border-primary/40 hover:shadow-elevation-2 transition-all"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold text-foreground truncate">{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
+                              <div className="text-xs text-muted-foreground truncate">{ticket?.title || 'Untitled ticket'}</div>
+                            </div>
+                            <Icon name="RotateCcw" size={16} className="text-primary shrink-0" />
+                          </div>
+                        </button>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">No recent tickets to reuse yet.</p>
+                      )}
+                    </div>
+                  </section>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {currentStep === 0 && renderCard('Step 1 - Scope', 'Choose the module, category, and service.', 'Layers3', (
+                    <div className="space-y-3">
+                      <CategorySelector
+                        selectedModule={formData.module}
+                        onModuleChange={(module) => {
+                          setFormData((prev) => ({ ...initialFormData, module, employee: prev.employee }));
+                          setErrors((prev) => ({ ...prev, module: '', category: '', service: '' }));
+                        }}
+                        selectedCategory={formData.category}
+                        onCategoryChange={(category) => {
+                          setFormData((prev) => ({ ...prev, category, service: null, priority: '', impact: '', urgency: '', department: '' }));
+                          setErrors((prev) => ({ ...prev, category: '', service: '' }));
+                        }}
+                        selectedService={formData.service}
+                        onServiceSelect={applyServiceDefaults}
+                      />
+                      {errors.module && <p className="text-sm text-error">{errors.module}</p>}
+                      {errors.category && <p className="text-sm text-error">{errors.category}</p>}
+                      {errors.service && <p className="text-sm text-error">{errors.service}</p>}
+                    </div>
+                  ))}
+
+                  {currentStep === 1 && renderCard('Step 2 - Details', 'Add the title, description, and the person affected.', 'FileText', (
+                    <div className="space-y-4">
+                      <EmployeeLookup selectedEmployee={formData.employee} onEmployeeSelect={(employee) => setField('employee', employee)} />
+                      <Input label="Title" type="text" placeholder="Short, action-oriented title" value={formData.subject} onChange={(e) => setField('subject', e.target.value)} required error={errors.subject} />
+                      {duplicateTickets.length > 0 && (
+                        <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
+                          <div className="flex items-start gap-3">
+                            <Icon name="AlertTriangle" size={18} className="text-warning mt-0.5" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold text-foreground">Possible duplicate detected</div>
+                              <p className="text-xs text-muted-foreground">We found similar recent tickets. Reusing one can save a few steps.</p>
+                              <div className="mt-3 space-y-2">
+                                {duplicateTickets.slice(0, 3).map((ticket) => (
+                                  <div key={ticket?.id} className="flex items-center justify-between gap-3 rounded-lg bg-background/70 border border-border px-3 py-2">
+                                    <div className="min-w-0">
+                                      <div className="text-xs font-semibold text-foreground truncate">{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
+                                      <div className="text-xs text-muted-foreground truncate">{ticket?.title || 'Untitled ticket'}</div>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => navigate(ticket?.id ? `/ticket-details/${ticket.id}` : '/ticket-management-center')}
+                                    >
+                                      Open
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Description <span className="text-error">*</span></label>
+                        <textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} placeholder="What happened, who is affected, and what should happen next?" rows={6} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background resize-none" />
+                        {errors.description && <p className="text-sm text-error mt-2">{errors.description}</p>}
+                        {templateHint && <p className="text-xs text-muted-foreground mt-2">Hint: {templateHint}</p>}
+                      </div>
+                      <Input label="Due Date" type="date" value={formData.dueDate} onChange={(e) => setField('dueDate', e.target.value)} />
+                    </div>
+                  ))}
+
+                  {currentStep === 2 && renderCard('Step 3 - Priority', 'Set urgency, impact, and the routing details.', 'AlertCircle', (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div><h3 className="text-sm font-semibold text-foreground">Advanced controls</h3><p className="text-xs text-muted-foreground">Keep these open for full control or hide them for a simpler flow.</p></div>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setAdvancedOpen((prev) => !prev)}>{advancedOpen ? 'Hide' : 'Show'}</Button>
+                      </div>
+                      {advancedOpen && (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Select label="Priority" placeholder="Select priority" options={priorityOptions} value={formData.priority} onChange={(value) => setField('priority', value)} error={errors.priority} />
+                            <Select label="Impact" placeholder="Select impact" options={impactOptions} value={formData.impact} onChange={(value) => setField('impact', value)} error={errors.impact} />
+                            <Select label="Urgency" placeholder="Select urgency" options={urgencyOptions} value={formData.urgency} onChange={(value) => setField('urgency', value)} error={errors.urgency} />
+                          </div>
+                          <div className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-3">
+                            <p className="text-xs text-muted-foreground">
+                              Department is set automatically from the selected category and service.
+                            </p>
+                            <p className="mt-1 text-sm font-medium text-foreground">{selectedDepartmentLabel}</p>
+                          </div>
+                        </>
+                      )}
+                      <FileUploader attachments={formData.attachments} onAttachmentsChange={(attachments) => setField('attachments', attachments)} />
+                      {formData.category && formData.priority && <RoutingPreview category={formData.category} priority={formData.priority} subject={formData.subject} />}
+                      {(formData.category || formData.service) && (
+                        <div className="bg-card border border-border rounded-xl p-4">
+                          <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"><Icon name="Clock3" size={20} className="text-indigo-500" /></div><div><h3 className="text-base font-semibold text-foreground">Service SLA</h3><p className="text-xs text-muted-foreground">Live SLA guidance for the selected service</p></div></div>
+                          {serviceSlaLoading ? <p className="text-sm text-muted-foreground">Loading SLA guidance...</p> : serviceSla ? (
+                            <div className="space-y-3">
+                              <div className="rounded-lg bg-muted p-3"><div className="text-xs uppercase tracking-wider text-muted-foreground">Policy</div><div className="font-semibold text-foreground">{serviceSla.policyName}</div></div>
+                              <div className="grid grid-cols-3 gap-3">
+                                <div className="rounded-lg bg-muted p-3"><div className="text-[10px] uppercase tracking-wider text-muted-foreground">Response</div><div className="font-semibold text-foreground">{serviceSla.responseHours}h</div></div>
+                                <div className="rounded-lg bg-muted p-3"><div className="text-[10px] uppercase tracking-wider text-muted-foreground">Resolution</div><div className="font-semibold text-foreground">{serviceSla.resolutionHours}h</div></div>
+                                <div className="rounded-lg bg-muted p-3"><div className="text-[10px] uppercase tracking-wider text-muted-foreground">Escalate</div><div className="font-semibold text-foreground">{serviceSla.escalationMinutes}m</div></div>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{serviceSla.guidance}</p>
+                            </div>
+                          ) : <p className="text-sm text-muted-foreground">Pick a service to see the SLA guidance.</p>}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {currentStep === 3 && renderCard('Step 4 - Review', 'Confirm the ticket before you submit it.', 'CheckCircle2', (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {[
+                          ['Module', formData.module || '-'],
+                          ['Category', formData.category || '-'],
+                          ['Service', formData.service?.nameEn || '-'],
+                          ['Employee', formData.employee?.name || formData.employee?.username || '-'],
+                          ['Priority', selectedPriorityLabel],
+                          ['Impact', selectedImpactLabel],
+                          ['Urgency', selectedUrgencyLabel],
+                          ['Department', selectedDepartmentLabel],
+                        ].map(([label, value]) => (
+                          <div key={label} className="rounded-xl border border-border bg-muted/40 p-3"><div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div><div className="mt-1 text-sm font-semibold text-foreground break-words">{value}</div></div>
+                        ))}
+                      </div>
+                      <div className="rounded-xl border border-border bg-muted/40 p-3"><div className="text-[10px] uppercase tracking-wider text-muted-foreground">Title</div><div className="mt-1 text-sm font-semibold text-foreground">{formData.subject || '-'}</div></div>
+                      <div className="rounded-xl border border-border bg-muted/40 p-3"><div className="text-[10px] uppercase tracking-wider text-muted-foreground">Description</div><div className="mt-1 text-sm text-foreground whitespace-pre-wrap">{formData.description || '-'}</div></div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => setCurrentStep(1)}>Edit details</Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => setCurrentStep(2)}>Edit priority</Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => navigator.clipboard?.writeText(`${formData.subject}\n\n${formData.description}`)}>
+                          Copy summary
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {currentStep > 0 ? <Button type="button" variant="outline" size="lg" onClick={previousStep} iconName="ArrowLeft" iconPosition="left">Back</Button> : <Button type="button" variant="outline" size="lg" onClick={handleReset} iconName="RotateCcw" iconPosition="left">Reset</Button>}
+                  {currentStep < 3 ? <Button type="button" variant="default" size="lg" onClick={nextStep} iconName="ArrowRight" iconPosition="right" className="sm:ml-auto">Next</Button> : <Button type="submit" variant="default" size="lg" loading={isSubmitting} iconName="Send" iconPosition="right" className="sm:ml-auto">{isSubmitting ? 'Creating...' : 'Create Ticket'}</Button>}
+                </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4">
+          <div className="bg-card border border-border rounded-lg shadow-elevation-5 max-w-md w-full p-6 md:p-8">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4"><Icon name="CheckCircle2" size={40} color="var(--color-success)" /></div>
+              <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-2">Ticket Created Successfully!</h2>
+              <p className="text-sm md:text-base text-muted-foreground mb-4">Your ticket has been submitted and routed to the right team.</p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg"><Icon name="Ticket" size={20} color="var(--color-primary)" /><span className="text-lg font-semibold text-primary">{generatedTicketId}</span></div>
+            </div>
+            <div className="space-y-3">
+              <Button variant="default" size="lg" fullWidth onClick={handleModalClose} iconName="Eye" iconPosition="right">View Ticket Details</Button>
+              <Button variant="outline" size="lg" fullWidth onClick={() => { setShowSuccessModal(false); handleReset(); }} iconName="Plus" iconPosition="left">Create Another Ticket</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default TicketCreation;

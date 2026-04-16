@@ -7,6 +7,8 @@ import Icon from '../../components/AppIcon';
 import { usersAPI, sessionAPI, organizationUnitAPI } from '../../services/api';
 import { formatLocalizedValue, getLocalizedDisplayName, getNameParts, getPreferredLanguage } from '../../services/displayValue';
 import { ORG_UNIT_SOURCES, groupByOrganizationUnit, getOrganizationUnitLabel } from '../../services/organizationUnits';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const toArray = (value) => {
   if (!value) {
@@ -291,6 +293,13 @@ const UserManagement = () => {
   const [sessionInfo, setSessionInfo] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [sessionError, setSessionError] = useState('');
+  const roleOptions = [
+    { value: 'all', label: t('allRoles', 'All Roles') },
+    { value: 'EndUser', label: t('endUser', 'End User') },
+    { value: 'Technician', label: t('technician', 'Technician') },
+    { value: 'Manager', label: t('manager', 'Manager') },
+    { value: 'Administrator', label: t('administrator', 'Administrator') },
+  ];
 
   useEffect(() => {
     fetchUsers();
@@ -304,7 +313,7 @@ const UserManagement = () => {
       const res = await sessionAPI.getCurrentLoginInformations();
       setSessionInfo(normalizeSessionInfo(res));
     } catch (err) {
-      setSessionError('Could not load your live session permissions.');
+      setSessionError(t('couldNotLoadSession', 'Could not load your live session permissions.'));
       console.error('Failed to fetch session info:', err);
     } finally {
       setSessionLoading(false);
@@ -333,7 +342,7 @@ const UserManagement = () => {
 
       setUsers(list);
     } catch (err) {
-      setError('Failed to load users. Make sure the backend is running and your account has permission.');
+      setError(t('failedToLoadUsers', 'Failed to load users. Make sure the backend is running and your account has permission.'));
       console.error('Failed to fetch users:', err);
     } finally {
       setLoading(false);
@@ -450,12 +459,12 @@ const UserManagement = () => {
 
   const saveUser = async () => {
     const nextError = !selectedUser
-      ? (!form.username.trim() ? 'Username is required.' :
-        !form.email.trim() ? 'Email is required.' :
-        !form.firstName.trim() ? 'First name is required.' :
-        !form.lastName.trim() ? 'Last name is required.' :
-        !form.password.trim() ? 'Password is required.' : '')
-      : (!form.email.trim() ? 'Email is required.' : '');
+      ? (!form.username.trim() ? t('usernameRequired', 'Username is required.') :
+        !form.email.trim() ? t('emailRequired', 'Email is required.') :
+        !form.firstName.trim() ? t('firstNameRequired', 'First name is required.') :
+        !form.lastName.trim() ? t('lastNameRequired', 'Last name is required.') :
+        !form.password.trim() ? t('passwordRequired', 'Password is required.') : '')
+      : (!form.email.trim() ? t('emailRequired', 'Email is required.') : '');
 
     if (nextError) {
       setFormError(nextError);
@@ -496,7 +505,7 @@ const UserManagement = () => {
       closeEditor();
       await fetchUsers();
     } catch (err) {
-      setError(err?.response?.data || 'Failed to save user changes.');
+      setError(err?.response?.data || t('failedToSaveUser', 'Failed to save user changes.'));
       console.error('Failed to save user:', err);
     } finally {
       setSubmitting(false);
@@ -509,7 +518,7 @@ const UserManagement = () => {
       await usersAPI.update(user.id, { isActive: !user.isActive });
       await fetchUsers();
     } catch (err) {
-      setError('Failed to update user status.');
+      setError(t('failedToUpdateUserStatus', 'Failed to update user status.'));
       console.error('Failed to update user:', err);
     } finally {
       setSubmitting(false);
@@ -522,13 +531,13 @@ const UserManagement = () => {
       <main className="pt-16 px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">User Management</h1>
-            <p className="text-muted-foreground mt-2">Manage system users, roles, and account status.</p>
+            <h1 className="text-3xl font-bold text-foreground">{t('userManagement', 'User Management')}</h1>
+            <p className="text-muted-foreground mt-2">{t('userManagementDescription', 'Manage system users, roles, and account status.')}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
               type="search"
-              placeholder="Search users..."
+              placeholder={t('searchUsers', 'Search users...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e?.target?.value)}
               className="sm:w-72"
@@ -540,7 +549,7 @@ const UserManagement = () => {
               className="sm:w-48"
             />
             <Button onClick={() => openEditor()} iconName="Plus" iconPosition="left">
-              Add User
+              {t('addUser', 'Add User')}
             </Button>
           </div>
         </div>
@@ -549,22 +558,22 @@ const UserManagement = () => {
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-destructive flex items-center justify-between gap-4">
             <span>{error}</span>
             <Button variant="outline" size="sm" onClick={fetchUsers}>
-              Retry
+              {t('retry', 'Retry')}
             </Button>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-lg border border-border bg-card p-4">
-            <div className="text-sm text-muted-foreground">Total Users</div>
+            <div className="text-sm text-muted-foreground">{t('totalUsers', 'Total Users')}</div>
             <div className="text-2xl font-bold mt-1">{users.length}</div>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
-            <div className="text-sm text-muted-foreground">Active Users</div>
+            <div className="text-sm text-muted-foreground">{t('activeUsers', 'Active Users')}</div>
             <div className="text-2xl font-bold mt-1">{users.filter((user) => user.isActive).length}</div>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
-            <div className="text-sm text-muted-foreground">Filtered Results</div>
+            <div className="text-sm text-muted-foreground">{t('filteredResults', 'Filtered Results')}</div>
             <div className="text-2xl font-bold mt-1">{filteredUsers.length}</div>
           </div>
         </div>
@@ -574,32 +583,32 @@ const UserManagement = () => {
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                 <Icon name="ShieldCheck" size={14} />
-                Live session access
+                {t('liveSessionAccess', 'Live session access')}
               </div>
-              <h2 className="text-lg font-semibold text-foreground">Your Permissions</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t('yourPermissions', 'Your Permissions')}</h2>
               <p className="text-sm text-muted-foreground">
-                This is loaded from the current login session so you can see the active user context.
+                {t('permissionsDescription', 'This is loaded from the current login session so you can see the active user context.')}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:w-[340px]">
               <div className="rounded-lg border border-border bg-background p-3">
-                <div className="text-xs text-muted-foreground">User</div>
+                <div className="text-xs text-muted-foreground">{t('user', 'User')}</div>
                 <div className="mt-1 text-sm font-semibold text-foreground">
       {sessionLoading
-        ? 'Loading...'
+        ? t('loading', 'Loading...')
         : (formatApiValue(sessionUser?.fullName) ||
           formatApiValue(sessionUser?.name) ||
           formatApiValue(sessionUser?.displayName) ||
           formatApiValue(sessionUser?.userName) ||
           formatApiValue(sessionUser?.emailAddress) ||
           formatApiValue(sessionUser?.email) ||
-          'Unknown user')}
+          t('unknownUser', 'Unknown user'))}
                 </div>
               </div>
               <div className="rounded-lg border border-border bg-background p-3">
-                <div className="text-xs text-muted-foreground">Roles</div>
+                <div className="text-xs text-muted-foreground">{t('roles', 'Roles')}</div>
                 <div className="mt-1 text-sm font-semibold text-foreground">
-                  {sessionLoading ? 'Loading...' : (sessionPermissions.length || 0)}
+                  {sessionLoading ? t('loading', 'Loading...') : (sessionPermissions.length || 0)}
                 </div>
               </div>
             </div>
@@ -607,9 +616,9 @@ const UserManagement = () => {
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Permissions</div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">{t('permissions', 'Permissions')}</div>
               {sessionLoading ? (
-                <p className="mt-2 text-sm text-muted-foreground">Loading permissions...</p>
+                <p className="mt-2 text-sm text-muted-foreground">{t('loadingPermissions', 'Loading permissions...')}</p>
               ) : sessionError ? (
                 <p className="mt-2 text-sm text-warning">{sessionError}</p>
               ) : sessionPermissions.length > 0 ? (
@@ -622,24 +631,24 @@ const UserManagement = () => {
                 </div>
               ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  No explicit permissions were returned by the session endpoint. The backend may be exposing roles only.
+                  {t('noExplicitPermissions', 'No explicit permissions were returned by the session endpoint. The backend may be exposing roles only.')}
                 </p>
               )}
             </div>
 
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Session details</div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">{t('sessionDetails', 'Session details')}</div>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Email</span>
+                  <span className="text-muted-foreground">{t('email', 'Email')}</span>
                   <span className="font-medium text-foreground text-right break-words">{formatApiValue(sessionUser?.emailAddress) || formatApiValue(sessionUser?.email) || 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Username</span>
+                  <span className="text-muted-foreground">{t('username', 'Username')}</span>
                   <span className="font-medium text-foreground text-right break-words">{formatApiValue(sessionUser?.userName) || formatApiValue(sessionUser?.username) || 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Tenant</span>
+                  <span className="text-muted-foreground">{t('tenant', 'Tenant')}</span>
                   <span className="font-medium text-foreground text-right break-words">{formatApiValue(sessionInfo?.tenant?.name) || formatApiValue(sessionInfo?.tenantName) || 'Host'}</span>
                 </div>
               </div>
@@ -652,25 +661,25 @@ const UserManagement = () => {
             <table className="w-full text-left border-collapse">
               <thead className="bg-muted/40">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">User</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Department</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Last Login</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('user', 'User')}</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('role', 'Role')}</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('department', 'Department')}</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('status', 'Status')}</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('lastLogin', 'Last Login')}</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t('actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-12 text-center text-muted-foreground">
-                      Loading users...
+                      {t('loadingUsers', 'Loading users...')}
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-12 text-center text-muted-foreground">
-                      No users found for the current filters.
+                      {t('noUsersFound', 'No users found for the current filters.')}
                     </td>
                   </tr>
                 ) : (
@@ -690,32 +699,32 @@ const UserManagement = () => {
                                 {(formatApiValue(user.firstName) || formatApiValue(user.username) || '?').charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <div className="font-medium text-foreground">{formatApiValue(user.fullName) || `${formatApiValue(user.firstName) || ''} ${formatApiValue(user.lastName) || ''}`.trim() || formatApiValue(user.username) || 'Unknown user'}</div>
+                                <div className="font-medium text-foreground">{formatApiValue(user.fullName) || `${formatApiValue(user.firstName) || ''} ${formatApiValue(user.lastName) || ''}`.trim() || formatApiValue(user.username) || t('unknownUser', 'Unknown user')}</div>
                                 <div className="text-xs text-muted-foreground">{formatApiValue(user.username) || 'N/A'}</div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
-                              {formatApiValue(user.role) || 'EndUser'}
+                              {formatApiValue(user.role) || t('endUser', 'EndUser')}
                             </span>
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-foreground">{formatApiValue(user.department) || 'N/A'}</div>
-                            <div className="text-xs text-muted-foreground">{formatApiValue(user.jobTitle) || 'No title'}</div>
+                            <div className="text-xs text-muted-foreground">{formatApiValue(user.jobTitle) || t('noTitle', 'No title')}</div>
                           </td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
-                              {user.isActive ? 'Active' : 'Inactive'}
+                              {user.isActive ? t('active', 'Active') : t('inactive', 'Inactive')}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm text-muted-foreground">
-                            {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never'}
+                            {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : t('never', 'Never')}
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex justify-end gap-2">
                               <Button variant="outline" size="sm" onClick={() => openEditor(user)}>
-                                Edit
+                                {t('edit', 'Edit')}
                               </Button>
                               <Button
                                 variant={user.isActive ? 'ghost' : 'default'}
@@ -723,7 +732,7 @@ const UserManagement = () => {
                                 onClick={() => toggleActive(user)}
                                 disabled={submitting}
                               >
-                                {user.isActive ? 'Deactivate' : 'Activate'}
+                                {user.isActive ? t('deactivate', 'Deactivate') : t('activate', 'Activate')}
                               </Button>
                             </div>
                           </td>
@@ -743,13 +752,13 @@ const UserManagement = () => {
           <div className="w-full max-w-2xl rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold">{selectedUser ? 'Edit User' : 'Add User'}</h2>
+                <h2 className="text-xl font-semibold">{selectedUser ? t('editUser', 'Edit User') : t('addUser', 'Add User')}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {selectedUser ? 'Update role, contact details, or account status.' : 'Create a new user account.'}
+                  {selectedUser ? t('updateRoleContactDetails', 'Update role, contact details, or account status.') : t('createNewUserAccount', 'Create a new user account.')}
                 </p>
               </div>
               <Button variant="ghost" size="icon" onClick={closeEditor}>
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{t('close', 'Close')}</span>
                 x
               </Button>
             </div>
@@ -762,50 +771,50 @@ const UserManagement = () => {
               )}
               {!selectedUser && (
                 <Input
-                  label="Username"
+                  label={t('username', 'Username')}
                   value={form.username}
                   onChange={(e) => setField('username', e?.target?.value)}
                 />
               )}
               <Input
-                label="Email"
+                label={t('email', 'Email')}
                 value={form.email}
                 onChange={(e) => setField('email', e?.target?.value)}
               />
               <Input
-                label="First Name"
+                label={t('firstName', 'First Name')}
                 value={form.firstName}
                 onChange={(e) => setField('firstName', e?.target?.value)}
               />
               <Input
-                label="Last Name"
+                label={t('lastName', 'Last Name')}
                 value={form.lastName}
                 onChange={(e) => setField('lastName', e?.target?.value)}
               />
               <Select
-                label="Role"
+                label={t('role', 'Role')}
                 options={roleOptions.filter((option) => option.value !== 'all')}
                 value={form.role}
                 onChange={(value) => setField('role', value)}
               />
               <Input
-                label="Department"
+                label={t('department', 'Department')}
                 value={form.department}
                 onChange={(e) => setField('department', e?.target?.value)}
               />
               <Input
-                label="Job Title"
+                label={t('jobTitle', 'Job Title')}
                 value={form.jobTitle}
                 onChange={(e) => setField('jobTitle', e?.target?.value)}
               />
               <Input
-                label="Phone Number"
+                label={t('phoneNumber', 'Phone Number')}
                 value={form.phoneNumber}
                 onChange={(e) => setField('phoneNumber', e?.target?.value)}
               />
               {!selectedUser && (
                 <Input
-                  label="Password"
+                  label={t('password', 'Password')}
                   type="password"
                   value={form.password}
                   onChange={(e) => setField('password', e?.target?.value)}
@@ -821,7 +830,7 @@ const UserManagement = () => {
                     className="h-4 w-4 rounded border-border"
                   />
                   <label htmlFor="is-active" className="text-sm text-foreground">
-                    Account active
+                    {t('accountActive', 'Account active')}
                   </label>
                 </div>
               )}
@@ -829,10 +838,10 @@ const UserManagement = () => {
 
             <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
               <Button variant="outline" onClick={closeEditor}>
-                Cancel
+                {t('cancel', 'Cancel')}
               </Button>
               <Button onClick={saveUser} disabled={submitting}>
-                {submitting ? 'Saving...' : 'Save User'}
+                {submitting ? t('saving', 'Saving...') : t('saveUser', 'Save User')}
               </Button>
             </div>
           </div>

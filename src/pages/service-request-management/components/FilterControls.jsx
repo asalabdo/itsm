@@ -4,9 +4,13 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [filters, setFilters] = useState({
     dateRange: '30d',
     serviceType: 'all',
@@ -35,17 +39,17 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
   }, []);
 
   const dateRangeOptions = [
-    { value: '7d', label: 'Last 7 days' },
-    { value: '30d', label: 'Last 30 days' },
-    { value: '90d', label: 'Last 90 days' },
-    { value: 'custom', label: 'Custom range' }
+    { value: '7d', label: t('last7Days', 'Last 7 days') },
+    { value: '30d', label: t('last30Days', 'Last 30 days') },
+    { value: '90d', label: t('last90Days', 'Last 90 days') },
+    { value: 'custom', label: t('customRange', 'Custom range') }
   ];
 
-  const serviceTypeOptions = filterOptions?.serviceTypeOptions || [{ value: 'all', label: 'All Services' }];
-  const departmentOptions = filterOptions?.departmentOptions || [{ value: 'all', label: 'All Departments' }];
-  const statusOptions = filterOptions?.statusOptions || [{ value: 'all', label: 'All Statuses' }];
-  const priorityOptions = filterOptions?.priorityOptions || [{ value: 'all', label: 'All Priorities' }];
-  const assigneeOptions = filterOptions?.assigneeOptions || [{ value: 'all', label: 'All Assignees' }];
+  const serviceTypeOptions = filterOptions?.serviceTypeOptions || [{ value: 'all', label: t('allServices', 'All Services') }];
+  const departmentOptions = filterOptions?.departmentOptions || [{ value: 'all', label: t('allDepartments', 'All Departments') }];
+  const statusOptions = filterOptions?.statusOptions || [{ value: 'all', label: t('allStatuses', 'All Statuses') }];
+  const priorityOptions = filterOptions?.priorityOptions || [{ value: 'all', label: t('allPriorities', 'All Priorities') }];
+  const assigneeOptions = filterOptions?.assigneeOptions || [{ value: 'all', label: t('allAssignees', 'All Assignees') }];
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
@@ -85,7 +89,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
   };
 
   const saveCurrentFilter = () => {
-    const filterName = prompt('Enter a name for this filter:');
+    const filterName = prompt(t('enterFilterName', 'Enter a name for this filter:'));
     if (filterName) {
       const newFilter = {
         id: Date.now(),
@@ -105,10 +109,10 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
       {/* Filter Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-3">
-          <h3 className="font-medium text-foreground">Service Request Filters</h3>
+          <h3 className="font-medium text-foreground">{t('serviceRequestFilters', 'Service Request Filters')}</h3>
           {getActiveFilterCount() > 0 && (
             <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
-              {getActiveFilterCount()} active
+              {getActiveFilterCount()} {t('active', 'active')}
             </span>
           )}
         </div>
@@ -119,7 +123,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={16} />
-            <span className="ml-1">{isExpanded ? 'Less' : 'More'}</span>
+            <span className="ml-1">{isExpanded ? t('less', 'Less') : t('more', 'More')}</span>
           </Button>
           <Button
             variant="ghost"
@@ -128,7 +132,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
             disabled={getActiveFilterCount() === 0}
           >
             <Icon name="RotateCcw" size={16} />
-            <span className="ml-1">Reset</span>
+            <span className="ml-1">{t('reset', 'Reset')}</span>
           </Button>
         </div>
       </div>
@@ -137,28 +141,28 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
       <div className="p-4 border-b border-border">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Select
-            label="Date Range"
+            label={t('dateRange', 'Date Range')}
             options={dateRangeOptions}
             value={filters?.dateRange}
             onChange={(value) => handleFilterChange('dateRange', value)}
           />
           
           <Select
-            label="Service Type"
+            label={t('serviceType', 'Service Type')}
             options={serviceTypeOptions}
             value={filters?.serviceType}
             onChange={(value) => handleFilterChange('serviceType', value)}
           />
           
           <Select
-            label="Department"
+            label={t('department', 'Department')}
             options={departmentOptions}
             value={filters?.department}
             onChange={(value) => handleFilterChange('department', value)}
           />
           
           <Select
-            label="Status"
+            label={t('status', 'Status')}
             options={statusOptions}
             value={filters?.status}
             onChange={(value) => handleFilterChange('status', value)}
@@ -170,7 +174,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
       <div className="p-4 border-b border-border">
         <Input
           type="search"
-          placeholder="Search requests by ID, service name, requester, or description..."
+          placeholder={t('searchRequestsById', 'Search requests by ID, service name, requester, or description...')}
           value={filters?.searchTerm}
           onChange={handleSearchChange}
           className="w-full"
@@ -182,14 +186,14 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
         <div className="p-4 border-b border-border bg-muted/30">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
-              label="Priority"
+              label={t('priority', 'Priority')}
               options={priorityOptions}
               value={filters?.priority}
               onChange={(value) => handleFilterChange('priority', value)}
             />
             
             <Select
-              label="Assignee"
+              label={t('assignee', 'Assignee')}
               options={assigneeOptions}
               value={filters?.assignee}
               onChange={(value) => handleFilterChange('assignee', value)}
@@ -201,10 +205,10 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
       {/* Saved Filters */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-medium text-foreground">Quick Filters</h4>
+          <h4 className="text-sm font-medium text-foreground">{t('quickFilters', 'Quick Filters')}</h4>
           <Button variant="ghost" size="sm" onClick={saveCurrentFilter}>
             <Icon name="Plus" size={14} />
-            <span className="ml-1">Save Current</span>
+            <span className="ml-1">{t('saveCurrent', 'Save Current')}</span>
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -226,7 +230,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Export filtered results for reporting and analytics
+            {t('exportFilteredResults', 'Export filtered results for reporting and analytics')}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -259,7 +263,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
               onClick={() => navigate('/reports-analytics')}
             >
               <Icon name="BarChart3" size={16} />
-              <span className="ml-1">Analytics</span>
+              <span className="ml-1">{t('analytics', 'Analytics')}</span>
             </Button>
           </div>
         </div>

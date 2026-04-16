@@ -21,15 +21,15 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
           <h4 className="font-semibold text-popover-foreground mb-2">{label}</h4>
           <div className="space-y-1">
             <div className="flex justify-between">
-              <span className="text-sm">Assets:</span>
+              <span className="text-sm">الأصول:</span>
               <span className="text-sm font-medium">{data?.assetCount?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm">Total Cost:</span>
+              <span className="text-sm">إجمالي التكلفة:</span>
               <span className="text-sm font-medium">${(data?.totalCost / 1000000)?.toFixed(1)}M</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm">Utilization:</span>
+              <span className="text-sm">نسبة الاستخدام:</span>
               <span className={`text-sm font-medium ${getUtilizationColor(data?.utilization)}`}>
                 {data?.utilization}%
               </span>
@@ -49,8 +49,8 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Department Asset Distribution</h3>
-          <p className="text-sm text-muted-foreground">Asset allocation and utilization by department</p>
+          <h3 className="text-lg font-semibold text-foreground">توزيع الأصول حسب القسم</h3>
+          <p className="text-sm text-muted-foreground">تخصيص الأصول ومعدلات الاستخدام حسب القسم</p>
         </div>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
@@ -60,7 +60,7 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
                 viewMode === 'count' ?'bg-primary text-primary-foreground' :'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              Count
+              العدد
             </button>
             <button
               onClick={() => setViewMode('cost')}
@@ -68,7 +68,7 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
                 viewMode === 'cost' ?'bg-primary text-primary-foreground' :'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              Cost
+              التكلفة
             </button>
           </div>
           <Icon name="MoreHorizontal" size={18} className="text-muted-foreground cursor-pointer" />
@@ -119,7 +119,7 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
       {selectedDepartment && (
         <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-medium text-foreground">{selectedDepartment?.department} - Asset Breakdown</h4>
+                <h4 className="font-medium text-foreground">تفصيل أصول {selectedDepartment?.department}</h4>
             <button 
               onClick={() => setSelectedDepartment(null)}
               className="text-muted-foreground hover:text-foreground"
@@ -144,15 +144,15 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
               <div>
-                <span className="text-sm text-muted-foreground">Total Assets: </span>
+                <span className="text-sm text-muted-foreground">إجمالي الأصول: </span>
                 <span className="font-medium">{selectedDepartment?.assetCount?.toLocaleString()}</span>
               </div>
               <div>
-                <span className="text-sm text-muted-foreground">Total Cost: </span>
+                <span className="text-sm text-muted-foreground">إجمالي التكلفة: </span>
                 <span className="font-medium">${(selectedDepartment?.totalCost / 1000000)?.toFixed(1)}M</span>
               </div>
               <div>
-                <span className="text-sm text-muted-foreground">Utilization: </span>
+                <span className="text-sm text-muted-foreground">نسبة الاستخدام: </span>
                 <span className={`font-medium ${getUtilizationColor(selectedDepartment?.utilization)}`}>
                   {selectedDepartment?.utilization}%
                 </span>
@@ -161,11 +161,11 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
             <div className="flex space-x-2">
               <button className="flex items-center space-x-2 text-sm text-primary hover:text-primary/80">
                 <Icon name="Eye" size={16} />
-                <span>View Assets</span>
+                <span>عرض الأصول</span>
               </button>
               <button className="flex items-center space-x-2 text-sm text-primary hover:text-primary/80">
                 <Icon name="Download" size={16} />
-                <span>Export</span>
+                <span>تصدير</span>
               </button>
             </div>
           </div>
@@ -178,23 +178,23 @@ const DepartmentAssetDistribution = ({ data = [] }) => {
             <div className="text-2xl font-bold text-foreground">
               {departmentData?.reduce((sum, dept) => sum + dept?.assetCount, 0)?.toLocaleString()}
             </div>
-            <div className="text-sm text-muted-foreground">Total Assets</div>
+            <div className="text-sm text-muted-foreground">إجمالي الأصول</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-foreground">
               ${(departmentData?.reduce((sum, dept) => sum + dept?.totalCost, 0) / 1000000)?.toFixed(1)}M
             </div>
-            <div className="text-sm text-muted-foreground">Total Value</div>
+            <div className="text-sm text-muted-foreground">إجمالي القيمة</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-success">
               {Math.round(departmentData?.reduce((sum, dept) => sum + dept?.utilization, 0) / departmentData?.length)}%
             </div>
-            <div className="text-sm text-muted-foreground">Avg Utilization</div>
+            <div className="text-sm text-muted-foreground">متوسط الاستخدام</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-foreground">{departmentData?.length}</div>
-            <div className="text-sm text-muted-foreground">Departments</div>
+            <div className="text-sm text-muted-foreground">الأقسام</div>
           </div>
         </div>
       </div>

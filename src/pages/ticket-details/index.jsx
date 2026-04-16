@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import TicketHeader from './components/TicketHeader';
 import ConversationThread from './components/ConversationThread';
 import InternalNotes from './components/InternalNotes';
@@ -37,13 +39,13 @@ const formatTicketDate = (value) => {
   };
 };
 
-const mapConversationMessages = (ticket) => {
+const mapConversationMessages = (ticket, t) => {
   const comments = ticket?.comments || ticket?.Comments || [];
   const initialMessage = ticket?.description
     ? [{
         id: `ticket-${ticket.id}-initial`,
         type: 'customer',
-        sender: ticket?.requestedBy?.username || ticket?.requestedBy?.firstName || 'Requester',
+        sender: ticket?.requestedBy?.username || ticket?.requestedBy?.firstName || t('requester', 'Requester'),
         timestamp: formatTicketDate(ticket?.createdAt).time,
         content: ticket.description,
       }]
@@ -54,7 +56,7 @@ const mapConversationMessages = (ticket) => {
     .map((comment) => ({
       id: comment?.id,
       type: comment?.user?.role === 'EndUser' ? 'customer' : 'agent',
-      sender: comment?.user?.username || comment?.user?.name || 'Agent',
+      sender: comment?.user?.username || comment?.user?.name || t('agent', 'Agent'),
       timestamp: formatTicketDate(comment?.createdAt).time,
       content: comment?.comment,
     }));
@@ -62,18 +64,18 @@ const mapConversationMessages = (ticket) => {
   return [...initialMessage, ...commentMessages];
 };
 
-const mapInternalNotes = (ticket) => {
+const mapInternalNotes = (ticket, t) => {
   const comments = ticket?.comments || ticket?.Comments || [];
 
   return comments
     .filter((comment) => comment?.comment?.startsWith('[Internal]'))
     .map((comment) => ({
       id: comment?.id,
-      author: comment?.user?.username || comment?.user?.name || 'Agent',
+      author: comment?.user?.username || comment?.user?.name || t('agent', 'Agent'),
       timestamp: formatTicketDate(comment?.createdAt).time,
       content: comment?.comment.replace(/^\[Internal\]\s*/, ''),
       avatar: null,
-      avatarAlt: comment?.user?.username || 'Agent',
+      avatarAlt: comment?.user?.username || t('agent', 'Agent'),
     }));
 };
 
@@ -115,7 +117,7 @@ const parseUtcTimestamp = (value) => {
   return new Date(str + 'Z');
 };
 
-const parseTimeTracking = (ticket) => {
+const parseTimeTracking = (ticket, t) => {
   const activities = [...(ticket?.activities || ticket?.Activities || [])]
     .filter((activity) => ['TimeTrackingStarted', 'TimeTrackingStopped'].includes(activity?.action))
     .sort((a, b) => {
@@ -139,7 +141,7 @@ const parseTimeTracking = (ticket) => {
       totalSeconds += Number.isFinite(durationSeconds) ? durationSeconds : 0;
       sessions.unshift({
         id: activity?.id,
-        agent: activity?.user?.fullName || activity?.user?.username || 'Agent',
+        agent: activity?.user?.fullName || activity?.user?.username || t('agent', 'Agent'),
         date: (parseUtcTimestamp(activity?.timestamp) ?? new Date()).toLocaleString(),
         duration: Number.isFinite(durationSeconds) ? durationSeconds : 0,
       });
@@ -150,7 +152,7 @@ const parseTimeTracking = (ticket) => {
   const currentSessionStartedAt = parseUtcTimestamp(pendingStart?.timestamp);
   const activeSession = currentSessionStartedAt ? {
     id: pendingStart?.id,
-    agent: pendingStart?.user?.fullName || pendingStart?.user?.username || 'Agent',
+    agent: pendingStart?.user?.fullName || pendingStart?.user?.username || t('agent', 'Agent'),
     date: currentSessionStartedAt.toLocaleString(),
     duration: Math.max(0, Math.floor((Date.now() - currentSessionStartedAt.getTime()) / 1000)),
   } : null;
@@ -171,6 +173,8 @@ const TicketDetails = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const ticketId = id || searchParams.get('id') || '4521';
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const [ticketData, setTicketData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -211,13 +215,13 @@ const TicketDetails = () => {
   const ticket = ticketData || {
     id: ticketId,
     ticketNumber: `TKT-${ticketId}`,
-    title: 'Ticket details unavailable',
-    description: 'No ticket was found for this id.',
+    title: t('ticketDetailsUnavailable', 'Ticket details not available'),
+    description: t('ticketNotFound', 'No ticket found for this ID.'),
     priority: 'Medium',
     status: 'Open',
     category: 'Incident',
-    requestedBy: { username: 'Unknown requester' },
-    assignedTo: { username: 'Unassigned' },
+    requestedBy: { username: t('unknownRequester', 'Unknown requester') },
+    assignedTo: { username: t('unassigned', 'Unassigned') },
     createdAt: new Date().toISOString(),
     slaDueDate: null,
     slaRemainingMinutes: null,
@@ -247,8 +251,8 @@ const TicketDetails = () => {
     };
   }, [ticketData, ticketId, workflowRefreshKey]);
 
-  const messages = mapConversationMessages(ticketData || ticket);
-  const internalNotes = mapInternalNotes(ticketData || ticket);
+  const messages = mapConversationMessages(ticketData || ticket, t);
+  const internalNotes = mapInternalNotes(ticketData || ticket, t);
   const auditTrail = mapAuditTrail(ticketData || ticket);
 
   const handleStatusChange = async (newStatus) => {
@@ -439,7 +443,7 @@ const TicketDetails = () => {
   };
 
   const createdAt = formatTicketDate(ticket?.createdAt);
-  const timeTracking = parseTimeTracking(ticket);
+  const timeTracking = parseTimeTracking(ticket, t);
   const displayAttachments = (ticket?.attachments || []).map((attachment) => ({
     id: attachment?.id,
     name: attachment?.fileName,
@@ -490,7 +494,7 @@ const TicketDetails = () => {
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-              <p className="text-gray-600">Loading ticket details...</p>
+            <p className="text-gray-600">جارٍ تحميل تفاصيل التذكرة...</p>
             </div>
           </div>
         </main>
@@ -500,7 +504,7 @@ const TicketDetails = () => {
             <TicketHeader ticket={viewTicket} />
 
             <WorkflowStatusStrip
-              title="Ticket Workflow"
+              title="سير عمل التذكرة"
               subtitle="See the route this ticket is following across service matching, manager review, ERP assignment, and third-party submission."
               service={workflowService}
               organization={workflowOrganization}
@@ -520,7 +524,7 @@ const TicketDetails = () => {
 
             {error && !ticketData && (
               <div className="rounded-lg border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
-                We could not load this ticket from the backend, so you are seeing a fallback view.
+                لم نتمكن من تحميل هذه التذكرة من الخادم، لذلك تظهر لك نسخة بديلة.
               </div>
             )}
 

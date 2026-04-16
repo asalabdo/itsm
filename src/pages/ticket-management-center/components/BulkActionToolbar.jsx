@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
-
 import Button from '../../../components/ui/Button';
-
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const BulkActionToolbar = ({ selectedCount, onClearSelection, onBulkAction }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showAssignMenu, setShowAssignMenu] = useState(false);
 
   const statusOptions = [
-    { value: 'open', label: 'Open' },
-    { value: 'in-progress', label: 'In Progress' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'resolved', label: 'Resolved' },
-    { value: 'closed', label: 'Closed' }
+    { value: 'open', label: t('open', 'Open') },
+    { value: 'in-progress', label: t('inProgress', 'In Progress') },
+    { value: 'pending', label: t('pending', 'Pending') },
+    { value: 'resolved', label: t('resolved', 'Resolved') },
+    { value: 'closed', label: t('closed', 'Closed') }
   ];
 
   const priorityOptions = [
-    { value: 'critical', label: 'Critical' },
-    { value: 'high', label: 'High' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'low', label: 'Low' }
+    { value: 'critical', label: t('critical', 'Critical') },
+    { value: 'high', label: t('high', 'High') },
+    { value: 'medium', label: t('medium', 'Medium') },
+    { value: 'low', label: t('low', 'Low') }
   ];
 
   const handleBulkAction = (action, value = null) => {
@@ -39,7 +41,7 @@ const BulkActionToolbar = ({ selectedCount, onClearSelection, onBulkAction }) =>
               {selectedCount}
             </div>
             <span className="text-sm font-medium">
-              {selectedCount} ticket{selectedCount !== 1 ? 's' : ''} selected
+              {selectedCount} {t('ticketSelected', 'ticket')} {selectedCount !== 1 ? t('ticketsSelected', 'tickets selected') : t('ticketSelected', 'ticket selected')}
             </span>
           </div>
 
@@ -54,7 +56,7 @@ const BulkActionToolbar = ({ selectedCount, onClearSelection, onBulkAction }) =>
                 iconPosition="left"
                 onClick={() => setShowActionMenu(!showActionMenu)}
               >
-                Change Status
+                {t('changeStatus', 'Change Status')}
               </Button>
               {showActionMenu && (
                 <>
@@ -85,7 +87,7 @@ const BulkActionToolbar = ({ selectedCount, onClearSelection, onBulkAction }) =>
                 iconPosition="left"
                 onClick={() => setShowAssignMenu(!showAssignMenu)}
               >
-                Change Priority
+                {t('changePriority', 'Change Priority')}
               </Button>
               {showAssignMenu && (
                 <>
@@ -115,7 +117,7 @@ const BulkActionToolbar = ({ selectedCount, onClearSelection, onBulkAction }) =>
               iconPosition="left"
               onClick={() => handleBulkAction('assign')}
             >
-              Assign
+              {t('assign', 'Assign')}
             </Button>
 
             <Button
@@ -125,7 +127,7 @@ const BulkActionToolbar = ({ selectedCount, onClearSelection, onBulkAction }) =>
               iconPosition="left"
               onClick={() => handleBulkAction('export')}
             >
-              Export
+              {t('export', 'Export')}
             </Button>
 
             <Button
@@ -135,7 +137,7 @@ const BulkActionToolbar = ({ selectedCount, onClearSelection, onBulkAction }) =>
               iconPosition="left"
               onClick={() => handleBulkAction('delete')}
             >
-              Delete
+              {t('delete', 'Delete')}
             </Button>
           </div>
 

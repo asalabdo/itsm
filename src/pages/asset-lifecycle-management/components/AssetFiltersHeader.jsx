@@ -3,8 +3,13 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -12,30 +17,30 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const categoryOptions = [
-    { value: 'all', label: 'All Categories' },
-    { value: 'hardware', label: 'Hardware' },
-    { value: 'software', label: 'Software' },
-    { value: 'network', label: 'Network Equipment' },
-    { value: 'mobile', label: 'Mobile Devices' },
-    { value: 'peripherals', label: 'Peripherals' }
+    { value: 'all', label: t('allCategories', 'All Categories') },
+    { value: 'hardware', label: t('hardware', 'Hardware') },
+    { value: 'software', label: t('software', 'Software') },
+    { value: 'network', label: t('networkEquipment', 'Network Equipment') },
+    { value: 'mobile', label: t('mobileDevices', 'Mobile Devices') },
+    { value: 'peripherals', label: t('peripherals', 'Peripherals') }
   ];
 
   const locationOptions = [
-    { value: 'all', label: 'All Locations' },
-    { value: 'datacenter-a', label: 'Data Center A' },
-    { value: 'datacenter-b', label: 'Data Center B' },
-    { value: 'building-a', label: 'Building A' },
-    { value: 'building-b', label: 'Building B' },
-    { value: 'remote', label: 'Remote Locations' }
+    { value: 'all', label: t('allLocations', 'All Locations') },
+    { value: 'datacenter-a', label: t('dataCenterA', 'Data Center A') },
+    { value: 'datacenter-b', label: t('dataCenterB', 'Data Center B') },
+    { value: 'building-a', label: t('buildingA', 'Building A') },
+    { value: 'building-b', label: t('buildingB', 'Building B') },
+    { value: 'remote', label: t('remoteLocations', 'Remote Locations') }
   ];
 
   const stageOptions = [
-    { value: 'all', label: 'All Stages' },
-    { value: 'procurement', label: 'Procurement' },
-    { value: 'deployment', label: 'Deployment' },
-    { value: 'active', label: 'Active' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'retirement', label: 'Retirement' }
+    { value: 'all', label: t('allStages', 'All Stages') },
+    { value: 'procurement', label: t('procurement', 'Procurement') },
+    { value: 'deployment', label: t('deployment', 'Deployment') },
+    { value: 'active', label: t('active', 'Active') },
+    { value: 'maintenance', label: t('maintenance', 'Maintenance') },
+    { value: 'retirement', label: t('retirement', 'Retirement') }
   ];
 
   const handleFilterChange = () => {
@@ -79,7 +84,7 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
         <div className="flex-1 max-w-md">
           <Input
             type="search"
-            placeholder="Search assets by name, ID, or description..."
+            placeholder="ابحث عن الأصول بالاسم أو المعرف أو الوصف..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e?.target?.value)}
             className="w-full"
@@ -114,7 +119,7 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             iconName={showAdvancedFilters ? "ChevronUp" : "ChevronDown"}
           >
-            Advanced
+            متقدم
           </Button>
         </div>
       </div>
@@ -123,10 +128,10 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
         <div className="border-t border-border pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Vendor</label>
+              <label className="block text-sm font-medium text-foreground mb-2">المورّد</label>
               <Select
                 options={[
-                  { value: 'all', label: 'All Vendors' },
+                  { value: 'all', label: 'كل المورّدين' },
                   { value: 'dell', label: 'Dell Technologies' },
                   { value: 'hp', label: 'HP Enterprise' },
                   { value: 'cisco', label: 'Cisco Systems' },
@@ -139,14 +144,14 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Purchase Date</label>
+              <label className="block text-sm font-medium text-foreground mb-2">تاريخ الشراء</label>
               <Select
                 options={[
-                  { value: 'all', label: 'All Dates' },
-                  { value: 'last-30', label: 'Last 30 days' },
-                  { value: 'last-90', label: 'Last 90 days' },
-                  { value: 'last-year', label: 'Last year' },
-                  { value: 'older', label: 'Older than 1 year' }
+                  { value: 'all', label: 'كل التواريخ' },
+                  { value: 'last-30', label: 'آخر 30 يومًا' },
+                  { value: 'last-90', label: 'آخر 90 يومًا' },
+                  { value: 'last-year', label: 'أقدم من سنة' },
+                  { value: 'older', label: 'أقدم من سنة' }
                 ]}
                 value="all"
                 onChange={() => {}}
@@ -154,14 +159,14 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Warranty Status</label>
+              <label className="block text-sm font-medium text-foreground mb-2">حالة الضمان</label>
               <Select
                 options={[
-                  { value: 'all', label: 'All Status' },
-                  { value: 'active', label: 'Active Warranty' },
-                  { value: 'expiring', label: 'Expiring Soon' },
-                  { value: 'expired', label: 'Expired' },
-                  { value: 'none', label: 'No Warranty' }
+                  { value: 'all', label: 'كل الحالات' },
+                  { value: 'active', label: 'ضمان ساري' },
+                  { value: 'expiring', label: 'ينتهي قريبًا' },
+                  { value: 'expired', label: 'منتهي' },
+                  { value: 'none', label: 'لا يوجد ضمان' }
                 ]}
                 value="all"
                 onChange={() => {}}
@@ -169,10 +174,10 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Cost Range</label>
+              <label className="block text-sm font-medium text-foreground mb-2">نطاق التكلفة</label>
               <Select
                 options={[
-                  { value: 'all', label: 'All Ranges' },
+                  { value: 'all', label: 'كل النطاقات' },
                   { value: '0-1000', label: '$0 - $1,000' },
                   { value: '1000-5000', label: '$1,000 - $5,000' },
                   { value: '5000-10000', label: '$5,000 - $10,000' },
@@ -187,14 +192,14 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm" iconName="Save">
-                Save Filter Set
+                حفظ مجموعة الفلاتر
               </Button>
               <Button variant="ghost" size="sm" iconName="Upload">
-                Load Saved Filters
+                تحميل الفلاتر المحفوظة
               </Button>
             </div>
             <Button variant="ghost" size="sm" onClick={clearFilters}>
-              Clear All Filters
+              مسح كل الفلاتر
             </Button>
           </div>
         </div>
@@ -207,25 +212,25 @@ const AssetFiltersHeader = ({ onFiltersChange, alertCount = 0 }) => {
             <div className="flex items-center space-x-2 px-3 py-2 bg-error/10 border border-error/20 rounded-lg">
               <Icon name="AlertTriangle" size={16} className="text-error" />
               <span className="text-sm font-medium text-error">
-                {alertCount} Critical Alert{alertCount > 1 ? 's' : ''}
+                {alertCount} تنبيه حرج{alertCount > 1 ? 'ات' : ''}
               </span>
             </div>
           )}
 
           <div className="text-sm text-muted-foreground">
-            Showing assets matching current filters
+            عرض الأصول المطابقة للفلاتر الحالية
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" iconName="Download">
-            Export
+            تصدير
           </Button>
           <Button variant="outline" size="sm" iconName="RefreshCw">
-            Refresh
+            تحديث
           </Button>
           <Button variant="default" size="sm" iconName="Plus">
-            Add Asset
+            إضافة أصل
           </Button>
         </div>
       </div>

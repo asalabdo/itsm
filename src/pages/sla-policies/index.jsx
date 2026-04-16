@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
@@ -8,10 +8,10 @@ import Icon from '../../components/AppIcon';
 import { slaAPI } from '../../services/api';
 
 const fallbackPolicies = [
-  { key: 'technical-support', name: 'Technical Support', priority: 'High', responseHours: 2, resolutionHours: 8, escalationMinutes: 120, owner: 'Service Desk', notes: 'Device, email, printer, and network issues.' },
-  { key: 'access-management', name: 'Access Management', priority: 'High', responseHours: 1, resolutionHours: 4, escalationMinutes: 60, owner: 'Security Operations', notes: 'Password reset, MFA, VPN, permissions.' },
-  { key: 'incident-management', name: 'Incident Management', priority: 'Urgent', responseHours: 1, resolutionHours: 4, escalationMinutes: 30, owner: 'Incident Manager', notes: 'Major incidents and outages.' },
-  { key: 'service-request', name: 'Service Requests', priority: 'Medium', responseHours: 8, resolutionHours: 24, escalationMinutes: 240, owner: 'Fulfillment Team', notes: 'Equipment, software, onboarding.' },
+  { key: 'technical-support', name: 'الدعم الفني', priority: 'عالية', responseHours: 2, resolutionHours: 8, escalationMinutes: 120, owner: 'مكتب الخدمة', notes: 'مشكلات الأجهزة والبريد والطابعة والشبكة.' },
+  { key: 'access-management', name: 'إدارة الوصول', priority: 'عالية', responseHours: 1, resolutionHours: 4, escalationMinutes: 60, owner: 'عمليات الأمن', notes: 'إعادة تعيين كلمة المرور وMFA وVPN والصلاحيات.' },
+  { key: 'incident-management', name: 'إدارة الحوادث', priority: 'عاجلة', responseHours: 1, resolutionHours: 4, escalationMinutes: 30, owner: 'مدير الحوادث', notes: 'الحوادث الكبرى والانقطاعات.' },
+  { key: 'service-request', name: 'طلبات الخدمة', priority: 'متوسطة', responseHours: 8, resolutionHours: 24, escalationMinutes: 240, owner: 'فريق التنفيذ', notes: 'المعدات والبرمجيات والتأهيل.' },
 ];
 
 const SlaPoliciesPage = () => {
@@ -35,16 +35,16 @@ const SlaPoliciesPage = () => {
   }, []);
 
   const stats = [
-    { label: 'Policies', value: policies.length, icon: 'ShieldCheck' },
-    { label: 'Urgent Paths', value: policies.filter((p) => p.priority === 'Urgent' || p.priority === 'High').length, icon: 'AlertTriangle' },
-    { label: 'Avg Response', value: `${Math.round(policies.reduce((sum, p) => sum + (p.responseHours || 0), 0) / Math.max(policies.length, 1))}h`, icon: 'Clock' },
-    { label: 'Avg Resolution', value: `${Math.round(policies.reduce((sum, p) => sum + (p.resolutionHours || 0), 0) / Math.max(policies.length, 1))}h`, icon: 'Timer' },
+    { label: 'السياسات', value: policies.length, icon: 'ShieldCheck' },
+    { label: 'المسارات العاجلة', value: policies.filter((p) => p.priority === 'عاجلة' || p.priority === 'عالية').length, icon: 'AlertTriangle' },
+    { label: 'متوسط الاستجابة', value: `${Math.round(policies.reduce((sum, p) => sum + (p.responseHours || 0), 0) / Math.max(policies.length, 1))}h`, icon: 'Clock' },
+    { label: 'متوسط الحل', value: `${Math.round(policies.reduce((sum, p) => sum + (p.resolutionHours || 0), 0) / Math.max(policies.length, 1))}h`, icon: 'Timer' },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>SLA Policies</title>
+        <title>سياسات SLA</title>
       </Helmet>
       <Header />
       <BreadcrumbTrail />
@@ -52,14 +52,14 @@ const SlaPoliciesPage = () => {
         <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-background p-6 md:p-8 shadow-elevation-2">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="space-y-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Service Level Management</div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">SLA Policies</h1>
-              <p className="text-muted-foreground max-w-2xl">Review service-level targets and jump directly into tickets or incidents when a policy needs attention.</p>
+              <div className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">إدارة مستوى الخدمة</div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">سياسات SLA</h1>
+              <p className="text-muted-foreground max-w-2xl">راجع أهداف مستوى الخدمة وانتقل مباشرة إلى التذاكر أو الحوادث عند الحاجة.</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="default" onClick={() => navigate('/ticket-creation')} iconName="Plus">Create Ticket</Button>
-              <Button variant="outline" onClick={() => navigate('/ticket-management-center')} iconName="Ticket">Tickets</Button>
-              <Button variant="outline" onClick={() => navigate('/incident-management-workflow')} iconName="AlertTriangle">Incidents</Button>
+              <Button variant="default" onClick={() => navigate('/ticket-creation')} iconName="Plus">إنشاء تذكرة</Button>
+              <Button variant="outline" onClick={() => navigate('/ticket-management-center')} iconName="Ticket">التذاكر</Button>
+              <Button variant="outline" onClick={() => navigate('/incident-management-workflow')} iconName="AlertTriangle">الحوادث</Button>
             </div>
           </div>
         </section>
@@ -80,7 +80,7 @@ const SlaPoliciesPage = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {loading ? (
-            <div className="col-span-full rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">Loading SLA policies...</div>
+            <div className="col-span-full rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">جارٍ تحميل سياسات SLA...</div>
           ) : (
             policies.map((policy) => (
               <div key={policy.key} className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1 hover:shadow-elevation-2 transition-shadow">
@@ -94,22 +94,22 @@ const SlaPoliciesPage = () => {
                 <p className="text-sm text-muted-foreground mb-4">{policy.notes}</p>
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="rounded-lg bg-muted p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Response</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">الاستجابة</p>
                     <p className="text-sm font-semibold text-foreground">{policy.responseHours}h</p>
                   </div>
                   <div className="rounded-lg bg-muted p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Resolution</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">الحل</p>
                     <p className="text-sm font-semibold text-foreground">{policy.resolutionHours}h</p>
                   </div>
                   <div className="rounded-lg bg-muted p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Escalate</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">التصعيد</p>
                     <p className="text-sm font-semibold text-foreground">{policy.escalationMinutes}m</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" onClick={() => navigate(`/ticket-management-center?priority=${encodeURIComponent(policy.priority)}`)}>Tickets</Button>
-                  <Button size="sm" variant="outline" onClick={() => navigate(`/incident-management-workflow?priority=${encodeURIComponent(policy.priority)}`)}>Incidents</Button>
-                  <Button size="sm" variant="ghost" onClick={() => navigate('/search')}>Search</Button>
+                  <Button size="sm" variant="outline" onClick={() => navigate(`/ticket-management-center?priority=${encodeURIComponent(policy.priority)}`)}>التذاكر</Button>
+                  <Button size="sm" variant="outline" onClick={() => navigate(`/incident-management-workflow?priority=${encodeURIComponent(policy.priority)}`)}>الحوادث</Button>
+                  <Button size="sm" variant="ghost" onClick={() => navigate('/search')}>بحث</Button>
                 </div>
               </div>
             ))

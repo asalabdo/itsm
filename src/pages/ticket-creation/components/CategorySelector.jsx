@@ -2,8 +2,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import ServiceSelector from './ServiceSelector';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService, onServiceSelect, selectedModule, onModuleChange }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const modules = [
     {
@@ -630,9 +634,9 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
         >
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1">
-              Department / Category / Service <span className="text-error">*</span>
+              {t('departmentCategoryService', 'Department / Category / Service')} <span className="text-error">*</span>
             </label>
-            <p className="text-xs text-muted-foreground">Pick the route in one flow, from department to category to service.</p>
+            <p className="text-xs text-muted-foreground">{t('pickRouteFlow', 'Pick the route in one flow, from department to category to service.')}</p>
           </div>
           {selectedModule && (
             <button
@@ -640,7 +644,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
               onClick={() => onModuleChange('')}
               className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline"
             >
-              Show all departments
+              {t('showAllDepartments', 'Show all departments')}
             </button>
           )}
           <motion.div 
@@ -702,7 +706,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground leading-tight">{module.name}</p>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                      {(categoriesByModule[module.id] || []).length} categories available
+                      {(categoriesByModule[module.id] || []).length} {t('categoriesAvailable', 'categories available')}
                     </p>
                     {selectedModule === module.id && (
                       <motion.div
@@ -710,7 +714,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                         animate={{ opacity: 1, y: 0 }}
                         className="text-xs text-primary font-medium mt-1"
                       >
-                        ✓ Selected
+                        ✓ {t('selected', 'Selected')}
                       </motion.div>
                     )}
                   </div>
@@ -732,10 +736,10 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
             >
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">
-                  Category <span className="text-error">*</span>
+                  {t('category', 'Category')} <span className="text-error">*</span>
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  {selectedModuleConfig ? `Categories for ${selectedModuleConfig.name}` : 'Choose a department first to see categories'}
+                  {selectedModuleConfig ? `${t('categoriesFor', 'Categories for')} ${selectedModuleConfig.name}` : t('chooseDepartmentFirst', 'Choose a department first to see categories')}
                 </p>
               </div>
               <motion.div 
@@ -838,7 +842,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                   onClick={() => onCategoryChange('')}
                   className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline"
                 >
-                  Show all categories
+                  {t('showAllCategories', 'Show all categories')}
                 </button>
               )}
             </motion.div>
@@ -857,15 +861,15 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
               <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
                   <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                    {selectedModuleConfig?.name || 'Department'}
+                    {selectedModuleConfig?.name || t('department', 'Department')}
                   </span>
                   <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
                   <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                    {selectedCategoryConfig?.name || 'Category'}
+                    {selectedCategoryConfig?.name || t('category', 'Category')}
                   </span>
                   <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
-                    {selectedService?.nameEn || 'Service'}
+                    {selectedService?.nameEn || t('service', 'Service')}
                   </span>
                 </div>
               </div>

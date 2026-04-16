@@ -1,31 +1,35 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const QuickActions = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const actions = [
     {
-      label: 'Create Ticket',
+      label: t('createTicket', 'Create Ticket'),
       icon: 'Plus',
       variant: 'default',
       onClick: () => navigate('/ticket-creation')
     },
     {
-      label: 'View Analytics',
+      label: t('analytics', 'View Analytics'),
       icon: 'BarChart3',
       variant: 'outline',
       onClick: () => navigate('/manager-dashboard')
     },
     {
-      label: 'Employee Portal',
+      label: t('employeePortal', 'Employee Portal'),
       icon: 'Users',
       variant: 'outline',
       onClick: () => navigate('/customer-portal')
     },
     {
-      label: 'Reports',
+      label: t('reports', 'Reports'),
       icon: 'FileText',
       variant: 'outline',
       onClick: () => navigate('/reports-analytics')

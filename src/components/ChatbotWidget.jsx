@@ -3,22 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import Icon from './AppIcon';
+import { useLanguage } from '../context/LanguageContext';
+import { getTranslation } from '../services/i18n';
 import { streamTicketChatResponse } from '../services/ticketChatService';
 
 const ChatbotWidget = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
       role: 'assistant',
-      content: 'Hi, Welcome to GFSA (General Food Security Authority). I\'m your AI assistant here to help you with all your IT service needs.',
+      content: `${t('hiWelcome', 'Hi, Welcome to GFSA...')} I'm your AI assistant here to help you with all your IT service needs.`,
       timestamp: new Date()
     },
     {
       id: 2,
       role: 'assistant', 
-      content: 'I can help you with:\n\n1. Creating a Ticket\n2. Checking a Ticket\'s Status\n3. Answering Questions about tickets\n4. Troubleshooting a common IT issue\n\nPlease select an option by typing the number (1-4).',
+      content: `${t('canHelpYouWith', 'I can help you with...')}\n\n1. Creating a Ticket\n2. Checking a Ticket's Status\n3. Answering Questions about tickets\n4. Troubleshooting a common IT issue\n\nPlease select an option by typing the number (1-4).`,
       timestamp: new Date()
     }
   ]);
@@ -137,7 +141,7 @@ const ChatbotWidget = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50 hover:scale-110"
-        aria-label="Toggle chatbot"
+        aria-label={t('toggleChatbot', 'Toggle chatbot')}
       >
         {isOpen ? (
           <Icon name="X" className="w-6 h-6" />
@@ -163,22 +167,22 @@ const ChatbotWidget = () => {
                 <Icon name="Bot" className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm">AI Assistant</h3>
-                <p className="text-xs opacity-90">Always here to help</p>
+                <h3 className="font-semibold text-sm">{t('aiAssistant', 'AI Assistant')}</h3>
+                <p className="text-xs opacity-90">{t('alwaysHereToHelp', 'Always here to help')}</p>
               </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/ticket-chatbot')}
                 className="p-1.5 hover:bg-primary-foreground/20 rounded transition-colors"
-                aria-label="Open full chat"
+                aria-label={t('openFullChat', 'Open full chat')}
               >
                 <Icon name="Maximize2" className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-1.5 hover:bg-primary-foreground/20 rounded transition-colors"
-                aria-label="Close chat"
+                aria-label={t('closeChat', 'Close chat')}
               >
                 <Icon name="X" className="w-4 h-4" />
               </button>
@@ -263,7 +267,7 @@ const ChatbotWidget = () => {
               <Input
                 ref={inputRef}
                 type="text"
-                placeholder="Type a message..."
+                placeholder={t('typeMessage', 'Type a message...')}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e?.target?.value)}
                 onKeyPress={handleKeyPress}

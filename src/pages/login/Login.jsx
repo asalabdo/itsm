@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import ThemeToggle from '../../components/ui/ThemeToggle';
 import apiClient from '../../services/apiClient';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,7 +54,7 @@ const Login = () => {
           </div>
         </div>
 
-        <h2 className="text-lg font-medium text-foreground mb-6">Sign in to your account</h2>
+        <h2 className="text-lg font-medium text-foreground mb-6">{t('signInToAccount', 'Sign in to your account')}</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-error/10 border border-error/20 rounded text-sm text-error">
@@ -60,29 +64,29 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Username</label>
+            <label className="block text-sm font-medium text-foreground mb-1">{t('username', 'Username')}</label>
             <input
               type="text"
               value={form.username}
               onChange={(e) => setForm(p => ({ ...p, username: e.target.value }))}
               className="w-full h-10 px-3 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Enter your username"
+              placeholder={t('enterUsername', 'Enter your username')}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Password</label>
+            <label className="block text-sm font-medium text-foreground mb-1">{t('password', 'Password')}</label>
             <input
               type="password"
               value={form.password}
               onChange={(e) => setForm(p => ({ ...p, password: e.target.value }))}
               className="w-full h-10 px-3 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Enter your password"
+              placeholder={t('enterPassword', 'Enter your password')}
               required
             />
           </div>
           <Button type="submit" fullWidth disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('signingIn', 'Signing in...') : t('signIn', 'Sign In')}
           </Button>
         </form>
       </div>

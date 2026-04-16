@@ -7,20 +7,24 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Icon from '../../components/AppIcon';
 import changeService from '../../services/changeService';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import { format } from 'date-fns';
-
-const statusOptions = [
-  { value: 'Proposed', label: 'Proposed' },
-  { value: 'Pending Approval', label: 'Pending Approval' },
-  { value: 'Approved', label: 'Approved' },
-  { value: 'Implementing', label: 'Implementing' },
-  { value: 'Completed', label: 'Completed' },
-  { value: 'Rejected', label: 'Rejected' },
-];
 
 const ChangeManagementDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
+  const statusOptions = [
+    { value: 'Proposed', label: t('proposed', 'Proposed') },
+    { value: 'Pending Approval', label: t('pendingApproval', 'Pending Approval') },
+    { value: 'Approved', label: t('approved', 'Approved') },
+    { value: 'Implementing', label: t('implementing', 'Implementing') },
+    { value: 'Completed', label: t('completed', 'Completed') },
+    { value: 'Rejected', label: t('rejected', 'Rejected') },
+  ];
   const [change, setChange] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState('');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
@@ -15,13 +15,13 @@ const WorkflowBuilder = () => {
   const [workflowBlocks, setWorkflowBlocks] = useState([]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showTestPanel, setShowTestPanel] = useState(false);
-  const [workflowName, setWorkflowName] = useState('New Workflow');
+  const [workflowName, setWorkflowName] = useState('سير عمل جديد');
   const [workflowDescription, setWorkflowDescription] = useState('');
   const [triggerType, setTriggerType] = useState('Manual');
 
   const breadcrumbItems = [
-    { label: 'Dashboard', path: '/agent-dashboard' },
-    { label: 'Workflow Builder', path: '/workflow-builder' },
+    { label: 'لوحة التحكم', path: '/agent-dashboard' },
+    { label: 'منشئ سير العمل', path: '/workflow-builder' },
   ];
 
   const handleAddBlock = (block) => {
@@ -64,7 +64,7 @@ const WorkflowBuilder = () => {
   const handleSaveWorkflow = async () => {
     try {
       if (!workflowName.trim()) {
-        alert('Workflow name is required.');
+        alert('اسم سير العمل مطلوب.');
         return;
       }
 
@@ -74,28 +74,28 @@ const WorkflowBuilder = () => {
         workflowDefinition: JSON.stringify(workflowBlocks),
         triggerType,
       });
-      alert('Workflow saved successfully!');
+      alert('تم حفظ سير العمل بنجاح!');
     } catch (err) {
       console.error('Failed to save workflow:', err);
-      alert('Failed to save workflow.');
+      alert('فشل حفظ سير العمل.');
     }
   };
 
   const handleClearWorkflow = () => {
-    if (window.confirm('Are you sure you want to clear the workflow?')) {
+    if (window.confirm('هل أنت متأكد أنك تريد مسح سير العمل؟')) {
       setWorkflowBlocks([]);
       setSelectedBlock(null);
-      setWorkflowName('New Workflow');
+      setWorkflowName('سير عمل جديد');
       setWorkflowDescription('');
       setTriggerType('Manual');
     }
   };
 
   const triggerOptions = [
-    { value: 'Manual', label: 'Manual' },
-    { value: 'TicketCreated', label: 'Ticket Created' },
-    { value: 'TicketUpdated', label: 'Ticket Updated' },
-    { value: 'Schedule', label: 'Schedule' },
+    { value: 'Manual', label: 'يدوي' },
+    { value: 'TicketCreated', label: 'إنشاء تذكرة' },
+    { value: 'TicketUpdated', label: 'تحديث تذكرة' },
+    { value: 'Schedule', label: 'جدولة' },
   ];
 
   return (
@@ -108,10 +108,10 @@ const WorkflowBuilder = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-              Workflow Builder
+              منشئ سير العمل
             </h1>
             <p className="text-muted-foreground">
-              Create and manage automated rules for ticket routing and notifications
+              إنشاء وإدارة قواعد تلقائية لتوجيه التذاكر والإشعارات
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -121,7 +121,7 @@ const WorkflowBuilder = () => {
               iconName="Layout"
               onClick={() => setShowTemplates(true)}
             >
-              Templates
+              القوالب
             </Button>
             <Button
               variant="outline"
@@ -129,7 +129,7 @@ const WorkflowBuilder = () => {
               iconName="Play"
               onClick={() => setShowTestPanel(true)}
             >
-              Test
+              اختبار
             </Button>
             <Button
               variant="outline"
@@ -138,7 +138,7 @@ const WorkflowBuilder = () => {
               onClick={handleClearWorkflow}
               disabled={workflowBlocks?.length === 0}
             >
-              Clear
+              مسح
             </Button>
             <Button
               variant="default"
@@ -146,7 +146,7 @@ const WorkflowBuilder = () => {
               iconName="Save"
               onClick={handleSaveWorkflow}
             >
-              Save Workflow
+              حفظ سير العمل
             </Button>
           </div>
         </div>
@@ -155,17 +155,17 @@ const WorkflowBuilder = () => {
         <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-1">
-              <label className="block text-xs font-medium text-muted-foreground mb-2">Workflow Name</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-2">اسم سير العمل</label>
               <input
                 type="text"
                 value={workflowName}
                 onChange={(e) => setWorkflowName(e?.target?.value)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Workflow Name"
+                placeholder="اسم سير العمل"
               />
             </div>
             <div className="md:col-span-1">
-              <label className="block text-xs font-medium text-muted-foreground mb-2">Trigger Type</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-2">نوع المشغل</label>
               <select
                 value={triggerType}
                 onChange={(e) => setTriggerType(e?.target?.value)}
@@ -177,19 +177,19 @@ const WorkflowBuilder = () => {
               </select>
             </div>
             <div className="md:col-span-1">
-              <label className="block text-xs font-medium text-muted-foreground mb-2">Description</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-2">الوصف</label>
               <input
                 type="text"
                 value={workflowDescription}
                 onChange={(e) => setWorkflowDescription(e?.target?.value)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Describe what this workflow does"
+                placeholder="صف ما الذي يفعله هذا سير العمل"
               />
             </div>
           </div>
           <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Icon name="Layers" size={16} />
-            <span>{workflowBlocks?.length} blocks</span>
+            <span>{workflowBlocks?.length} كتلة</span>
           </div>
         </div>
 

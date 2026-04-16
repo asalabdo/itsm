@@ -1,36 +1,40 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const BreadcrumbTrail = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isRtl, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const routeMap = {
-    '/agent-dashboard': { label: 'My Tickets', parent: null },
-    '/ticket-details': { label: 'Ticket Details', parent: '/agent-dashboard' },
-    '/customer-portal': { label: 'Employee Portal', parent: null },
-    '/manager-dashboard': { label: 'Analytics', parent: null },
-    '/ticket-creation': { label: 'New Ticket', parent: null },
-    '/my-work': { label: 'My Work', parent: null },
-    '/asset-registry-and-tracking': { label: 'Asset Registry', parent: null },
-    '/manage/assets': { label: 'Manage Assets', parent: '/asset-registry-and-tracking' },
-    '/reports-analytics': { label: 'Reports', parent: '/manager-dashboard' },
-    '/advanced-analytics': { label: 'Advanced Analytics', parent: '/manager-dashboard' },
-    '/reporting-and-analytics-hub': { label: 'Reports & Analytics', parent: '/manager-dashboard' },
-    '/sla-policies': { label: 'SLA Policies', parent: '/manager-dashboard' },
-    '/ticket-sla': { label: 'Ticket SLA', parent: '/manager-dashboard' },
-    '/priorities': { label: 'Priorities', parent: '/manager-dashboard' },
-    '/escalations': { label: 'Escalations', parent: '/manager-dashboard' },
-    '/ticket-workflow-crud': { label: 'Ticket Workflow', parent: '/workflow-builder-studio' },
-    '/monitoring-events': { label: 'Monitoring Events', parent: '/manager-dashboard' },
-    '/problems': { label: 'Problems', parent: '/manager-dashboard' },
-    '/knowledge-base': { label: 'Knowledge Base', parent: '/customer-portal' },
-    '/settings': { label: 'Settings', parent: null },
+    '/agent-dashboard': { label: t('myTickets', 'My Tickets'), parent: null },
+    '/ticket-details': { label: t('ticketDetails', 'Ticket Details'), parent: '/agent-dashboard' },
+    '/customer-portal': { label: t('employeePortal', 'Employee Portal'), parent: null },
+    '/manager-dashboard': { label: t('analytics', 'Analytics'), parent: null },
+    '/ticket-creation': { label: t('newTicket', 'New Ticket'), parent: null },
+    '/my-work': { label: t('myWork', 'My Work'), parent: null },
+    '/asset-registry-and-tracking': { label: t('assetRegistry', 'Asset Registry'), parent: null },
+    '/manage/assets': { label: t('assetRegistry', 'Manage Assets'), parent: '/asset-registry-and-tracking' },
+    '/reports-analytics': { label: t('reports', 'Reports'), parent: '/manager-dashboard' },
+    '/advanced-analytics': { label: t('advancedAnalytics', 'Advanced Analytics'), parent: '/manager-dashboard' },
+    '/reporting-and-analytics-hub': { label: t('reportsAnalytics', 'Reports & Analytics'), parent: '/manager-dashboard' },
+    '/sla-policies': { label: t('slaPolicies', 'SLA Policies'), parent: '/manager-dashboard' },
+    '/ticket-sla': { label: t('ticketSLA', 'Ticket SLA'), parent: '/manager-dashboard' },
+    '/priorities': { label: t('priorities', 'Priorities'), parent: '/manager-dashboard' },
+    '/escalations': { label: t('escalations', 'Escalations'), parent: '/manager-dashboard' },
+    '/ticket-workflow-crud': { label: t('ticketWorkflow', 'Ticket Workflow'), parent: '/workflow-builder-studio' },
+    '/monitoring-events': { label: t('monitoringEvents', 'Monitoring Events'), parent: '/manager-dashboard' },
+    '/problems': { label: t('problems', 'Problems'), parent: '/manager-dashboard' },
+    '/knowledge-base': { label: t('knowledgeBase', 'Knowledge Base'), parent: '/customer-portal' },
+    '/settings': { label: t('settings', 'Settings'), parent: null },
   };
 
   const generateBreadcrumbs = () => {
-    const breadcrumbs = [{ label: 'Home', path: '/' }];
+    const breadcrumbs = [{ label: t('home', 'Home'), path: '/' }];
     const currentRoute = routeMap[location.pathname];
 
     if (!currentRoute) return breadcrumbs;
@@ -62,7 +66,7 @@ const BreadcrumbTrail = () => {
   };
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-muted-foreground px-4 py-3 bg-muted/30 border-b border-border">
+    <nav className={`flex items-center gap-2 text-sm text-muted-foreground px-4 py-3 bg-muted/30 border-b border-border ${isRtl ? 'flex-row-reverse' : ''}`}>
       {breadcrumbs.map((crumb, index) => (
         <React.Fragment key={crumb.path}>
           <button
@@ -78,7 +82,7 @@ const BreadcrumbTrail = () => {
           </button>
           {index < breadcrumbs.length - 1 && (
             <Icon
-              name="ChevronRight"
+              name={isRtl ? 'ChevronLeft' : 'ChevronRight'}
               size={14}
               className="text-muted-foreground"
             />

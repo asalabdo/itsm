@@ -55,3 +55,6 @@ backend/bin-workflowtests/
 tests/WorkflowRoutingTests/bin/
 tests/WorkflowRoutingTests/obj/
 tests/WorkflowRoutingTests/tempout/
+backend/bin-settingsfix/
+backend/bin-erpfix2/
+backend/bin-workflowtests/

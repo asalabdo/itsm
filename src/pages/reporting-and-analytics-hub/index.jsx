@@ -8,8 +8,12 @@ import DataTable from './components/DataTable';
 import QuickActionsBar from './components/QuickActionsBar';
 import Icon from '../../components/AppIcon';
 import reportingService from '../../services/reportingService';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ReportingAndAnalyticsHub = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [selectedReport, setSelectedReport] = useState(null);
   const [isSidebarOpen] = useState(true);
   const [isFilterPanelOpen] = useState(true);
@@ -43,7 +47,7 @@ const ReportingAndAnalyticsHub = () => {
 
   const kpiData = [
     {
-      title: 'Total Tickets',
+      title: t('totalTickets', 'Total Tickets'),
       value: analytics?.slaCompliance?.totalTickets?.toLocaleString() || '0',
       change: '',
       changeType: 'positive',
@@ -52,7 +56,7 @@ const ReportingAndAnalyticsHub = () => {
       subtitle: `${analytics?.slaCompliance?.resolvedWithinSla || 0} resolved within SLA`
     },
     {
-      title: 'SLA Compliance',
+      title: t('slaCompliance', 'SLA Compliance'),
       value: `${analytics?.slaCompliance?.compliancePercentage?.toFixed(1) || '0'}%`,
       change: analytics?.slaCompliance?.compliancePercentage > 95 ? 'Above target' : 'Below target',
       changeType: analytics?.slaCompliance?.compliancePercentage > 95 ? 'positive' : 'negative',
@@ -61,7 +65,7 @@ const ReportingAndAnalyticsHub = () => {
       subtitle: `${analytics?.slaCompliance?.breachedSla || 0} breaches`
     },
     {
-      title: 'Avg Resolution',
+      title: t('avgResolution', 'Avg Resolution'),
       value: analytics?.topPerformers?.[0]?.avgResolutionTimeHours != null
         ? `${Number(analytics.topPerformers[0].avgResolutionTimeHours).toFixed(1)} hrs`
         : '--',
@@ -72,7 +76,7 @@ const ReportingAndAnalyticsHub = () => {
       subtitle: 'Best resolution time'
     },
     {
-      title: 'Active Technicians',
+      title: t('activeTechnicians', 'Active Technicians'),
       value: analytics?.topPerformers?.length?.toString() || '0',
       change: '',
       changeType: 'positive',
@@ -93,10 +97,10 @@ const ReportingAndAnalyticsHub = () => {
   })) || [];
 
   const tableColumns = [
-    { key: 'technicianName', label: 'Technician' },
-    { key: 'resolvedCount', label: 'Resolved' },
-    { key: 'avgResolutionTimeHours', label: 'Avg Time (hrs)', render: (val) => val != null ? Number(val).toFixed(1) : '--' },
-    { key: 'slaComplianceRate', label: 'SLA %', render: (val) => val != null ? `${Number(val).toFixed(1)}%` : '--' }
+    { key: 'technicianName', label: t('technician', 'Technician') },
+    { key: 'resolvedCount', label: t('resolved', 'Resolved') },
+    { key: 'avgResolutionTimeHours', label: t('avgTime', 'Avg Time (hrs)'), render: (val) => val != null ? Number(val).toFixed(1) : '--' },
+    { key: 'slaComplianceRate', label: t('slaPercent', 'SLA %'), render: (val) => val != null ? `${Number(val).toFixed(1)}%` : '--' }
   ];
 
   const handleApplyFilters = (filters) => fetchData(filters.days || 30);
@@ -147,9 +151,9 @@ const ReportingAndAnalyticsHub = () => {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Total Tickets</span><span className="font-semibold">{analytics?.slaCompliance?.totalTickets ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Resolved within SLA</span><span className="font-semibold text-success">{analytics?.slaCompliance?.resolvedWithinSla ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">SLA Breaches</span><span className="font-semibold text-error">{analytics?.slaCompliance?.breachedSla ?? '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('totalTickets', 'Total Tickets')}</span><span className="font-semibold">{analytics?.slaCompliance?.totalTickets ?? '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved within SLA')}</span><span className="font-semibold text-success">{analytics?.slaCompliance?.resolvedWithinSla ?? '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('slaPercent', 'SLA Breaches')}</span><span className="font-semibold text-error">{analytics?.slaCompliance?.breachedSla ?? '--'}</span></div>
                 </div>
               </div>
 
@@ -164,9 +168,9 @@ const ReportingAndAnalyticsHub = () => {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Compliance %</span><span className="font-semibold">{analytics?.slaCompliance?.compliancePercentage != null ? `${Number(analytics.slaCompliance.compliancePercentage).toFixed(1)}%` : '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Top Technicians</span><span className="font-semibold">{analytics?.topPerformers?.length ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Categories</span><span className="font-semibold">{analytics?.categoryBreakdown?.length ?? '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('slaPercent', 'Compliance %')}</span><span className="font-semibold">{analytics?.slaCompliance?.compliancePercentage != null ? `${Number(analytics.slaCompliance.compliancePercentage).toFixed(1)}%` : '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('activeTechnicians', 'Top Technicians')}</span><span className="font-semibold">{analytics?.topPerformers?.length ?? '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('category', 'Categories')}</span><span className="font-semibold">{analytics?.categoryBreakdown?.length ?? '--'}</span></div>
                 </div>
               </div>
 
@@ -181,9 +185,9 @@ const ReportingAndAnalyticsHub = () => {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Name</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.technicianName ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Avg Resolution</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.avgResolutionTimeHours != null ? `${Number(analytics.topPerformers[0].avgResolutionTimeHours).toFixed(1)}h` : '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Resolved</span><span className="font-semibold text-success">{analytics?.topPerformers?.[0]?.resolvedCount ?? '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('technician', 'Name')}</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.technicianName ?? '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('avgResolution', 'Avg Resolution')}</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.avgResolutionTimeHours != null ? `${Number(analytics.topPerformers[0].avgResolutionTimeHours).toFixed(1)}h` : '--'}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved')}</span><span className="font-semibold text-success">{analytics?.topPerformers?.[0]?.resolvedCount ?? '--'}</span></div>
                 </div>
               </div>
             </div>

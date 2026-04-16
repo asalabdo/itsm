@@ -1,7 +1,8 @@
-import React from 'react';
 import { cn } from '../../utils/cn';
+import { useLanguage } from '../../context/LanguageContext';
 
 const DashboardCard = ({ title, value, subtitle, children, className }) => {
+  const { isRtl } = useLanguage();
   return (
     <div
       className={cn('rounded-lg p-4 shadow-sm bg-card border border-border border-l-4 border-l-primary text-card-foreground', className)}
@@ -12,7 +13,7 @@ const DashboardCard = ({ title, value, subtitle, children, className }) => {
           {value && <div className="mt-2 text-2xl font-bold text-primary">{value}</div>}
           {subtitle && <div className="text-xs mt-1 text-muted-foreground">{subtitle}</div>}
         </div>
-        <div className="ml-4">{children}</div>
+        <div className={isRtl ? 'mr-4' : 'ml-4'}>{children}</div>
       </div>
     </div>
   );

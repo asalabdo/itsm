@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 import { cn } from "../../utils/cn";
 import Icon from '../AppIcon';
+import { useLanguage } from '../../context/LanguageContext';
 
 const buttonVariants = cva(
     "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -50,6 +51,7 @@ const Button = React.forwardRef(({
     ...props
 }, ref) => {
     const Comp = asChild ? Slot : "button";
+    const { isRtl } = useLanguage();
 
     // Icon size mapping based on button size
     const iconSizeMap = {
@@ -65,7 +67,7 @@ const Button = React.forwardRef(({
 
     // Loading spinner
     const LoadingSpinner = () => (
-        <Icon name="Loader2" size={16} className="-ml-1 mr-2 animate-spin" />
+        <Icon name="Loader2" size={16} className={cn("animate-spin", children && (isRtl ? "ml-2" : "-ml-1 mr-2"))} />
     );
 
     const renderIcon = () => {
@@ -76,8 +78,8 @@ const Button = React.forwardRef(({
                     name={iconName}
                     size={calculatedIconSize}
                     className={cn(
-                        children && iconPosition === 'left' && "mr-2",
-                        children && iconPosition === 'right' && "ml-2"
+                        children && iconPosition === 'left' && (isRtl ? "ml-2" : "mr-2"),
+                        children && iconPosition === 'right' && (isRtl ? "mr-2" : "ml-2")
                     )}
                 />
             );
@@ -128,7 +130,9 @@ const Button = React.forwardRef(({
                 className: cn(
                     buttonVariants({ variant, size, className }),
                     fullWidth && "w-full",
-                    child?.props?.className
+                    child?.props?.className,
+                    children && iconName && iconPosition === 'left' && (isRtl ? 'flex-row-reverse' : ''),
+                    children && iconName && iconPosition === 'right' && (isRtl ? 'flex-row-reverse' : '')
                 ),
                 disabled: disabled || loading || child?.props?.disabled,
                 children: content,
@@ -144,7 +148,8 @@ const Button = React.forwardRef(({
         <Comp
             className={cn(
                 buttonVariants({ variant, size, className }),
-                fullWidth && "w-full"
+                fullWidth && "w-full",
+                children && iconName && isRtl && "flex-row-reverse"
             )}
             ref={ref}
             disabled={disabled || loading}

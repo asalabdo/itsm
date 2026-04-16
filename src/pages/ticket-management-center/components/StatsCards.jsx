@@ -1,11 +1,16 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const StatsCards = ({ stats }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
   const cards = [
     {
       id: 'total',
-      label: 'Total Tickets',
+      label: t('totalTickets', 'Total Tickets'),
       value: stats?.total,
       change: '+12%',
       trend: 'up',
@@ -14,7 +19,7 @@ const StatsCards = ({ stats }) => {
     },
     {
       id: 'open',
-      label: 'Open Tickets',
+      label: t('openTickets', 'Open Tickets'),
       value: stats?.open,
       change: '+8%',
       trend: 'up',
@@ -23,7 +28,7 @@ const StatsCards = ({ stats }) => {
     },
     {
       id: 'inProgress',
-      label: 'In Progress',
+      label: t('inProgress', 'In Progress'),
       value: stats?.inProgress,
       change: '-5%',
       trend: 'down',
@@ -32,7 +37,7 @@ const StatsCards = ({ stats }) => {
     },
     {
       id: 'resolved',
-      label: 'Resolved Today',
+      label: t('resolvedToday', 'Resolved Today'),
       value: stats?.resolved,
       change: '+15%',
       trend: 'up',
@@ -41,7 +46,7 @@ const StatsCards = ({ stats }) => {
     },
     {
       id: 'overdue',
-      label: 'Overdue SLA',
+      label: t('overdueSLA', 'Overdue SLA'),
       value: stats?.overdue,
       change: '-3%',
       trend: 'down',
@@ -50,7 +55,7 @@ const StatsCards = ({ stats }) => {
     },
     {
       id: 'avgResponse',
-      label: 'Avg Response Time',
+      label: t('avgResponseTime', 'Avg Response Time'),
       value: stats?.avgResponse,
       change: '-10%',
       trend: 'down',

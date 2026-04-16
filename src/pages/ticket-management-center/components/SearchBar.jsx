@@ -3,6 +3,8 @@ import Icon from '../../../components/AppIcon';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const defaultFilters = {
   status: 'all',
@@ -14,42 +16,44 @@ const defaultFilters = {
 };
 
 const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuickFilter, onSaveFilter, departmentOptions = null }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const statusOptions = [
-    { value: 'all', label: 'All Status' },
-    { value: 'open', label: 'Open' },
-    { value: 'in-progress', label: 'In Progress' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'resolved', label: 'Resolved' },
-    { value: 'closed', label: 'Closed' }
+    { value: 'all', label: t('allStatus', 'All Status') },
+    { value: 'open', label: t('open', 'Open') },
+    { value: 'in-progress', label: t('inProgress', 'In Progress') },
+    { value: 'pending', label: t('pending', 'Pending') },
+    { value: 'resolved', label: t('resolved', 'Resolved') },
+    { value: 'closed', label: t('closed', 'Closed') }
   ];
 
   const priorityOptions = [
-    { value: 'all', label: 'All Priorities' },
-    { value: 'critical', label: 'Critical' },
-    { value: 'high', label: 'High' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'low', label: 'Low' }
+    { value: 'all', label: t('allPriorities', 'All Priorities') },
+    { value: 'critical', label: t('critical', 'Critical') },
+    { value: 'high', label: t('high', 'High') },
+    { value: 'medium', label: t('medium', 'Medium') },
+    { value: 'low', label: t('low', 'Low') }
   ];
 
   const fallbackDepartmentOptions = [
-    { value: 'all', label: 'All Departments' },
-    { value: 'it', label: 'IT Support' },
-    { value: 'hr', label: 'Human Resources' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'operations', label: 'Operations' },
-    { value: 'facilities', label: 'Facilities' }
+    { value: 'all', label: t('allDepartments', 'All Departments') },
+    { value: 'it', label: t('itSupport', 'IT Support') },
+    { value: 'hr', label: t('humanResources', 'Human Resources') },
+    { value: 'finance', label: t('finance', 'Finance') },
+    { value: 'operations', label: t('operations', 'Operations') },
+    { value: 'facilities', label: t('facilities', 'Facilities') }
   ];
 
   const dateRangeOptions = [
-    { value: 'all', label: 'All Time' },
-    { value: 'today', label: 'Today' },
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
-    { value: 'quarter', label: 'This Quarter' },
-    { value: 'custom', label: 'Custom Range' }
+    { value: 'all', label: t('allTime', 'All Time') },
+    { value: 'today', label: t('today', 'Today') },
+    { value: 'week', label: t('thisWeek', 'This Week') },
+    { value: 'month', label: t('thisMonth', 'This Month') },
+    { value: 'quarter', label: t('thisQuarter', 'This Quarter') },
+    { value: 'custom', label: t('customRange', 'Custom Range') }
   ];
 
   const handleSearch = (e) => {
@@ -59,7 +63,7 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
 
   const currentFilters = { ...defaultFilters, ...filters };
   const resolvedDepartmentOptions = Array.isArray(departmentOptions) && departmentOptions.length > 0
-    ? [{ value: 'all', label: 'All Departments' }, ...departmentOptions]
+    ? [{ value: 'all', label: t('allDepartments', 'All Departments') }, ...departmentOptions]
     : fallbackDepartmentOptions;
 
   return (
@@ -68,7 +72,7 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
         <div className="flex-1">
           <Input
             type="search"
-            placeholder="Search tickets by ID, title, requester, or description..."
+            placeholder={t('searchPlaceholder', 'Search tickets by ID, title, requester, or description...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e?.target?.value)}
             className="w-full"
@@ -79,7 +83,7 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
           variant="default"
           iconName="Search"
         >
-          Search
+          {t('search', 'Search')}
         </Button>
         <Button
           type="button"
@@ -87,31 +91,31 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
           iconName={showAdvanced ? 'ChevronUp' : 'ChevronDown'}
           onClick={() => setShowAdvanced(!showAdvanced)}
         >
-          Filters
+          {t('filters', 'Filters')}
         </Button>
       </form>
       {showAdvanced && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-border">
           <Select
-            label="Status"
+            label={t('status', 'Status')}
             options={statusOptions}
             value={currentFilters?.status}
             onChange={(value) => onFilterChange('status', value)}
           />
           <Select
-            label="Priority"
+            label={t('priority', 'Priority')}
             options={priorityOptions}
             value={currentFilters?.priority}
             onChange={(value) => onFilterChange('priority', value)}
           />
           <Select
-            label="Department"
+            label={t('department', 'Department')}
             options={resolvedDepartmentOptions}
             value={currentFilters?.department}
             onChange={(value) => onFilterChange('department', value)}
           />
           <Select
-            label="Date Range"
+            label={t('dateRange', 'Date Range')}
             options={dateRangeOptions}
             value={currentFilters?.dateRange}
             onChange={(value) => onFilterChange('dateRange', value)}
@@ -120,15 +124,15 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
       )}
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-4">
-          <span className="text-muted-foreground">Quick filters:</span>
-          <button type="button" onClick={() => onQuickFilter?.('my-tickets')} className="text-primary hover:underline">My Tickets</button>
-          <button type="button" onClick={() => onQuickFilter?.('unassigned')} className="text-primary hover:underline">Unassigned</button>
-          <button type="button" onClick={() => onQuickFilter?.('overdue')} className="text-primary hover:underline">Overdue</button>
-          <button type="button" onClick={() => onQuickFilter?.('high-priority')} className="text-primary hover:underline">High Priority</button>
+          <span className="text-muted-foreground">{t('quickFilters', 'Quick filters')}:</span>
+          <button type="button" onClick={() => onQuickFilter?.('my-tickets')} className="text-primary hover:underline">{t('myTickets', 'My Tickets')}</button>
+          <button type="button" onClick={() => onQuickFilter?.('unassigned')} className="text-primary hover:underline">{t('unassigned', 'Unassigned')}</button>
+          <button type="button" onClick={() => onQuickFilter?.('overdue')} className="text-primary hover:underline">{t('overdue', 'Overdue')}</button>
+          <button type="button" onClick={() => onQuickFilter?.('high-priority')} className="text-primary hover:underline">{t('highPriority', 'High Priority')}</button>
         </div>
         <button type="button" onClick={() => onSaveFilter?.({ query: searchQuery, filters: currentFilters })} className="text-primary hover:underline flex items-center gap-1">
           <Icon name="Save" size={14} />
-          Save Filter
+          {t('saveFilter', 'Save Filter')}
         </button>
       </div>
     </div>

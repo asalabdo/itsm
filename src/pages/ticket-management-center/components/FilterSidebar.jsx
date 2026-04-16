@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { Checkbox } from '../../../components/ui/Checkbox';
-
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const defaultFilters = {
   status: [],
@@ -23,6 +24,8 @@ const FilterSidebar = ({
   sidebarCounts = {},
   onSavedFilterSelect,
 }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [localFilters, setLocalFilters] = useState({ ...defaultFilters, ...activeFilters });
   const [expandedSections, setExpandedSections] = useState({
     status: true,
@@ -104,7 +107,7 @@ const FilterSidebar = ({
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Icon name="Filter" size={20} />
-            <h2 className="font-semibold text-base">Filters</h2>
+            <h2 className="font-semibold text-base">{t('filters', 'Filters')}</h2>
             {activeFilterCount > 0 && (
               <span className="px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-full">
                 {activeFilterCount}
@@ -122,7 +125,7 @@ const FilterSidebar = ({
         <div className="flex-1 overflow-y-auto scrollbar-custom p-4 mb-6">
           <div className="mb-6">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Saved Filters
+              {t('savedFilters', 'Saved Filters')}
             </h3>
             <div className="space-y-1">
               {savedFilters?.map(filter => (
@@ -148,7 +151,7 @@ const FilterSidebar = ({
                 onClick={() => toggleSection('status')}
                 className="w-full flex items-center justify-between py-2 text-sm font-medium"
               >
-                <span>Status</span>
+                <span>{t('status', 'Status')}</span>
                 <Icon
                   name={expandedSections?.status ? 'ChevronDown' : 'ChevronRight'}
                   size={16}
@@ -179,7 +182,7 @@ const FilterSidebar = ({
                 onClick={() => toggleSection('priority')}
                 className="w-full flex items-center justify-between py-2 text-sm font-medium"
               >
-                <span>Priority</span>
+                <span>{t('priority', 'Priority')}</span>
                 <Icon
                   name={expandedSections?.priority ? 'ChevronDown' : 'ChevronRight'}
                   size={16}
@@ -210,7 +213,7 @@ const FilterSidebar = ({
                 onClick={() => toggleSection('department')}
                 className="w-full flex items-center justify-between py-2 text-sm font-medium"
               >
-                <span>Department</span>
+                <span>{t('department', 'Department')}</span>
                 <Icon
                   name={expandedSections?.department ? 'ChevronDown' : 'ChevronRight'}
                   size={16}
@@ -241,7 +244,7 @@ const FilterSidebar = ({
                 onClick={() => toggleSection('assignee')}
                 className="w-full flex items-center justify-between py-2 text-sm font-medium"
               >
-                <span>Assignee</span>
+                <span>{t('assignee', 'Assignee')}</span>
                 <Icon
                   name={expandedSections?.assignee ? 'ChevronDown' : 'ChevronRight'}
                   size={16}
@@ -272,7 +275,7 @@ const FilterSidebar = ({
                 onClick={() => toggleSection('dateRange')}
                 className="w-full flex items-center justify-between py-2 text-sm font-medium"
               >
-                <span>Date Range</span>
+                <span>{t('dateRange', 'Date Range')}</span>
                 <Icon
                   name={expandedSections?.dateRange ? 'ChevronDown' : 'ChevronRight'}
                   size={16}
@@ -282,14 +285,14 @@ const FilterSidebar = ({
                 <div className="space-y-3 mt-2">
                   <Input
                     type="date"
-                    label="From"
+                    label={t('from', 'From')}
                     size="sm"
                     value={localFilters?.dateFrom || ''}
                     onChange={(e) => handleDateChange('dateFrom', e?.target?.value)}
                   />
                   <Input
                     type="date"
-                    label="To"
+                    label={t('to', 'To')}
                     size="sm"
                     value={localFilters?.dateTo || ''}
                     onChange={(e) => handleDateChange('dateTo', e?.target?.value)}
@@ -306,14 +309,14 @@ const FilterSidebar = ({
             fullWidth
             onClick={handleApplyFilters}
           >
-            Apply Filters
+            {t('applyFilters', 'Apply Filters')}
           </Button>
           <Button
             variant="outline"
             fullWidth
             onClick={handleResetFilters}
           >
-            Reset All
+            {t('resetAll', 'Reset All')}
           </Button>
         </div>
       </aside>

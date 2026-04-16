@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import apiClient from '../../../services/apiClient';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ServiceHealthScorecard = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -54,12 +58,12 @@ const ServiceHealthScorecard = () => {
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Service Health Scorecard</h3>
-          <p className="text-sm text-muted-foreground">Ticket distribution by category</p>
+          <h3 className="text-lg font-semibold text-foreground">{t('serviceHealthScorecard', 'Service Health Scorecard')}</h3>
+          <p className="text-sm text-muted-foreground">{t('ticketDistributionByCategory', 'Ticket distribution by category')}</p>
         </div>
         <div className="flex items-center space-x-2">
           <Icon name="Activity" size={16} className="text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Live</span>
+          <span className="text-sm text-muted-foreground">{t('live', 'Live')}</span>
         </div>
       </div>
       <div className="space-y-4">
@@ -73,7 +77,7 @@ const ServiceHealthScorecard = () => {
                 </div>
                 <div>
                   <h4 className="font-medium text-foreground">{cat.category}</h4>
-                  <p className="text-sm text-muted-foreground">{cat.count} open tickets</p>
+                  <p className="text-sm text-muted-foreground">{cat.count} {t('openTickets', 'open tickets')}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -83,14 +87,14 @@ const ServiceHealthScorecard = () => {
           );
         })}
         {categories.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">No data available</p>
+          <p className="text-sm text-muted-foreground text-center py-4">{t('noDataAvailable', 'No data available')}</p>
         )}
       </div>
       <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Overall Service Health</span>
+        <span className="text-muted-foreground">{t('overallServiceHealth', 'Overall Service Health')}</span>
         <div className="flex items-center space-x-2">
           <Icon name="CheckCircle" size={16} className="text-success" />
-          <span className="font-medium text-success">{healthPct}% Healthy</span>
+          <span className="font-medium text-success">{healthPct}% {t('healthy', 'Healthy')}</span>
         </div>
       </div>
     </div>

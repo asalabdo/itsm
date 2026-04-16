@@ -15,7 +15,7 @@ const ApprovalWorkflow = ({ changes = [] }) => {
       id: `WF-${change?.id || index + 1}`,
       changeId: change?.changeNumber || `CHG-${change?.id || index + 1}`,
       title: change?.title || 'Untitled Change',
-      currentStep: status === 'Approved' ? 'Final Approval' : status === 'In Progress' ? 'Implementation Review' : 'Initial Review',
+      currentStep: status === 'Approved' ? 'الموافقة النهائية' : status === 'In Progress' ? 'مراجعة التنفيذ' : 'المراجعة الأولية',
       totalSteps,
       completedSteps,
       status,
@@ -23,9 +23,9 @@ const ApprovalWorkflow = ({ changes = [] }) => {
       submittedDate: createdAt,
       estimatedCompletion: scheduled,
       steps: [
-        { name: 'Initial Review', status: 'Completed', approver: 'Change Manager', completedAt: createdAt, duration: 2 },
-        { name: 'CAB Review', status: completedSteps > 1 ? 'Completed' : 'Pending', approver: 'CAB', completedAt: completedSteps > 1 ? createdAt : null, duration: completedSteps > 1 ? 6 : null },
-        { name: 'Implementation Authorization', status: status === 'Approved' ? 'Completed' : 'Pending', approver: 'Operations Manager', completedAt: status === 'Approved' ? scheduled : null, duration: status === 'Approved' ? 4 : null }
+        { name: 'المراجعة الأولية', status: 'Completed', approver: 'مدير التغيير', completedAt: createdAt, duration: 2 },
+        { name: 'مراجعة مجلس التغيير', status: completedSteps > 1 ? 'Completed' : 'Pending', approver: 'CAB', completedAt: completedSteps > 1 ? createdAt : null, duration: completedSteps > 1 ? 6 : null },
+        { name: 'اعتماد التنفيذ', status: status === 'Approved' ? 'Completed' : 'Pending', approver: 'مدير العمليات', completedAt: status === 'Approved' ? scheduled : null, duration: status === 'Approved' ? 4 : null }
       ],
       bottleneck: status === 'Pending' ? 'CAB Review' : null,
       averageStepTime: Math.max(1, Number((scheduled - createdAt) / 36e5 / Math.max(1, totalSteps)).toFixed(1)),
@@ -88,10 +88,10 @@ const ApprovalWorkflow = ({ changes = [] }) => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-3">
-          <h3 className="text-lg font-semibold text-foreground">Approval Workflow Status</h3>
+          <h3 className="text-lg font-semibold text-foreground">حالة سير الموافقات</h3>
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <Icon name="Clock" size={16} />
-            <span>Avg: {calculateAverageApprovalTime()}h</span>
+            <span>المتوسط: {calculateAverageApprovalTime()} ساعة</span>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -100,11 +100,11 @@ const ApprovalWorkflow = ({ changes = [] }) => {
             onChange={(e) => setTimeRange(e?.target?.value)}
             className="text-sm border border-border rounded px-2 py-1 bg-background"
           >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
+            <option value="7d">آخر 7 أيام</option>
+            <option value="30d">آخر 30 يومًا</option>
+            <option value="90d">آخر 90 يومًا</option>
           </select>
-          <Button variant="ghost" size="sm" title="Refresh Data">
+          <Button variant="ghost" size="sm" title="تحديث البيانات">
             <Icon name="RefreshCw" size={16} />
           </Button>
         </div>
@@ -115,7 +115,7 @@ const ApprovalWorkflow = ({ changes = [] }) => {
           <div className="bg-muted/30 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-muted-foreground">Active Workflows</div>
+                <div className="text-sm text-muted-foreground">سير العمل النشط</div>
                 <div className="text-2xl font-semibold text-foreground">
                   {workflowData?.filter(wf => wf?.status === 'In Progress' || wf?.status === 'Fast Track')?.length}
                 </div>
@@ -127,7 +127,7 @@ const ApprovalWorkflow = ({ changes = [] }) => {
           <div className="bg-muted/30 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-muted-foreground">Avg Approval Time</div>
+                <div className="text-sm text-muted-foreground">متوسط وقت الموافقة</div>
                 <div className="text-2xl font-semibold text-foreground">
                   {calculateAverageApprovalTime()}h
                 </div>
@@ -139,7 +139,7 @@ const ApprovalWorkflow = ({ changes = [] }) => {
           <div className="bg-muted/30 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-muted-foreground">Bottlenecks</div>
+                <div className="text-sm text-muted-foreground">نقاط الاختناق</div>
                 <div className="text-2xl font-semibold text-foreground">
                   {getBottleneckSteps()?.length}
                 </div>
@@ -178,7 +178,7 @@ const ApprovalWorkflow = ({ changes = [] }) => {
                     {workflow?.priority}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Step {workflow?.completedSteps}/{workflow?.totalSteps}
+                    الخطوة {workflow?.completedSteps}/{workflow?.totalSteps}
                   </div>
                 </div>
               </div>
@@ -186,7 +186,7 @@ const ApprovalWorkflow = ({ changes = [] }) => {
               {/* Progress Bar */}
               <div className="mb-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                  <span>Progress</span>
+                  <span>التقدم</span>
                   <span>{Math.round((workflow?.completedSteps / workflow?.totalSteps) * 100)}%</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
@@ -200,10 +200,10 @@ const ApprovalWorkflow = ({ changes = [] }) => {
               {/* Current Step */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center space-x-2">
-                  <span className="text-muted-foreground">Current:</span>
+                  <span className="text-muted-foreground">الحالية:</span>
                   <span className="font-medium text-foreground">{workflow?.currentStep}</span>
-                  {workflow?.bottleneck === workflow?.currentStep && (
-                    <Icon name="AlertCircle" size={16} className="text-warning" title="Bottleneck detected" />
+                    {workflow?.bottleneck === workflow?.currentStep && (
+                    <Icon name="AlertCircle" size={16} className="text-warning" title="تم اكتشاف نقطة اختناق" />
                   )}
                 </div>
                 <div className="text-muted-foreground">
@@ -231,10 +231,10 @@ const ApprovalWorkflow = ({ changes = [] }) => {
                           </div>
                           {step?.duration && (
                             <div className="text-xs text-muted-foreground">
-                              Duration: {step?.duration}h
+                              المدة: {step?.duration} ساعة
                               {step?.completedAt && (
                                 <span className="ml-2">
-                                  Completed: {step?.completedAt?.toLocaleDateString()}
+                                  اكتملت: {step?.completedAt?.toLocaleDateString()}
                                 </span>
                               )}
                             </div>
@@ -254,13 +254,13 @@ const ApprovalWorkflow = ({ changes = [] }) => {
         <div className="p-4 border-t border-border bg-muted/30">
           <h4 className="font-medium text-foreground mb-2 flex items-center space-x-2">
             <Icon name="AlertTriangle" size={16} className="text-warning" />
-            <span>Identified Bottlenecks</span>
+            <span>نقاط الاختناق المحددة</span>
           </h4>
           <div className="space-y-2">
             {getBottleneckSteps()?.slice(0, 3)?.map(([step, count]) => (
               <div key={step} className="flex items-center justify-between text-sm">
                 <span className="text-foreground">{step}</span>
-                <span className="text-warning font-medium">{count} occurrence{count > 1 ? 's' : ''}</span>
+                <span className="text-warning font-medium">{count} مرة{count > 1 ? 'ات' : ''}</span>
               </div>
             ))}
           </div>

@@ -1,39 +1,42 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const QuickActions = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const actions = [
     {
       id: 1,
-      title: 'View Reports',
-      description: 'Detailed analytics and insights',
+      title: t('viewReports', 'View Reports'),
+      description: 'تحليلات ورؤى تفصيلية',
       icon: 'FileText',
       color: 'var(--color-primary)',
       path: '/reports-analytics',
     },
     {
       id: 2,
-      title: 'Create Ticket',
-      description: 'Open new support request',
+      title: t('createTicket', 'Create Ticket'),
+      description: 'فتح طلب دعم جديد',
       icon: 'Plus',
       color: 'var(--color-success)',
       path: '/ticket-creation',
     },
     {
       id: 3,
-      title: 'Team Dashboard',
-      description: 'Monitor agent activity',
+      title: t('teamDashboard', 'Team Dashboard'),
+      description: 'مراقبة نشاط الفريق',
       icon: 'Users',
       color: 'var(--color-warning)',
       path: '/agent-dashboard',
     },
     {
       id: 4,
-      title: 'Employee Portal',
-      description: 'View customer requests',
+      title: t('employeePortalQuick', 'Employee Portal'),
+      description: 'عرض طلبات الموظفين',
       icon: 'UserCircle',
       color: 'var(--color-accent)',
       path: '/customer-portal',
@@ -42,7 +45,7 @@ const QuickActions = () => {
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-4 md:p-6">
-      <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+      <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">{t('quickActions', 'Quick Actions')}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
         {actions?.map((action) => (
           <button
@@ -50,7 +53,7 @@ const QuickActions = () => {
             onClick={() => navigate(action?.path)}
             className="flex items-center gap-3 p-3 md:p-4 bg-background border border-border rounded-lg hover:shadow-elevation-2 hover:border-primary/50 transition-smooth text-left"
           >
-            <div 
+            <div
               className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: `${action?.color}15` }}
             >

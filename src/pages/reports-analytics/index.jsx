@@ -16,9 +16,13 @@ import SLAPerformanceChart from './components/SLAPerformanceChart';
 import AgentPerformanceTable from './components/AgentPerformanceTable';
 import { dashboardAPI } from '../../services/api';
 import apiClient from '../../services/apiClient';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ReportsAnalytics = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [chartType, setChartType] = useState('line');
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -31,27 +35,28 @@ const ReportsAnalytics = () => {
   }, []);
 
   const metrics = summary ? [
-    { title: 'Total Tickets', value: String(summary.totalTickets ?? '--'), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: '' },
-    { title: 'Avg Resolution Time', value: summary.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '--', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-success)', trend: '' },
-    { title: 'SLA Compliance', value: '--', change: '', changeType: 'positive', icon: 'Target', iconColor: 'var(--color-warning)', trend: '' },
-    { title: 'Open Tickets', value: String(summary.openTickets ?? '--'), change: '', changeType: 'positive', icon: 'Star', iconColor: 'var(--color-accent)', trend: '' },
+    { title: t('totalTickets', 'Total Tickets'), value: String(summary.totalTickets ?? '--'), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: '' },
+    { title: t('avgResolution', 'Avg Resolution Time'), value: summary.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '--', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-success)', trend: '' },
+    { title: t('slaCompliance', 'SLA Compliance'), value: '--', change: '', changeType: 'positive', icon: 'Target', iconColor: 'var(--color-warning)', trend: '' },
+    { title: t('openTickets', 'Open Tickets'), value: String(summary.openTickets ?? '--'), change: '', changeType: 'positive', icon: 'Star', iconColor: 'var(--color-accent)', trend: '' },
   ] : [
-    { title: 'Total Tickets', value: '--', change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: '' },
-    { title: 'Avg Resolution Time', value: '--', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-success)', trend: '' },
-    { title: 'SLA Compliance', value: '--', change: '', changeType: 'positive', icon: 'Target', iconColor: 'var(--color-warning)', trend: '' },
-    { title: 'Open Tickets', value: '--', change: '', changeType: 'positive', icon: 'Star', iconColor: 'var(--color-accent)', trend: '' },
+    { title: t('totalTickets', 'Total Tickets'), value: '--', change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: '' },
+    { title: t('avgResolution', 'Avg Resolution Time'), value: '--', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-success)', trend: '' },
+    { title: t('slaCompliance', 'SLA Compliance'), value: '--', change: '', changeType: 'positive', icon: 'Target', iconColor: 'var(--color-warning)', trend: '' },
+    { title: t('openTickets', 'Open Tickets'), value: '--', change: '', changeType: 'positive', icon: 'Star', iconColor: 'var(--color-accent)', trend: '' },
   ];
 
 
   const chartTypeOptions = [
-  { value: 'line', label: 'Line Chart' },
-  { value: 'bar', label: 'Bar Chart' }];
-
+    { value: 'line', label: t('lineChart', 'Line Chart') },
+    { value: 'bar', label: t('barChart', 'Bar Chart') }
+  ];
 
   const tabs = [
-  { id: 'overview', label: 'Overview', icon: 'LayoutDashboard' },
-  { id: 'performance', label: 'Performance', icon: 'TrendingUp' },
-  { id: 'templates', label: 'Templates', icon: 'FileStack' }];
+    { id: 'overview', label: t('overview', 'Overview'), icon: 'LayoutDashboard' },
+    { id: 'performance', label: t('performance', 'Performance'), icon: 'TrendingUp' },
+    { id: 'templates', label: t('templates', 'Templates'), icon: 'FileStack' }
+  ];
 
 
   const handleApplyFilters = (filters) => {
@@ -213,23 +218,23 @@ const ReportsAnalytics = () => {
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">Open Tickets</span>
+                      <span className="text-sm text-muted-foreground caption">{t('openTickets', 'Open Tickets')}</span>
                       <span className="text-sm font-medium text-foreground data-text">{summary?.openTickets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">Resolved Today</span>
+                      <span className="text-sm text-muted-foreground caption">{t('resolved', 'Resolved Today')}</span>
                       <span className="text-sm font-medium text-success data-text">{summary?.resolvedTickets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">Total Assets</span>
+                      <span className="text-sm text-muted-foreground caption">{t('totalAssets', 'Total Assets')}</span>
                       <span className="text-sm font-medium text-error data-text">{summary?.totalAssets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">Active Assets</span>
+                      <span className="text-sm text-muted-foreground caption">{t('activeTechnicians', 'Active Assets')}</span>
                       <span className="text-sm font-medium text-foreground data-text">{summary?.activeAssets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground caption">Avg Resolution Time</span>
+                      <span className="text-sm text-muted-foreground caption">{t('avgResolution', 'Avg Resolution Time')}</span>
                       <span className="text-sm font-medium text-foreground data-text">{summary?.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '--'}</span>
                     </div>
                   </div>

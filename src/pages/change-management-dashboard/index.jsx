@@ -7,10 +7,14 @@ import PipelineVisualization from './components/PipelineVisualization';
 import FilterControls from './components/FilterControls';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import { changeRequestsAPI, dashboardAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
 
 const ChangeManagementDashboard = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [activeFilters, setActiveFilters] = useState({});
@@ -141,10 +145,10 @@ const ChangeManagementDashboard = () => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-semibold text-foreground font-heading">
-                Change Management Dashboard
+                {t('changeManagementDashboard', 'Change Management Dashboard')}
               </h1>
               <p className="text-muted-foreground mt-2">
-                Monitor change success rates, approval workflows, and deployment pipeline performance
+                {t('changeManagementDashboardDescription', 'Monitor change success rates, approval workflows, and deployment pipeline performance')}
               </p>
             </div>
             
@@ -160,7 +164,12 @@ const ChangeManagementDashboard = () => {
                     className="capitalize"
                   >
                     <Icon name={getViewModeIcon(mode)} size={16} />
-                    <span className="ml-1 hidden sm:inline">{mode}</span>
+                  <span className="ml-1 hidden sm:inline">
+                    {mode === 'overview' ? t('overview', 'Overview') : 
+                     mode === 'calendar' ? t('calendar', 'Calendar') : 
+                     mode === 'metrics' ? t('metrics', 'Metrics') : 
+                     t('pipeline', 'Pipeline')}
+                  </span>
                   </Button>
                 ))}
               </div>
@@ -177,14 +186,14 @@ const ChangeManagementDashboard = () => {
                   size={16} 
                   className={refreshing ? 'animate-spin' : ''} 
                 />
-                <span className="ml-2 hidden sm:inline">
-                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                  <span className="ml-2 hidden sm:inline">
+                  {refreshing ? t('refreshing', 'Refreshing...') : t('refresh', 'Refresh')}
                 </span>
               </Button>
 
               {/* Last Refresh Indicator */}
               <div className="text-sm text-muted-foreground hidden md:block">
-                Last updated: {lastRefresh?.toLocaleTimeString('en-US', { 
+                {t('lastRefresh', 'Last refresh')}: {lastRefresh?.toLocaleTimeString('en-US', { 
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
@@ -247,12 +256,12 @@ const ChangeManagementDashboard = () => {
 
           {/* Emergency Alert Banner */}
           <div className="fixed bottom-6 right-6 z-50">
-            <div className="bg-error text-error-foreground px-4 py-3 rounded-lg operations-shadow flex items-center space-x-3 max-w-sm">
-              <Icon name="AlertTriangle" size={20} className="animate-pulse" />
-              <div>
-                <div className="font-medium text-sm">Emergency Change Alert</div>
-                <div className="text-xs opacity-90">Security patch deployment in progress</div>
-              </div>
+              <div className="bg-error text-error-foreground px-4 py-3 rounded-lg operations-shadow flex items-center space-x-3 max-w-sm">
+                <Icon name="AlertTriangle" size={20} className="animate-pulse" />
+                <div>
+                <div className="font-medium text-sm">{t('emergencyChangeAlert', 'Emergency Change Alert')}</div>
+                <div className="text-xs opacity-90">{t('securityPatchDeployment', 'Security patch deployment in progress')}</div>
+                </div>
               <Button variant="ghost" size="sm" className="text-error-foreground hover:bg-error/20">
                 <Icon name="X" size={16} />
               </Button>

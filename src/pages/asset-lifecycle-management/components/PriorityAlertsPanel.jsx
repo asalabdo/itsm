@@ -37,8 +37,8 @@ const PriorityAlertsPanel = ({ alerts = [] }) => {
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Priority Alerts</h3>
-          <p className="text-sm text-muted-foreground">Critical actions required</p>
+          <h3 className="text-lg font-semibold text-foreground">تنبيهات الأولوية</h3>
+          <p className="text-sm text-muted-foreground">الإجراءات الحرجة المطلوبة</p>
         </div>
         <div className="flex items-center space-x-2">
         <div className="w-6 h-6 bg-error rounded-full flex items-center justify-center">
@@ -64,16 +64,16 @@ const PriorityAlertsPanel = ({ alerts = [] }) => {
                   <h4 className="font-medium text-foreground mb-1">{alert?.title}</h4>
                   <p className="text-sm text-muted-foreground mb-2">{alert?.description}</p>
                   <div className="flex items-center space-x-4 text-xs">
-                    <span className="text-muted-foreground">Asset: {alert?.assetId}</span>
-                    <span className="text-muted-foreground">Location: {alert?.location}</span>
+                    <span className="text-muted-foreground">الأصل: {alert?.assetId}</span>
+                    <span className="text-muted-foreground">الموقع: {alert?.location}</span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div className={`text-sm font-medium ${getDaysRemainingColor(alert?.daysRemaining)}`}>
                   {alert?.daysRemaining < 0 
-                    ? `${Math.abs(alert?.daysRemaining)} days overdue`
-                    : `${alert?.daysRemaining} days`
+                    ? `متأخر ${Math.abs(alert?.daysRemaining)} يومًا`
+                    : `${alert?.daysRemaining} يومًا`
                   }
                 </div>
                 <div className="text-xs text-muted-foreground">{alert?.cost}</div>
@@ -85,17 +85,17 @@ const PriorityAlertsPanel = ({ alerts = [] }) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
                     <div className="text-sm">
-                      <span className="text-muted-foreground">Severity: </span>
+                      <span className="text-muted-foreground">الحدة: </span>
                       <span className="capitalize font-medium">{alert?.severity}</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-muted-foreground">Estimated Cost: </span>
+                      <span className="text-muted-foreground">التكلفة التقديرية: </span>
                       <span className="font-medium">{alert?.cost}</span>
                     </div>
                   </div>
                   <div className="flex space-x-2">
                     <Button variant="outline" size="sm">
-                      View Details
+                      عرض التفاصيل
                     </Button>
                     <Button variant="default" size="sm">
                       {alert?.action}
@@ -112,10 +112,10 @@ const PriorityAlertsPanel = ({ alerts = [] }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="outline" size="sm" iconName="Filter">
-              Filter Alerts
+              تصفية التنبيهات
             </Button>
             <Button variant="ghost" size="sm" iconName="Settings">
-              Alert Settings
+              إعدادات التنبيهات
             </Button>
           </div>
           {/* <Button variant="default" size="sm" iconName="Plus">
@@ -127,15 +127,15 @@ const PriorityAlertsPanel = ({ alerts = [] }) => {
       <div className="mt-4 grid grid-cols-3 gap-4">
         <div className="text-center p-3 bg-error/10 rounded-lg">
           <div className="text-lg font-semibold text-error">{priorityAlerts?.filter(alert => alert.severity === 'critical').length}</div>
-          <div className="text-xs text-muted-foreground">Critical</div>
+          <div className="text-xs text-muted-foreground">حرجة</div>
         </div>
         <div className="text-center p-3 bg-warning/10 rounded-lg">
           <div className="text-lg font-semibold text-warning">{priorityAlerts?.filter(alert => alert.severity === 'high').length}</div>
-          <div className="text-xs text-muted-foreground">High</div>
+          <div className="text-xs text-muted-foreground">عالية</div>
         </div>
         <div className="text-center p-3 bg-accent/10 rounded-lg">
           <div className="text-lg font-semibold text-accent">{priorityAlerts?.filter(alert => alert.severity === 'medium').length}</div>
-          <div className="text-xs text-muted-foreground">Medium</div>
+          <div className="text-xs text-muted-foreground">متوسطة</div>
         </div>
       </div>
     </div>

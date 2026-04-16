@@ -121,7 +121,7 @@ const Select = React.forwardRef(({
     options = [],
     value,
     defaultValue,
-    placeholder = "Select an option",
+    placeholder,
     multiple = false,
     disabled = false,
     required = false,
@@ -153,17 +153,17 @@ const Select = React.forwardRef(({
 
     // Get selected option(s) for display
     const getSelectedDisplay = () => {
-        if (!value) return placeholder;
+        if (!value) return placeholder || "Select an option";
 
         if (multiple) {
             const selectedOptions = flatOptions?.filter(opt => value?.includes(opt?.value));
-            if (selectedOptions?.length === 0) return placeholder;
+            if (selectedOptions?.length === 0) return placeholder || "Select an option";
             if (selectedOptions?.length === 1) return selectedOptions?.[0]?.label;
             return `${selectedOptions?.length} items selected`;
         }
 
         const selectedOption = flatOptions?.find(opt => opt?.value === value);
-        return selectedOption ? selectedOption?.label : placeholder;
+        return selectedOption ? selectedOption?.label : (placeholder || "Select an option");
     };
 
     const handleToggle = () => {

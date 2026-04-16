@@ -2,9 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from 'components/ui/Button';
 import Icon from 'components/AppIcon';
+import { useLanguage } from '../context/LanguageContext';
+import { getTranslation } from '../services/i18n';
 
 const NotFound = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const handleGoHome = () => {
     navigate('/');
@@ -19,9 +23,9 @@ const NotFound = () => {
           </div>
         </div>
 
-        <h2 className="text-2xl font-medium text-onBackground mb-2">Page Not Found</h2>
+        <h2 className="text-2xl font-medium text-onBackground mb-2">{t('pageNotFound', 'Page Not Found')}</h2>
         <p className="text-onBackground/70 mb-8">
-          The page you're looking for doesn't exist. Let's get you back!
+          {t('pageNotFoundDescription', 'The page you\'re looking for doesn\'t exist. Let\'s get you back!')}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -31,7 +35,7 @@ const NotFound = () => {
             iconPosition="left"
             onClick={() => window.history?.back()}
           >
-            Go Back
+            {t('goBack', 'Go Back')}
           </Button>
 
           <Button
@@ -40,7 +44,7 @@ const NotFound = () => {
             iconPosition="left"
             onClick={handleGoHome}
           >
-            Back to Home
+            {t('backToHome', 'Back to Home')}
           </Button>
         </div>
       </div>

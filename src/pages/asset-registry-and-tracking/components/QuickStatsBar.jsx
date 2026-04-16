@@ -4,35 +4,35 @@ import Icon from '../../../components/AppIcon';
 const QuickStatsBar = ({ stats }) => {
   const statItems = [
     {
-      label: 'Total Assets',
+      label: 'إجمالي الأصول',
       value: stats?.total,
       icon: 'Package',
       color: 'text-primary',
       bgColor: 'bg-primary/10'
     },
     {
-      label: 'Active',
+      label: 'نشطة',
       value: stats?.active,
       icon: 'CheckCircle',
       color: 'text-success',
       bgColor: 'bg-success/10'
     },
     {
-      label: 'Under Maintenance',
+      label: 'تحت الصيانة',
       value: stats?.maintenance,
       icon: 'Wrench',
       color: 'text-warning',
       bgColor: 'bg-warning/10'
     },
     {
-      label: 'Maintenance Due',
+      label: 'الصيانة المستحقة',
       value: stats?.maintenanceDue,
       icon: 'AlertTriangle',
       color: 'text-error',
       bgColor: 'bg-error/10'
     },
     {
-      label: 'Total Value',
+      label: 'إجمالي القيمة',
       value: stats?.totalValue,
       icon: 'Banknote',
       color: 'text-primary',

@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { serviceRequestsAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ActiveRequestsDashboard = ({ expanded = false }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -57,12 +61,12 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
 
 
   const statusOptions = [
-    { value: 'all', label: 'All Requests', count: requests?.length },
-    { value: 'pending_approval', label: 'Pending Approval', count: requests?.filter(r => r?.status === 'pending_approval')?.length },
-    { value: 'in_progress', label: 'In Progress', count: requests?.filter(r => r?.status === 'in_progress')?.length },
-    { value: 'urgent', label: 'Urgent', count: requests?.filter(r => r?.priority === 'critical' || r?.status === 'urgent')?.length },
-    { value: 'completed', label: 'Completed', count: requests?.filter(r => r?.status === 'completed')?.length },
-    { value: 'rejected', label: 'Rejected', count: requests?.filter(r => r?.status === 'rejected')?.length }
+    { value: 'all', label: t('allRequests', 'All Requests'), count: requests?.length },
+    { value: 'pending_approval', label: t('pendingApproval', 'Pending Approval'), count: requests?.filter(r => r?.status === 'pending_approval')?.length },
+    { value: 'in_progress', label: t('inProgress', 'In Progress'), count: requests?.filter(r => r?.status === 'in_progress')?.length },
+    { value: 'urgent', label: t('urgent', 'Urgent'), count: requests?.filter(r => r?.priority === 'critical' || r?.status === 'urgent')?.length },
+    { value: 'completed', label: t('completed', 'Completed'), count: requests?.filter(r => r?.status === 'completed')?.length },
+    { value: 'rejected', label: t('rejected', 'Rejected'), count: requests?.filter(r => r?.status === 'rejected')?.length }
   ];
 
   const filteredRequests = requests?.filter(request => 
@@ -92,11 +96,11 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending_approval': return 'Pending Approval';
-      case 'in_progress': return 'In Progress';
-      case 'completed': return 'Completed';
-      case 'rejected': return 'Rejected';
-      case 'urgent': return 'Urgent';
+      case 'pending_approval': return t('pendingApproval', 'Pending Approval');
+      case 'in_progress': return t('inProgress', 'In Progress');
+      case 'completed': return t('completed', 'Completed');
+      case 'rejected': return t('rejected', 'Rejected');
+      case 'urgent': return t('urgent', 'Urgent');
       default: return status;
     }
   };
@@ -115,11 +119,11 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
     const diffMs = due - now;
     const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
     
-    if (diffHours < 0) return 'Overdue';
-    if (diffHours < 24) return `${diffHours}h remaining`;
+    if (diffHours < 0) return t('overdue', 'Overdue');
+    if (diffHours < 24) return `${diffHours}h ${t('remaining', 'remaining')}`;
     
     const diffDays = Math.ceil(diffHours / 24);
-    return `${diffDays}d remaining`;
+    return `${diffDays}d ${t('remaining', 'remaining')}`;
   };
 
   if (loading) {
@@ -145,14 +149,14 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Active Requests</h2>
+          <h2 className="text-xl font-semibold text-foreground">{t('activeRequests', 'Active Requests')}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {filteredRequests?.length} requests with real-time tracking
+            {filteredRequests?.length} {t('requestsWithTracking', 'requests with real-time tracking')}
           </p>
         </div>
         <Button variant="outline" size="sm">
           <Icon name="Filter" size={16} />
-          <span className="ml-2">Filter</span>
+          <span className="ml-2">{t('filter', 'Filter')}</span>
         </Button>
       </div>
 
@@ -211,7 +215,7 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
             {/* Progress Bar */}
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground">Progress: {request?.progress}%</span>
+                <span className="text-xs text-muted-foreground">{t('progress', 'Progress')}: {request?.progress}%</span>
                 <span className="text-xs text-muted-foreground">{getTimeRemaining(request?.dueDate)}</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
@@ -226,7 +230,7 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-2">
                 <Icon name="Clock" size={14} className="text-muted-foreground" />
-                <span className="text-muted-foreground">Current Stage:</span>
+                <span className="text-muted-foreground">{t('currentStage', 'Current Stage')}:</span>
                 <span className="font-medium text-foreground">{request?.currentStage}</span>
               </div>
               <div className="flex items-center space-x-2">
@@ -238,7 +242,7 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
             {/* Expandable Milestones */}
             {expanded && (
               <div className="mt-4 pt-4 border-t border-border">
-                <h4 className="text-sm font-medium text-foreground mb-3">Milestones</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">{t('milestones', 'Milestones')}</h4>
                 <div className="space-y-2">
                   {request?.milestones?.map((milestone, index) => (
                     <div key={index} className="flex items-center space-x-3">
@@ -272,9 +276,9 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
       {filteredRequests?.length === 0 && (
         <div className="text-center py-12">
           <Icon name="ClipboardList" size={48} className="text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">No active requests</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">{t('noActiveRequests', 'No active requests')}</h3>
           <p className="text-muted-foreground">
-            All requests in this category have been processed
+            {t('allRequestsProcessed', 'All requests in this category have been processed')}
           </p>
         </div>
       )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
@@ -10,15 +10,19 @@ import PerformanceChart from './components/PerformanceChart';
 import QuickActions from './components/QuickActions';
 import { dashboardAPI, usersAPI, ticketsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ManagerDashboard = () => {
+  const { language } = useLanguage();
+  const t = useMemo(() => (key, fallback) => getTranslation(language, key, fallback), [language]);
   const [dateRange, setDateRange] = useState('month');
-  const [metrics, setMetrics] = useState([]);
+  const [, setMetrics] = useState([]);
   const [teamData, setTeamData] = useState([]);
-  const [slaAlerts, setSlaAlerts] = useState([]);
+  const [, setSlaAlerts] = useState([]);
   const [allTickets, setAllTickets] = useState([]);
-  const [chartData, setChartData] = useState([]);
-  const [pendingTickets, setPendingTickets] = useState([]);
+  const [, setChartData] = useState([]);
+  const [, setPendingTickets] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,10 +41,10 @@ const ManagerDashboard = () => {
           const avgTime = s.averageResolutionTime != null ? `${Number(s.averageResolutionTime).toFixed(1)}h` : '0h';
 
           setMetrics([
-            { title: 'Total Tickets', value: String(total), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [total] },
-            { title: 'Resolution Rate', value: `${resRate}%`, change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
-            { title: 'SLA Compliance', value: '0%', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
-            { title: 'Avg Response Time', value: avgTime, change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
+            { title: t('totalTickets', 'Total Tickets'), value: String(total), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [total] },
+            { title: t('resolutionRate', 'Resolution Rate'), value: `${resRate}%`, change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
+            { title: t('slaCompliance', 'SLA Compliance'), value: '0%', change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
+            { title: t('avgResponseTime', 'Avg Response Time'), value: avgTime, change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
           ]);
         }
 
@@ -49,7 +53,7 @@ const ManagerDashboard = () => {
         setAllTickets(tickets);
         setPendingTickets(tickets.filter(t => !t.assignedToId && !['Resolved', 'Closed'].includes(String(t.status || ''))));
         
-        let mappedTeam = users.map((u, i) => ({
+        const mappedTeam = users.map((u) => ({
           id: u.id,
           name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || 'Unknown',
           email: u.email || '',
@@ -101,17 +105,17 @@ const ManagerDashboard = () => {
         const slaCompliant = tickets.filter(t => String(t.slaStatus || '').toLowerCase() !== 'breached').length;
         const avgResponse = totalTickets > 0 ? (tickets.reduce((sum, t) => sum + Math.max(1, Math.floor(((new Date(t.updatedAt || Date.now())) - new Date(t.createdAt || Date.now())) / 3600000)), 0) / totalTickets).toFixed(1) : '0.0';
         setMetrics([
-          { title: 'Total Tickets', value: String(totalTickets), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [totalTickets] },
-          { title: 'Resolution Rate', value: `${totalTickets > 0 ? ((resolvedTickets / totalTickets) * 100).toFixed(1) : 0}%`, change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
-          { title: 'SLA Compliance', value: `${totalTickets > 0 ? ((slaCompliant / totalTickets) * 100).toFixed(0) : 0}%`, change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
-          { title: 'Avg Response Time', value: `${avgResponse}h`, change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
+          { title: t('totalTickets', 'Total Tickets'), value: String(totalTickets), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [totalTickets] },
+          { title: t('resolutionRate', 'Resolution Rate'), value: `${totalTickets > 0 ? ((resolvedTickets / totalTickets) * 100).toFixed(1) : 0}%`, change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
+          { title: t('slaCompliance', 'SLA Compliance'), value: `${totalTickets > 0 ? ((slaCompliant / totalTickets) * 100).toFixed(0) : 0}%`, change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
+          { title: t('avgResponseTime', 'Avg Response Time'), value: `${avgResponse}h`, change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
         ]);
       } catch (err) {
         console.error('Failed to load manager dashboard data:', err);
       }
     };
     fetchData();
-  }, []);
+  }, [t]);
 
   const rangeToDays = (range) => {
     switch (range) {
@@ -157,12 +161,12 @@ const ManagerDashboard = () => {
       : '0.0';
 
     return [
-      { title: 'Total Tickets', value: String(totalTickets), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [totalTickets] },
-      { title: 'Resolution Rate', value: `${totalTickets > 0 ? ((resolvedTickets / totalTickets) * 100).toFixed(1) : 0}%`, change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
-      { title: 'SLA Compliance', value: `${totalTickets > 0 ? ((slaCompliant / totalTickets) * 100).toFixed(0) : 0}%`, change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
-      { title: 'Avg Response Time', value: `${avgResponse}h`, change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
+      { title: t('totalTickets', 'Total Tickets'), value: String(totalTickets), change: '', changeType: 'positive', icon: 'Ticket', iconColor: 'var(--color-primary)', trend: [totalTickets] },
+      { title: t('resolutionRate', 'Resolution Rate'), value: `${totalTickets > 0 ? ((resolvedTickets / totalTickets) * 100).toFixed(1) : 0}%`, change: '', changeType: 'positive', icon: 'CheckCircle', iconColor: 'var(--color-success)', trend: [] },
+      { title: t('slaCompliance', 'SLA Compliance'), value: `${totalTickets > 0 ? ((slaCompliant / totalTickets) * 100).toFixed(0) : 0}%`, change: '', changeType: 'positive', icon: 'Clock', iconColor: 'var(--color-warning)', trend: [] },
+      { title: t('avgResponseTime', 'Avg Response Time'), value: `${avgResponse}h`, change: '', changeType: 'positive', icon: 'Zap', iconColor: 'var(--color-accent)', trend: [] }
     ];
-  }, [filteredTickets]);
+  }, [filteredTickets, t]);
 
   const visibleTeamData = useMemo(() => {
     return teamData.map((agent) => {
@@ -228,10 +232,10 @@ const ManagerDashboard = () => {
       <Header />
       <BreadcrumbTrail />
       <main className="max-w-[1920px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2">Manager Dashboard</h1>
-            <p className="text-sm md:text-base text-muted-foreground">Monitor team performance and optimize workflow efficiency</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2">{t('managerDashboard', 'Manager Dashboard')}</h1>
+            <p className="text-sm md:text-base text-muted-foreground">{t('monitorTeamPerformance', 'Monitor team performance and optimize workflow efficiency')}</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-card border border-border rounded-lg p-1">
@@ -243,7 +247,7 @@ const ManagerDashboard = () => {
                 }
                 onClick={() => setDateRange(range)}>
 
-                  {range?.charAt(0)?.toUpperCase() + range?.slice(1)}
+                  {t(range, range?.charAt(0)?.toUpperCase() + range?.slice(1))}
                 </button>
               )}
             </div>
@@ -252,7 +256,7 @@ const ManagerDashboard = () => {
               onClick={handleExportReport}
             >
               <Icon name="Download" size={18} />
-              <span className="hidden md:inline">Export Report</span>
+              <span className="hidden md:inline">{t('export', 'Export Report')}</span>
             </button>
           </div>
         </div>
@@ -283,7 +287,7 @@ const ManagerDashboard = () => {
 
         <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">Tickets by Category</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('ticketsByCategory', 'Tickets by Category')}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(
@@ -298,7 +302,7 @@ const ManagerDashboard = () => {
                 </div>
                 <div className="text-sm text-muted-foreground caption">
                   <Icon name="Ticket" size={14} className="inline mr-1" />
-                  {count} tickets
+                  {count} {t('ticketsCount', 'tickets')}
                 </div>
               </div>
             ))}

@@ -51,7 +51,7 @@ const AssetLifecycleManagement = () => {
 
         const normalizedAssets = assets.map((asset) => ({
           ...asset,
-          ownerDepartment: asset?.owner?.department || 'Unassigned'
+          ownerDepartment: asset?.owner?.department || 'غير مخصص'
         }));
 
         const procurement = normalizedAssets.filter(a => {
@@ -63,11 +63,11 @@ const AssetLifecycleManagement = () => {
         const retirement = normalizedAssets.filter(a => String(a.status || '').toLowerCase().includes('retir') || a?.decommissionDate);
 
         setLifecycleData([
-          { stage: 'Procurement', count: procurement.length, percentage: normalizedAssets.length ? Number(((procurement.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#005051', description: 'Assets in procurement or recent acquisition', details: { recent: procurement.length, activeOrders: procurement.length, planned: Math.max(0, normalizedAssets.length - procurement.length) } },
-          { stage: 'Deployment', count: Math.max(0, normalizedAssets.length - procurement.length - active.length), percentage: normalizedAssets.length ? Number((((normalizedAssets.length - procurement.length - active.length) / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#2563EB', description: 'Assets being staged or deployed', details: { staging: Math.max(0, normalizedAssets.length - procurement.length - active.length), testing: tickets.filter(t => String(t.category || '').toLowerCase().includes('deployment')).length, production: active.length } },
-          { stage: 'Active', count: active.length, percentage: normalizedAssets.length ? Number(((active.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#059669', description: 'Assets in active use', details: { optimal: active.length, maintenance: maintenance.length, issues: tickets.filter(t => String(t.category || '').toLowerCase().includes('asset')).length } },
-          { stage: 'Maintenance', count: maintenance.length, percentage: normalizedAssets.length ? Number(((maintenance.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#D97706', description: 'Assets under maintenance', details: { scheduled: maintenance.length, emergency: tickets.filter(t => String(t.priority || '').toLowerCase() === 'critical').length, warranty: tickets.filter(t => String(t.category || '').toLowerCase().includes('warranty')).length } },
-          { stage: 'Retirement', count: retirement.length, percentage: normalizedAssets.length ? Number(((retirement.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#DC2626', description: 'Assets scheduled for retirement', details: { planned: retirement.length, immediate: tickets.filter(t => String(t.category || '').toLowerCase().includes('retire')).length, disposed: 0 } }
+          { stage: 'المشتريات', count: procurement.length, percentage: normalizedAssets.length ? Number(((procurement.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#005051', description: 'الأصول قيد الشراء أو تم اقتناؤها حديثًا', details: { recent: procurement.length, activeOrders: procurement.length, planned: Math.max(0, normalizedAssets.length - procurement.length) } },
+          { stage: 'النشر', count: Math.max(0, normalizedAssets.length - procurement.length - active.length), percentage: normalizedAssets.length ? Number((((normalizedAssets.length - procurement.length - active.length) / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#2563EB', description: 'الأصول قيد التجهيز أو النشر', details: { staging: Math.max(0, normalizedAssets.length - procurement.length - active.length), testing: tickets.filter(t => String(t.category || '').toLowerCase().includes('deployment')).length, production: active.length } },
+          { stage: 'نشطة', count: active.length, percentage: normalizedAssets.length ? Number(((active.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#059669', description: 'الأصول قيد الاستخدام النشط', details: { optimal: active.length, maintenance: maintenance.length, issues: tickets.filter(t => String(t.category || '').toLowerCase().includes('asset')).length } },
+          { stage: 'الصيانة', count: maintenance.length, percentage: normalizedAssets.length ? Number(((maintenance.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#D97706', description: 'الأصول تحت الصيانة', details: { scheduled: maintenance.length, emergency: tickets.filter(t => String(t.priority || '').toLowerCase() === 'critical').length, warranty: tickets.filter(t => String(t.category || '').toLowerCase().includes('warranty')).length } },
+          { stage: 'الإحالة للتقاعد', count: retirement.length, percentage: normalizedAssets.length ? Number(((retirement.length / normalizedAssets.length) * 100).toFixed(1)) : 0, color: '#DC2626', description: 'الأصول المجدولة للإخراج من الخدمة', details: { planned: retirement.length, immediate: tickets.filter(t => String(t.category || '').toLowerCase().includes('retire')).length, disposed: 0 } }
         ]);
 
         setAlertsData(normalizedAssets
@@ -77,13 +77,13 @@ const AssetLifecycleManagement = () => {
             id: index + 1,
             type: String(asset.status || '').toLowerCase().includes('maint') ? 'maintenance' : asset?.decommissionDate ? 'eol' : 'warranty',
             severity: asset?.decommissionDate ? 'critical' : String(asset.status || '').toLowerCase().includes('maint') ? 'high' : 'medium',
-            title: asset?.decommissionDate ? 'End of life notice' : asset?.status || 'Asset review required',
-            description: `${asset.name} (${asset.assetTag}) requires attention`,
+            title: asset?.decommissionDate ? 'إشعار نهاية الخدمة' : asset?.status || 'تحتاج الأصل إلى مراجعة',
+            description: `${asset.name} (${asset.assetTag}) يحتاج إلى متابعة`,
             assetId: asset.assetTag,
-            location: asset.location || 'Unassigned',
+            location: asset.location || 'غير مخصص',
             daysRemaining: asset?.decommissionDate ? Math.ceil((new Date(asset.decommissionDate) - new Date()) / 86400000) : 30,
             cost: asset.costAmount ? `$${Number(asset.costAmount).toLocaleString()}` : '$0',
-            action: asset?.decommissionDate ? 'Plan Migration' : 'Review Asset'
+            action: asset?.decommissionDate ? 'خطة الترحيل' : 'مراجعة الأصل'
           })));
         setAlertCount(normalizedAssets.filter(a => String(a.status || '').toLowerCase() !== 'active').length);
 
@@ -147,7 +147,7 @@ const AssetLifecycleManagement = () => {
         stage.description
       ])),
       `asset-lifecycle-${new Date().toISOString().slice(0, 10)}.csv`,
-      ['Stage', 'Count', 'Percentage', 'Description']
+      ['المرحلة', 'العدد', 'النسبة', 'الوصف']
     );
   };
 
@@ -161,7 +161,7 @@ const AssetLifecycleManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-foreground mb-2">
-                  Asset Lifecycle Management
+                  إدارة دورة حياة الأصول
                 </h1>
                 <p className="text-muted-foreground">
                   Comprehensive asset tracking with lifecycle visibility and compliance monitoring
@@ -169,7 +169,7 @@ const AssetLifecycleManagement = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <div className="text-right">
-                  <div className="text-sm text-muted-foreground">Last Updated</div>
+                  <div className="text-sm text-muted-foreground">آخر تحديث</div>
                   <div className="text-sm font-medium text-foreground">
                     {new Date()?.toLocaleString()}
                   </div>
@@ -221,14 +221,14 @@ const AssetLifecycleManagement = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Quick Actions */}
             <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">إجراءات سريعة</h3>
               <div className="space-y-3">
                 <button
                   type="button"
                   onClick={() => navigate('/asset-registry-and-tracking')}
                   className="w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                 >
-                  <span className="text-sm font-medium">Bulk Asset Assignment</span>
+                  <span className="text-sm font-medium">تعيين الأصول دفعة واحدة</span>
                   <span className="text-xs text-muted-foreground">→</span>
                 </button>
                 <button
@@ -236,7 +236,7 @@ const AssetLifecycleManagement = () => {
                   onClick={() => navigate('/reports-analytics')}
                   className="w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                 >
-                  <span className="text-sm font-medium">Generate Compliance Report</span>
+                  <span className="text-sm font-medium">إنشاء تقرير امتثال</span>
                   <span className="text-xs text-muted-foreground">→</span>
                 </button>
                 <button
@@ -244,7 +244,7 @@ const AssetLifecycleManagement = () => {
                   onClick={() => navigate('/asset-registry-and-tracking')}
                   className="w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                 >
-                  <span className="text-sm font-medium">Schedule Maintenance</span>
+                  <span className="text-sm font-medium">جدولة الصيانة</span>
                   <span className="text-xs text-muted-foreground">→</span>
                 </button>
                 <button
@@ -252,7 +252,7 @@ const AssetLifecycleManagement = () => {
                   onClick={() => navigate('/asset-registry-and-tracking')}
                   className="w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                 >
-                  <span className="text-sm font-medium">Asset Retirement Planning</span>
+                  <span className="text-sm font-medium">تخطيط إخراج الأصول من الخدمة</span>
                   <span className="text-xs text-muted-foreground">→</span>
                 </button>
               </div>
@@ -260,34 +260,34 @@ const AssetLifecycleManagement = () => {
 
             {/* Recent Activity */}
             <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">النشاط الأخير</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                   <div>
-                    <p className="text-sm text-foreground">New server deployed</p>
-                    <p className="text-xs text-muted-foreground">Dell PowerEdge R750 - 2 minutes ago</p>
+                     <p className="text-sm text-foreground">تم نشر خادم جديد</p>
+                     <p className="text-xs text-muted-foreground">Dell PowerEdge R750 - منذ دقيقتين</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-warning rounded-full mt-2"></div>
                   <div>
-                    <p className="text-sm text-foreground">Warranty expiring soon</p>
-                    <p className="text-xs text-muted-foreground">HP ProLiant DL380 - 15 minutes ago</p>
+                     <p className="text-sm text-foreground">الضمان سينتهي قريبًا</p>
+                     <p className="text-xs text-muted-foreground">HP ProLiant DL380 - منذ 15 دقيقة</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-error rounded-full mt-2"></div>
                   <div>
-                    <p className="text-sm text-foreground">License renewal required</p>
-                    <p className="text-xs text-muted-foreground">VMware vSphere - 1 hour ago</p>
+                     <p className="text-sm text-foreground">تجديد الترخيص مطلوب</p>
+                     <p className="text-xs text-muted-foreground">VMware vSphere - منذ ساعة</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                    <p className="text-sm text-foreground">Asset transferred</p>
-                    <p className="text-xs text-muted-foreground">Laptop moved to Engineering - 2 hours ago</p>
+                     <p className="text-sm text-foreground">تم نقل الأصل</p>
+                     <p className="text-xs text-muted-foreground">تم نقل جهاز محمول إلى الهندسة - منذ ساعتين</p>
                   </div>
                 </div>
               </div>
@@ -295,40 +295,40 @@ const AssetLifecycleManagement = () => {
 
             {/* System Status */}
             <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-              <h3 className="text-lg font-semibold text-foreground mb-4">System Status</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">حالة النظام</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">Asset Database</span>
+                    <span className="text-sm text-foreground">قاعدة بيانات الأصول</span>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-success rounded-full"></div>
-                    <span className="text-xs text-success">Online</span>
+                     <span className="text-xs text-success">متصل</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">CMDB Sync</span>
+                    <span className="text-sm text-foreground">مزامنة CMDB</span>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-success rounded-full"></div>
-                    <span className="text-xs text-success">Synced</span>
+                     <span className="text-xs text-success">متزامن</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">License Server</span>
+                    <span className="text-sm text-foreground">خادم التراخيص</span>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-warning rounded-full"></div>
-                    <span className="text-xs text-warning">Degraded</span>
+                     <span className="text-xs text-warning">متراجع</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">Backup Status</span>
+                    <span className="text-sm text-foreground">حالة النسخ الاحتياطي</span>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-success rounded-full"></div>
-                    <span className="text-xs text-success">Complete</span>
+                     <span className="text-xs text-success">مكتمل</span>
                   </div>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-xs text-muted-foreground">
-                  Next scheduled backup: Today at 11:00 PM
+                  النسخ الاحتياطي التالي المجدول: اليوم الساعة 11:00 مساءً
                 </p>
               </div>
             </div>

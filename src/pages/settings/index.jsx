@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import { settingsAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const Settings = () => {
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { setLanguage, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [profile, setProfile] = useState({
     displayName: '',
     role: '',
@@ -32,7 +35,6 @@ const Settings = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        setLoading(true);
         const res = await settingsAPI.getProfile();
         setProfile((prev) => ({
           ...prev,
@@ -46,8 +48,6 @@ const Settings = () => {
         }));
       } catch (error) {
         console.error('Failed to load settings:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -55,15 +55,18 @@ const Settings = () => {
   }, []);
 
   const updateField = (key, value) => {
+    if (key === 'language') {
+      setLanguage(value);
+    }
     setProfile((prev) => ({ ...prev, [key]: value }));
   };
 
-  const toggleModule = (moduleName) => {
+  const toggleModule = (moduleKey) => {
     setProfile((prev) => ({
       ...prev,
-      enabledModules: prev.enabledModules.includes(moduleName)
-        ? prev.enabledModules.filter((item) => item !== moduleName)
-        : [...prev.enabledModules, moduleName],
+      enabledModules: prev.enabledModules.includes(moduleKey)
+        ? prev.enabledModules.filter((item) => item !== moduleKey)
+        : [...prev.enabledModules, moduleKey],
     }));
   };
 
@@ -82,7 +85,15 @@ const Settings = () => {
     }
   };
 
-  const moduleOptions = ['Incidents', 'Changes', 'Assets', 'Requests', 'Knowledge Base', 'Approvals', 'Automation'];
+  const moduleOptions = [
+    { key: 'incidents', label: t('incidentManagement', 'Incident Management') },
+    { key: 'changes', label: t('changeManagement', 'Change Management') },
+    { key: 'assets', label: t('assetRegistry', 'Asset Registry') },
+    { key: 'requests', label: t('serviceRequestManagement', 'Service Request Management') },
+    { key: 'knowledge', label: t('knowledgeBase', 'Knowledge Base') },
+    { key: 'approvals', label: t('approvalQueue', 'Approval Queue') },
+    { key: 'automation', label: t('automationRules', 'Automation Rules') },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,11 +106,11 @@ const Settings = () => {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                   <Icon name="Settings2" size={14} />
-                  Settings
+                  {t('settings', 'Settings')}
                 </div>
-                <h1 className="mt-3 text-3xl font-semibold text-foreground">Workspace preferences and ITSM defaults</h1>
+                <h1 className="mt-3 text-3xl font-semibold text-foreground">{t('settingsPageTitle', 'Workspace preferences and ITSM defaults')}</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Control the dashboard landing page, alerts, refresh cadence, and which operational modules are visible.
+                  {t('settingsPageSubtitle', 'Control the dashboard landing page, alerts, refresh cadence, and which operational modules are visible.')}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -117,11 +128,11 @@ const Settings = () => {
                     pushNotifications: true,
                     weeklyDigest: true,
                   },
-                }}))}>
-                  Reset Defaults
+                  }}))}>
+                  {t('resetDefaults', 'Reset Defaults')}
                 </Button>
                 <Button onClick={handleSave} loading={saving}>
-                  Save Changes
+                  {t('saveChanges', 'Save Changes')}
                 </Button>
               </div>
             </div>
@@ -130,10 +141,10 @@ const Settings = () => {
           <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
             <div className="space-y-6">
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-                <h2 className="text-lg font-semibold text-foreground mb-4">General</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">{t('general', 'General')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">Display Name</span>
+                    <span className="text-sm font-medium text-foreground">{t('displayName', 'Display Name')}</span>
                     <input
                       value={profile.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
@@ -141,7 +152,7 @@ const Settings = () => {
                     />
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">Role</span>
+                    <span className="text-sm font-medium text-foreground">{t('role', 'Role')}</span>
                     <input
                       value={profile.role}
                       onChange={(e) => updateField('role', e.target.value)}
@@ -149,37 +160,36 @@ const Settings = () => {
                     />
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">Theme</span>
+                    <span className="text-sm font-medium text-foreground">{t('theme', 'Theme')}</span>
                     <select
                       value={profile.theme}
                       onChange={(e) => updateField('theme', e.target.value)}
                       className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
                     >
-                      <option>System</option>
-                      <option>Light</option>
-                      <option>Dark</option>
+                      <option value="System">{t('systemTheme', 'System')}</option>
+                      <option value="Light">{t('lightTheme', 'Light')}</option>
+                      <option value="Dark">{t('darkTheme', 'Dark')}</option>
                     </select>
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">Language</span>
+                    <span className="text-sm font-medium text-foreground">{t('languageLabel', 'Language')}</span>
                     <select
                       value={profile.language}
                       onChange={(e) => updateField('language', e.target.value)}
                       className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
                     >
-                      <option value="en">English</option>
-                      <option value="ar">Arabic</option>
-                      <option value="fr">French</option>
+                      <option value="en">{t('english', 'English')}</option>
+                      <option value="ar">{t('arabic', 'Arabic')}</option>
                     </select>
                   </label>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Notifications and SLA</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">{t('notificationsAndSLA', 'Notifications and SLA')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">Notification Email</span>
+                    <span className="text-sm font-medium text-foreground">{t('notificationEmail', 'Notification Email')}</span>
                     <input
                       value={profile.notificationEmail}
                       onChange={(e) => updateField('notificationEmail', e.target.value)}
@@ -187,20 +197,20 @@ const Settings = () => {
                     />
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">Default Landing Page</span>
+                    <span className="text-sm font-medium text-foreground">{t('defaultLandingPage', 'Default Landing Page')}</span>
                     <select
                       value={profile.defaultLandingPage}
                       onChange={(e) => updateField('defaultLandingPage', e.target.value)}
                       className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
                     >
-                      <option value="/it-operations-command-center">Operations Center</option>
-                      <option value="/agent-dashboard">My Tickets</option>
-                      <option value="/customer-portal">Employee Portal</option>
-                      <option value="/service-request-management">Requests</option>
+                      <option value="/it-operations-command-center">{t('itOperationsCenter', 'IT Operations Center')}</option>
+                      <option value="/agent-dashboard">{t('agentDashboard', 'Agent Dashboard')}</option>
+                      <option value="/customer-portal">{t('employeePortal', 'Employee Portal')}</option>
+                      <option value="/service-request-management">{t('serviceRequestManagement', 'Service Request Management')}</option>
                     </select>
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">SLA Warning Minutes</span>
+                    <span className="text-sm font-medium text-foreground">{t('slaWarningMinutes', 'SLA Warning Minutes')}</span>
                     <input
                       type="number"
                       min="15"
@@ -210,7 +220,7 @@ const Settings = () => {
                     />
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">Escalation Minutes</span>
+                    <span className="text-sm font-medium text-foreground">{t('escalationMinutes', 'Escalation Minutes')}</span>
                     <input
                       type="number"
                       min="5"
@@ -223,10 +233,10 @@ const Settings = () => {
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
-                    ['emailUpdates', 'Email Updates', 'Receive ticket updates via email.'],
-                    ['smsAlerts', 'SMS Alerts', 'Get urgent notifications by text message.'],
-                    ['pushNotifications', 'Push Notifications', 'Browser notifications for real-time updates.'],
-                    ['weeklyDigest', 'Weekly Digest', 'Summary of tickets and activity every week.'],
+                    ['emailUpdates', t('emailUpdates', 'Email Updates'), t('emailUpdatesDesc', 'Receive ticket updates via email.')],
+                    ['smsAlerts', t('smsAlerts', 'SMS Alerts'), t('smsAlertsDesc', 'Get urgent notifications via text messages.')],
+                    ['pushNotifications', t('pushNotifications', 'Browser Notifications'), t('pushNotificationsDesc', 'Instant notifications via browser.')],
+                    ['weeklyDigest', t('weeklyDigest', 'Weekly Digest'), t('weeklyDigestDesc', 'Summary of tickets and activity each week.')],
                   ].map(([key, label, description]) => (
                     <label key={key} className="rounded-xl border border-border bg-muted/30 px-4 py-3 flex items-start gap-3">
                       <input
@@ -251,16 +261,16 @@ const Settings = () => {
               </div>
 
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-                <h2 className="text-lg font-semibold text-foreground mb-2">Integration Settings</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-2">{t('integrationSettings', 'Integration Settings')}</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Configure the delivery systems used by notifications and digests.
+                  {t('integrationSettingsDesc', 'Configure delivery systems used in notifications and summaries.')}
                 </p>
                 <div className="space-y-4">
                   {(profile.integrations || []).map((integration, index) => (
                     <div key={integration?.id || `${integration?.provider || 'integration'}-${index}`} className="rounded-xl border border-border p-4 space-y-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <label className="space-y-2">
-                          <span className="text-sm font-medium text-foreground">Name</span>
+                          <span className="text-sm font-medium text-foreground">{t('name', 'Name')}</span>
                           <input
                             value={integration.name || ''}
                             onChange={(e) => setProfile((prev) => ({
@@ -273,7 +283,7 @@ const Settings = () => {
                           />
                         </label>
                         <label className="space-y-2">
-                          <span className="text-sm font-medium text-foreground">Provider</span>
+                          <span className="text-sm font-medium text-foreground">{t('provider', 'Provider')}</span>
                           <input
                             value={integration.provider || ''}
                             onChange={(e) => setProfile((prev) => ({
@@ -288,7 +298,7 @@ const Settings = () => {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <label className="space-y-2">
-                          <span className="text-sm font-medium text-foreground">Configuration JSON</span>
+                          <span className="text-sm font-medium text-foreground">{t('jsonSettings', 'JSON Settings')}</span>
                           <textarea
                             rows={4}
                             value={integration.configurationJson || '{}'}
@@ -302,7 +312,7 @@ const Settings = () => {
                           />
                         </label>
                         <label className="space-y-2">
-                          <span className="text-sm font-medium text-foreground">Event Subscriptions</span>
+                          <span className="text-sm font-medium text-foreground">{t('eventSubscriptions', 'Event Subscriptions')}</span>
                           <textarea
                             rows={4}
                             value={integration.eventSubscriptions || '[]'}
@@ -327,7 +337,7 @@ const Settings = () => {
                             )),
                           }))}
                         />
-                        <span className="text-sm font-medium text-foreground">Enabled</span>
+                        <span className="text-sm font-medium text-foreground">{t('enabled', 'Enabled')}</span>
                       </label>
                     </div>
                   ))}
@@ -337,15 +347,15 @@ const Settings = () => {
 
             <aside className="space-y-6">
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Enabled Modules</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">{t('enabledModules', 'Enabled Modules')}</h2>
                 <div className="space-y-2">
-                  {moduleOptions.map((moduleName) => (
-                    <label key={moduleName} className="flex items-center justify-between rounded-xl border border-border px-4 py-3 hover:bg-muted/40">
-                      <span className="text-sm font-medium text-foreground">{moduleName}</span>
+                  {moduleOptions.map((module) => (
+                    <label key={module.key} className="flex items-center justify-between rounded-xl border border-border px-4 py-3 hover:bg-muted/40">
+                      <span className="text-sm font-medium text-foreground">{module.label}</span>
                       <input
                         type="checkbox"
-                        checked={profile.enabledModules.includes(moduleName)}
-                        onChange={() => toggleModule(moduleName)}
+                        checked={profile.enabledModules.includes(module.key)}
+                        onChange={() => toggleModule(module.key)}
                       />
                     </label>
                   ))}
@@ -353,17 +363,17 @@ const Settings = () => {
               </div>
 
               <div className="rounded-2xl border border-border bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-elevation-1">
-                <h2 className="text-lg font-semibold">Operations shortcuts</h2>
-                <p className="mt-2 text-sm text-white/70">Jump to the places these settings affect immediately.</p>
+                <h2 className="text-lg font-semibold">{t('operationsShortcuts', 'Operations shortcuts')}</h2>
+                <p className="mt-2 text-sm text-white/70">{t('operationsShortcutsDesc', 'Navigate directly to places where these settings have an impact.')}</p>
                 <div className="mt-4 space-y-2">
                   <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={() => window.dispatchEvent(new CustomEvent('itsm:refresh'))}>
-                    Refresh Dashboards
+                    {t('refreshDashboards', 'Refresh Dashboards')}
                   </Button>
                   <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={() => window.location.assign('/knowledge-base')}>
-                    Open Knowledge Base
+                    {t('openKnowledgeBase', 'Open Knowledge Base')}
                   </Button>
                   <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={() => window.location.assign('/sla-policies')}>
-                    Review SLA Policies
+                    {t('reviewSLAPolicies', 'Review SLA Policies')}
                   </Button>
                 </div>
               </div>

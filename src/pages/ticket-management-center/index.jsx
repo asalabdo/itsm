@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '../../components/ui/Header';
 import Button from '../../components/ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import FilterSidebar from './components/FilterSidebar';
 import TicketDataGrid from './components/TicketDataGrid';
 import TicketDetailPanel from './components/TicketDetailPanel';
@@ -54,6 +56,8 @@ const TicketManagementCenter = () => {
     total: '--', open: '--', inProgress: '--', resolved: '--', overdue: '--', avgResponse: '--'
   });
   const currentUser = userService.getCurrentUser() || { name: 'Admin User', initials: 'AU', role: 'Admin' };
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const mapTicket = (t) => ({
     backendId: t.id,
@@ -74,7 +78,7 @@ const TicketManagementCenter = () => {
     priorityLabel: t.priority || 'Medium',
     slaStatus: t.slaStatus?.toLowerCase() || (t.dueDate && new Date(t.dueDate) < new Date() ? 'breached' : 'healthy'),
     slaHours: t.dueDate ? Math.max(0, Math.floor((new Date(t.dueDate) - new Date()) / 3600000)) : 48,
-    lastActivity: t.updatedAt ? new Date(t.updatedAt).toLocaleString() : 'N/A',
+    lastActivity: t.updatedAt ? new Date(t.updatedAt).toLocaleString() : 'Not Available',
     hasAttachment: false,
     department: getDepartmentLabel(t, t.assignedTo),
     description: t.description || ''
@@ -234,22 +238,22 @@ const TicketManagementCenter = () => {
     setSearchQuery('');
     setActiveFilters({});
 
-    if (name === 'my open tickets') {
+    if (name === t('myOpenTickets', 'My Open Tickets').toLowerCase()) {
       setSearchFilters((prev) => ({ ...prev, status: 'open', assignee: 'me', priority: 'all', department: 'all', dateRange: 'all', slaStatus: 'all' }));
       return;
     }
 
-    if (name === 'high priority') {
+    if (name === t('highPriority', 'High Priority').toLowerCase()) {
       setSearchFilters((prev) => ({ ...prev, status: 'all', priority: 'high', department: 'all', assignee: 'all', dateRange: 'all', slaStatus: 'all' }));
       return;
     }
 
-    if (name === 'overdue sla') {
+    if (name === t('overdueSLA', 'Overdue SLA').toLowerCase()) {
       setSearchFilters((prev) => ({ ...prev, status: 'all', priority: 'all', department: 'all', assignee: 'all', dateRange: 'all', slaStatus: 'breached' }));
       return;
     }
 
-    if (name === 'unassigned') {
+    if (name === t('unassigned', 'Unassigned').toLowerCase()) {
       setSearchFilters((prev) => ({ ...prev, status: 'all', priority: 'all', department: 'all', assignee: 'unassigned', dateRange: 'all', slaStatus: 'all' }));
     }
   };
@@ -403,9 +407,9 @@ const TicketManagementCenter = () => {
     }, {});
 
     const assigneeOptions = [
-      { value: 'unassigned', label: 'Unassigned', count: assigneeMap.unassigned || 0 },
-      { value: 'me', label: 'Assigned to Me', count: tickets.filter((ticket) => isCurrentUserTicket(ticket)).length },
-      { value: 'my-team', label: 'My Team', count: tickets.filter((ticket) => ticket.assignee !== 'Unassigned' && !isCurrentUserTicket(ticket)).length },
+      { value: 'unassigned', label: t('unassigned', 'Unassigned'), count: assigneeMap.unassigned || 0 },
+      { value: 'me', label: t('assignedToMe', 'Assigned to Me'), count: tickets.filter((ticket) => isCurrentUserTicket(ticket)).length },
+      { value: 'my-team', label: t('myTeam', 'My Team'), count: tickets.filter((ticket) => ticket.assignee !== 'Unassigned' && !isCurrentUserTicket(ticket)).length },
       ...Object.values(assigneeMap.assignees || {})
         .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
         .map((entry) => entry)
@@ -420,26 +424,26 @@ const TicketManagementCenter = () => {
       }));
 
     const savedFilterCounts = [
-      { id: 1, name: 'My Open Tickets', icon: 'User', count: tickets.filter((ticket) => ticket.status === 'open' && isCurrentUserTicket(ticket)).length },
-      { id: 2, name: 'High Priority', icon: 'AlertTriangle', count: tickets.filter((ticket) => ['critical', 'high'].includes(ticket.priority)).length },
-      { id: 3, name: 'Overdue SLA', icon: 'Clock', count: tickets.filter((ticket) => ticket.slaHours <= 0).length },
-      { id: 4, name: 'Unassigned', icon: 'UserX', count: tickets.filter((ticket) => normalizeText(ticket.assignee) === 'unassigned').length },
+      { id: 1, name: t('myOpenTickets', 'My Open Tickets'), icon: 'User', count: tickets.filter((ticket) => ticket.status === 'open' && isCurrentUserTicket(ticket)).length },
+      { id: 2, name: t('highPriority', 'High Priority'), icon: 'AlertTriangle', count: tickets.filter((ticket) => ['critical', 'high'].includes(ticket.priority)).length },
+      { id: 3, name: t('overdueSLA', 'Overdue SLA'), icon: 'Clock', count: tickets.filter((ticket) => ticket.slaHours <= 0).length },
+      { id: 4, name: t('unassigned', 'Unassigned'), icon: 'UserX', count: tickets.filter((ticket) => normalizeText(ticket.assignee) === 'unassigned').length },
     ];
 
     return {
       saved: savedFilterCounts,
       status: [
-        { value: 'open', label: 'Open', count: statusCounts.open || 0 },
-        { value: 'in-progress', label: 'In Progress', count: statusCounts['in-progress'] || 0 },
-        { value: 'pending', label: 'Pending', count: statusCounts.pending || 0 },
-        { value: 'resolved', label: 'Resolved', count: statusCounts.resolved || 0 },
-        { value: 'closed', label: 'Closed', count: statusCounts.closed || 0 },
+        { value: 'open', label: t('open', 'Open'), count: statusCounts.open || 0 },
+        { value: 'in-progress', label: t('inProgress', 'In Progress'), count: statusCounts['in-progress'] || 0 },
+        { value: 'pending', label: t('pending', 'Pending'), count: statusCounts.pending || 0 },
+        { value: 'resolved', label: t('resolved', 'Resolved'), count: statusCounts.resolved || 0 },
+        { value: 'closed', label: t('closed', 'Closed'), count: statusCounts.closed || 0 },
       ],
       priority: [
-        { value: 'critical', label: 'Critical', count: priorityCounts.critical || 0, color: 'text-error' },
-        { value: 'high', label: 'High', count: priorityCounts.high || 0, color: 'text-warning' },
-        { value: 'medium', label: 'Medium', count: priorityCounts.medium || 0, color: 'text-primary' },
-        { value: 'low', label: 'Low', count: priorityCounts.low || 0, color: 'text-muted-foreground' },
+        { value: 'critical', label: t('critical', 'Critical'), count: priorityCounts.critical || 0, color: 'text-error' },
+        { value: 'high', label: t('high', 'High'), count: priorityCounts.high || 0, color: 'text-warning' },
+        { value: 'medium', label: t('medium', 'Medium'), count: priorityCounts.medium || 0, color: 'text-primary' },
+        { value: 'low', label: t('low', 'Low'), count: priorityCounts.low || 0, color: 'text-muted-foreground' },
       ],
       department: departmentOptions,
       assignee: assigneeOptions,
@@ -472,8 +476,8 @@ const TicketManagementCenter = () => {
           <div className="p-4 md:p-6 lg:p-8 space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">Ticket Management Center</h1>
-                <p className="text-sm md:text-base text-muted-foreground">Manage and track all support tickets across your organization</p>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">{t('ticketManagementCenter', 'Ticket Management Center')}</h1>
+                <p className="text-sm md:text-base text-muted-foreground">{t('manageTrackTickets', 'Manage and track all support tickets across your organization')}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -483,7 +487,7 @@ const TicketManagementCenter = () => {
                   className="whitespace-nowrap"
                 >
                   <span className="flex items-center gap-2">
-                    Filters
+                    {t('filters', 'Filters')}
                     {activeSidebarFilterCount > 0 && (
                       <span className={`inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1 text-[11px] font-semibold ${
                         filterSidebarOpen ? 'bg-primary-foreground text-primary' : 'bg-primary text-primary-foreground'
@@ -494,9 +498,9 @@ const TicketManagementCenter = () => {
                   </span>
                 </Button>
                 <Button variant="ghost" iconName="RefreshCw" onClick={fetchTickets} disabled={loading}>
-                  {loading ? 'Loading...' : 'Refresh'}
+                  {loading ? t('loading', 'Loading...') : t('refresh', 'Refresh')}
                 </Button>
-                <Button variant="default" iconName="Plus" iconPosition="left" onClick={() => setCreateModalOpen(true)}>New Ticket</Button>
+                <Button variant="default" iconName="Plus" iconPosition="left" onClick={() => setCreateModalOpen(true)}>{t('newTicket', 'New Ticket')}</Button>
               </div>
             </div>
 
@@ -513,11 +517,11 @@ const TicketManagementCenter = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {loading ? (
-                  <span className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Icon name="Loader" size={14} className="animate-spin" />Loading tickets...
+      <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Icon name="Loader" size={14} className="animate-spin" />{t('loadingTickets', 'Loading tickets...')}
                   </span>
                 ) : (
-                  <span className="text-sm text-muted-foreground">Showing {filteredTickets?.length} of {tickets?.length} tickets</span>
+                  <span className="text-sm text-muted-foreground">{t('showingTickets', 'Showing')} {filteredTickets?.length} {t('ofTickets', 'of')} {tickets?.length} {t('ticketsLabel', 'tickets')}</span>
                 )}
               </div>
             </div>
@@ -531,11 +535,11 @@ const TicketManagementCenter = () => {
             />
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Page 1 of {Math.ceil(filteredTickets?.length / 25) || 1}</span>
+              <span className="text-sm text-muted-foreground">{t('showingTickets', 'Showing')} {Math.ceil(filteredTickets?.length / 25) || 1} {t('ofTickets', 'of')} {Math.ceil(filteredTickets?.length / 25) || 1}</span>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" iconName="ChevronLeft" disabled>Previous</Button>
+                <Button variant="outline" size="sm" iconName="ChevronLeft" disabled>{t('previousBtn', 'Previous')}</Button>
                 <Button variant="outline" size="sm">1</Button>
-                <Button variant="outline" size="sm" iconName="ChevronRight" iconPosition="right">Next</Button>
+                <Button variant="outline" size="sm" iconName="ChevronRight" iconPosition="right">{t('nextBtn', 'Next')}</Button>
               </div>
             </div>
           </div>

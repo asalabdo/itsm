@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
-
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const GlobalControls = ({ onServiceFilterChange, onRefreshToggle, isAutoRefresh }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [selectedService, setSelectedService] = useState('all');
   const [slaCountdown, setSlaCountdown] = useState(847); // seconds until next SLA breach
   const [connectionStatus, setConnectionStatus] = useState('connected');
 
   const serviceOptions = [
-    { value: 'all', label: 'All Services' },
-    { value: 'email', label: 'Email Services' },
-    { value: 'network', label: 'Network Infrastructure' },
-    { value: 'database', label: 'Database Systems' },
-    { value: 'application', label: 'Application Services' },
-    { value: 'security', label: 'Security Services' }
+    { value: 'all', label: t('allServices', 'All Services') },
+    { value: 'email', label: t('emailServices', 'Email Services') },
+    { value: 'network', label: t('networkInfrastructure', 'Network Infrastructure') },
+    { value: 'database', label: t('databaseSystems', 'Database Systems') },
+    { value: 'application', label: t('applicationServices', 'Application Services') },
+    { value: 'security', label: t('securityServices', 'Security Services') }
   ];
 
   useEffect(() => {

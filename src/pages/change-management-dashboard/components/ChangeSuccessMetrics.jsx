@@ -119,28 +119,28 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
     <div className="space-y-6">
       {/* Header Controls */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Change Success Metrics</h3>
+        <h3 className="text-lg font-semibold text-foreground">مؤشرات نجاح التغيير</h3>
         <div className="flex items-center space-x-3">
           <select 
             value={selectedEnvironment} 
             onChange={(e) => setSelectedEnvironment(e?.target?.value)}
             className="text-sm border border-border rounded px-3 py-1 bg-background"
           >
-            <option value="all">All Environments</option>
-            <option value="production">Production</option>
-            <option value="test">Test</option>
-            <option value="development">Development</option>
+            <option value="all">كل البيئات</option>
+            <option value="production">الإنتاج</option>
+            <option value="test">الاختبار</option>
+            <option value="development">التطوير</option>
           </select>
           <select 
             value={timeRange} 
             onChange={(e) => setTimeRange(e?.target?.value)}
             className="text-sm border border-border rounded px-3 py-1 bg-background"
           >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
+            <option value="7d">آخر 7 أيام</option>
+            <option value="30d">آخر 30 يومًا</option>
+            <option value="90d">آخر 90 يومًا</option>
           </select>
-          <Button variant="ghost" size="sm" title="Export Report" onClick={() => onExport?.('csv')}>
+          <Button variant="ghost" size="sm" title="تصدير التقرير" onClick={() => onExport?.('csv')}>
             <Icon name="Download" size={16} />
           </Button>
         </div>
@@ -150,13 +150,13 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Success Rate</div>
+              <div className="text-sm text-muted-foreground">معدل النجاح</div>
               <div className="text-2xl font-semibold text-success">
                 {calculateOverallSuccessRate()}%
               </div>
               <div className="text-xs text-muted-foreground flex items-center space-x-1">
                 <Icon name="TrendingUp" size={12} className="text-success" />
-                <span>+2.3% from last period</span>
+                <span>+2.3% مقارنة بالفترة السابقة</span>
               </div>
             </div>
             <Icon name="CheckCircle" size={24} className="text-success" />
@@ -166,13 +166,13 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Rollback Rate</div>
+              <div className="text-sm text-muted-foreground">معدل التراجع</div>
               <div className="text-2xl font-semibold text-warning">
                 {calculateRollbackRate()}%
               </div>
               <div className="text-xs text-muted-foreground flex items-center space-x-1">
                 <Icon name="TrendingDown" size={12} className="text-success" />
-                <span>-1.2% from last period</span>
+                <span>-1.2% مقارنة بالفترة السابقة</span>
               </div>
             </div>
             <Icon name="RotateCcw" size={24} className="text-warning" />
@@ -182,13 +182,13 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Emergency Changes</div>
+              <div className="text-sm text-muted-foreground">التغييرات الطارئة</div>
               <div className="text-2xl font-semibold text-error">
                 {metricsData?.changeTypes?.find(t => t?.name === 'Emergency')?.value || 0}
               </div>
               <div className="text-xs text-muted-foreground flex items-center space-x-1">
                 <Icon name="AlertTriangle" size={12} className="text-error" />
-                <span>3 this week</span>
+                <span>3 هذا الأسبوع</span>
               </div>
             </div>
             <Icon name="Zap" size={24} className="text-error" />
@@ -198,13 +198,13 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Avg Implementation Time</div>
+              <div className="text-sm text-muted-foreground">متوسط وقت التنفيذ</div>
               <div className="text-2xl font-semibold text-accent">
                 2.4h
               </div>
               <div className="text-xs text-muted-foreground flex items-center space-x-1">
                 <Icon name="Clock" size={12} className="text-accent" />
-                <span>Within SLA</span>
+                <span>ضمن SLA</span>
               </div>
             </div>
             <Icon name="Timer" size={24} className="text-accent" />
@@ -214,19 +214,19 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
       {/* Success Rate Trends */}
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-medium text-foreground">Success Rate Trends by Environment</h4>
+          <h4 className="font-medium text-foreground">اتجاهات النجاح حسب البيئة</h4>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getEnvironmentColor('production') }}></div>
-              <span className="text-muted-foreground">Production</span>
+              <span className="text-muted-foreground">الإنتاج</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getEnvironmentColor('test') }}></div>
-              <span className="text-muted-foreground">Test</span>
+              <span className="text-muted-foreground">الاختبار</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getEnvironmentColor('development') }}></div>
-              <span className="text-muted-foreground">Development</span>
+              <span className="text-muted-foreground">التطوير</span>
             </div>
           </div>
         </div>
@@ -275,7 +275,7 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Rollback Analysis */}
         <div className="bg-card rounded-lg border border-border p-6">
-          <h4 className="font-medium text-foreground mb-4">Rollback Analysis by Environment</h4>
+          <h4 className="font-medium text-foreground mb-4">تحليل التراجع حسب البيئة</h4>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={metricsData?.rollbackData}>
@@ -314,7 +314,7 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
 
         {/* Change Types Distribution */}
         <div className="bg-card rounded-lg border border-border p-6">
-          <h4 className="font-medium text-foreground mb-4">Change Types Distribution</h4>
+          <h4 className="font-medium text-foreground mb-4">توزيع أنواع التغييرات</h4>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -348,7 +348,7 @@ const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }
       </div>
       {/* Business Impact Analysis */}
       <div className="bg-card rounded-lg border border-border p-6">
-        <h4 className="font-medium text-foreground mb-4">Business Impact Analysis</h4>
+          <h4 className="font-medium text-foreground mb-4">تحليل الأثر على الأعمال</h4>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {metricsData?.impactAnalysis?.map(impact => (
             <div key={impact?.category} className="text-center">

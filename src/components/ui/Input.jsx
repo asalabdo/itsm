@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "../../utils/cn";
+import { useLanguage } from '../../context/LanguageContext';
 
 const Input = React.forwardRef(({
     className,
@@ -13,6 +14,7 @@ const Input = React.forwardRef(({
     rows = 4,
     ...props
 }, ref) => {
+    const { isRtl } = useLanguage();
     // Generate unique ID if not provided
     const inputId = id || `input-${Math.random()?.toString(36)?.substr(2, 9)}`;
 
@@ -35,7 +37,7 @@ const Input = React.forwardRef(({
                         )}
                     >
                         {label}
-                        {required && <span className="text-destructive ml-1">*</span>}
+                        {required && <span className={cn("text-destructive", isRtl ? 'mr-1' : 'ml-1')}>*</span>}
                     </label>
                 )}
                 <textarea
@@ -103,7 +105,7 @@ const Input = React.forwardRef(({
                     )}
                 >
                     {label}
-                    {required && <span className="text-destructive ml-1">*</span>}
+                    {required && <span className={cn("text-destructive", isRtl ? 'mr-1' : 'ml-1')}>*</span>}
                 </label>
             )}
 

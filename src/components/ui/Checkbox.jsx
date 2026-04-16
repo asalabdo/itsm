@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, Minus } from "lucide-react";
 import { cn } from "../../utils/cn";
+import { useLanguage } from '../../context/LanguageContext';
 
 const Checkbox = React.forwardRef(({
     className,
@@ -15,6 +16,7 @@ const Checkbox = React.forwardRef(({
     size = "default",
     ...props
 }, ref) => {
+    const { isRtl } = useLanguage();
     // Generate unique ID if not provided
     const checkboxId = id || `checkbox-${Math.random()?.toString(36)?.substr(2, 9)}`;
 
@@ -26,7 +28,7 @@ const Checkbox = React.forwardRef(({
     };
 
     return (
-        <div className={cn("flex items-start space-x-2", className)}>
+        <div className={cn("flex items-start gap-2", className, isRtl && "flex-row-reverse")}>
             <div className="relative flex items-center">
                 <input
                     type="checkbox"
@@ -69,7 +71,7 @@ const Checkbox = React.forwardRef(({
                             )}
                         >
                             {label}
-                            {required && <span className="text-destructive ml-1">*</span>}
+                            {required && <span className={cn("text-destructive", isRtl ? 'mr-1' : 'ml-1')}>*</span>}
                         </label>
                     )}
 
@@ -103,6 +105,7 @@ const CheckboxGroup = React.forwardRef(({
     disabled = false,
     ...props
 }, ref) => {
+    const { isRtl } = useLanguage();
     return (
         <fieldset
             ref={ref}
@@ -116,7 +119,7 @@ const CheckboxGroup = React.forwardRef(({
                     error ? "text-destructive" : "text-foreground"
                 )}>
                     {label}
-                    {required && <span className="text-destructive ml-1">*</span>}
+                    {required && <span className={cn("text-destructive", isRtl ? 'mr-1' : 'ml-1')}>*</span>}
                 </legend>
             )}
 

@@ -6,6 +6,8 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import automationService from '../../services/automationService';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const emptyForm = {
   name: '',
@@ -17,22 +19,6 @@ const emptyForm = {
   isActive: true,
 };
 
-const targetOptions = [
-  { value: 'Ticket', label: 'Ticket' },
-  { value: 'ChangeRequest', label: 'Change Request' },
-  { value: 'ServiceRequest', label: 'Service Request' },
-  { value: 'Asset', label: 'Asset' },
-  { value: 'User', label: 'User' },
-];
-
-const triggerOptions = [
-  { value: 'Created', label: 'Created' },
-  { value: 'Updated', label: 'Updated' },
-  { value: 'StatusChanged', label: 'Status Changed' },
-  { value: 'PriorityChanged', label: 'Priority Changed' },
-  { value: 'Scheduled', label: 'Scheduled' },
-];
-
 const AutomationManagement = () => {
   const [rules, setRules] = useState([]);
   const [logs, setLogs] = useState([]);
@@ -41,6 +27,24 @@ const AutomationManagement = () => {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
+  const targetOptions = [
+    { value: 'Ticket', label: t('ticket', 'Ticket') },
+    { value: 'ChangeRequest', label: t('changeRequest', 'Change Request') },
+    { value: 'ServiceRequest', label: t('serviceRequest', 'Service Request') },
+    { value: 'Asset', label: t('asset', 'Asset') },
+    { value: 'User', label: t('user', 'User') },
+  ];
+
+  const triggerOptions = [
+    { value: 'Created', label: t('created', 'Created') },
+    { value: 'Updated', label: t('updated', 'Updated') },
+    { value: 'StatusChanged', label: t('statusChanged', 'Status Changed') },
+    { value: 'PriorityChanged', label: t('priorityChanged', 'Priority Changed') },
+    { value: 'Scheduled', label: t('scheduled', 'Scheduled') },
+  ];
 
   const loadData = async () => {
     try {
@@ -72,21 +76,21 @@ const AutomationManagement = () => {
   const validate = () => {
     const nextErrors = {};
 
-    if (!form.name.trim()) nextErrors.name = 'Name is required';
-    if (!form.description.trim()) nextErrors.description = 'Description is required';
-    if (!form.targetEntity.trim()) nextErrors.targetEntity = 'Target entity is required';
-    if (!form.triggerEvent.trim()) nextErrors.triggerEvent = 'Trigger event is required';
+    if (!form.name.trim()) nextErrors.name = t('nameRequired', 'Name is required');
+    if (!form.description.trim()) nextErrors.description = t('descriptionRequired', 'Description is required');
+    if (!form.targetEntity.trim()) nextErrors.targetEntity = t('targetEntityRequired', 'Target entity is required');
+    if (!form.triggerEvent.trim()) nextErrors.triggerEvent = t('triggerEventRequired', 'Trigger event is required');
 
     try {
       JSON.parse(form.conditionsJson || '{}');
     } catch {
-      nextErrors.conditionsJson = 'Conditions must be valid JSON';
+      nextErrors.conditionsJson = t('conditionsValidJson', 'Conditions must be valid JSON');
     }
 
     try {
       JSON.parse(form.actionsJson || '[]');
     } catch {
-      nextErrors.actionsJson = 'Actions must be valid JSON';
+      nextErrors.actionsJson = t('actionsValidJson', 'Actions must be valid JSON');
     }
 
     setErrors(nextErrors);
@@ -132,13 +136,13 @@ const AutomationManagement = () => {
       <main className="px-4 md:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Automation Rules</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">{t('automationRules', 'Automation Rules')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage backend automation rules and review recent execution logs.
+              {t('automationRulesDescription', 'Manage backend automation rules and review recent execution logs.')}
             </p>
           </div>
           <Button iconName="Plus" iconPosition="left" onClick={openCreate}>
-            New Rule
+            {t('newRule', 'New Rule')}
           </Button>
         </div>
 
@@ -146,34 +150,34 @@ const AutomationManagement = () => {
           <section className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Rules</h2>
-                <p className="text-sm text-muted-foreground">{rules.length} backend rules loaded</p>
+                <h2 className="text-lg font-semibold text-foreground">{t('rules', 'Rules')}</h2>
+                <p className="text-sm text-muted-foreground">{rules.length} {t('rulesLoaded', 'backend rules loaded')}</p>
               </div>
               <Button variant="outline" size="sm" onClick={loadData}>
-                Refresh
+                {t('refresh', 'Refresh')}
               </Button>
             </div>
 
             {loading ? (
               <div className="p-10 text-center text-muted-foreground">
                 <Icon name="Loader2" size={28} className="mx-auto mb-3 animate-spin" />
-                Loading automation rules...
+                {t('loadingAutomationRules', 'Loading automation rules...')}
               </div>
             ) : rules.length === 0 ? (
               <div className="p-10 text-center">
                 <Icon name="Zap" size={40} className="mx-auto mb-3 text-muted-foreground" />
-                <p className="font-medium text-foreground">No automation rules yet</p>
-                <p className="text-sm text-muted-foreground mt-1">Create the first rule to connect the backend engine.</p>
+                <p className="font-medium text-foreground">{t('noAutomationRulesYet', 'No automation rules yet')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('createFirstRule', 'Create the first rule to connect the backend engine.')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-muted/50 border-b border-border">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Rule</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Target</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Trigger</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('rule', 'Rule')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('target', 'Target')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('trigger', 'Trigger')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('status', 'Status')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -183,11 +187,11 @@ const AutomationManagement = () => {
                           <div className="font-medium text-foreground">{rule.name}</div>
                           <div className="text-xs text-muted-foreground">{rule.description}</div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-foreground">{rule.targetEntity || 'N/A'}</td>
-                        <td className="px-4 py-3 text-sm text-foreground">{rule.triggerEvent || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm text-foreground">{rule.targetEntity || t('notAvailable', 'Not available')}</td>
+                        <td className="px-4 py-3 text-sm text-foreground">{rule.triggerEvent || t('notAvailable', 'Not available')}</td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex px-2 py-1 text-xs rounded-full ${rule.isActive ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                            {rule.isActive ? 'Active' : 'Inactive'}
+                            {rule.isActive ? t('active', 'Active') : t('inactive', 'Inactive')}
                           </span>
                         </td>
                       </tr>
@@ -200,23 +204,23 @@ const AutomationManagement = () => {
 
           <aside className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">
             <div className="px-5 py-4 border-b border-border">
-              <h2 className="text-lg font-semibold text-foreground">Execution Logs</h2>
-              <p className="text-sm text-muted-foreground">Recent backend automation runs</p>
+              <h2 className="text-lg font-semibold text-foreground">{t('executionLogs', 'Execution Logs')}</h2>
+              <p className="text-sm text-muted-foreground">{t('recentBackendAutomation', 'Recent backend automation operations')}</p>
             </div>
             <div className="p-5 space-y-3 max-h-[40rem] overflow-y-auto">
               {logs.length === 0 ? (
-                <div className="text-sm text-muted-foreground">No execution logs returned by the backend yet.</div>
+                <div className="text-sm text-muted-foreground">{t('noExecutionLogs', 'The backend has not returned any execution logs yet.')}</div>
               ) : (
                 logs.map((log) => (
                   <div key={log.id} className="rounded-xl border border-border bg-muted/30 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="font-medium text-foreground">{log.ruleName}</div>
                       <span className={`text-xs px-2 py-1 rounded-full ${log.success ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
-                        {log.success ? 'Success' : 'Failed'}
+                        {log.success ? t('success', 'Success') : t('failure', 'Failure')}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{log.actionSummary || log.errorMessage || 'No details available.'}</p>
-                    <div className="mt-2 text-xs text-muted-foreground">{log.executedAt ? new Date(log.executedAt).toLocaleString() : 'Unknown time'}</div>
+                    <p className="mt-2 text-sm text-muted-foreground">{log.actionSummary || log.errorMessage || t('noDetailsAvailable', 'No details available.')}</p>
+                    <div className="mt-2 text-xs text-muted-foreground">{log.executedAt ? new Date(log.executedAt).toLocaleString() : t('unknownTime', 'Unknown time')}</div>
                   </div>
                 ))
               )}
@@ -230,8 +234,8 @@ const AutomationManagement = () => {
           <form onSubmit={handleCreate} className="w-full max-w-3xl rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-foreground">New Automation Rule</h2>
-                <p className="text-sm text-muted-foreground">Matches the backend `CreateAutomationRuleDto` contract.</p>
+                <h2 className="text-xl font-semibold text-foreground">{t('newAutomationRule', 'New Automation Rule')}</h2>
+                <p className="text-sm text-muted-foreground">{t('backendContractCompatible', 'Compatible with backend `CreateAutomationRuleDto` contract.')}</p>
               </div>
               <Button variant="ghost" size="sm" type="button" onClick={() => setShowForm(false)}>
                 <Icon name="X" size={18} />
@@ -240,14 +244,14 @@ const AutomationManagement = () => {
 
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[75vh] overflow-y-auto">
               <Input
-                label="Name"
+                label={t('name', 'Name')}
                 value={form.name}
                 onChange={(e) => setField('name', e?.target?.value)}
                 error={errors.name}
                 required
               />
               <Select
-                label="Target Entity"
+                label={t('targetEntity', 'Target Entity')}
                 options={targetOptions}
                 value={form.targetEntity}
                 onChange={(value) => setField('targetEntity', value)}
@@ -255,7 +259,7 @@ const AutomationManagement = () => {
               />
               <div className="md:col-span-2">
                 <Input
-                  label="Description"
+                  label={t('description', 'Description')}
                   value={form.description}
                   onChange={(e) => setField('description', e?.target?.value)}
                   error={errors.description}
@@ -263,25 +267,25 @@ const AutomationManagement = () => {
                 />
               </div>
               <Select
-                label="Trigger Event"
+                label={t('triggerEvent', 'Trigger Event')}
                 options={triggerOptions}
                 value={form.triggerEvent}
                 onChange={(value) => setField('triggerEvent', value)}
                 error={errors.triggerEvent}
               />
               <label className="block space-y-2">
-                <span className="text-sm font-medium text-foreground">Active</span>
+                <span className="text-sm font-medium text-foreground">{t('activeRule', 'Active')}</span>
                 <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
                   <input
                     type="checkbox"
                     checked={form.isActive}
                     onChange={(e) => setField('isActive', e.target.checked)}
                   />
-                  <span className="text-sm text-muted-foreground">Enable the rule immediately</span>
+                  <span className="text-sm text-muted-foreground">{t('enableRuleImmediately', 'Enable rule immediately')}</span>
                 </div>
               </label>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Conditions JSON</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('jsonConditions', 'JSON Conditions')}</label>
                 <textarea
                   rows={5}
                   value={form.conditionsJson}
@@ -291,7 +295,7 @@ const AutomationManagement = () => {
                 {errors.conditionsJson && <p className="mt-2 text-sm text-error">{errors.conditionsJson}</p>}
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Actions JSON</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('jsonActions', 'JSON Actions')}</label>
                 <textarea
                   rows={5}
                   value={form.actionsJson}
@@ -304,10 +308,10 @@ const AutomationManagement = () => {
 
             <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                Cancel
+                {t('cancel', 'Cancel')}
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? 'Saving...' : 'Create Rule'}
+                {saving ? t('saving', 'Saving...') : t('createRule', 'Create Rule')}
               </Button>
             </div>
           </form>

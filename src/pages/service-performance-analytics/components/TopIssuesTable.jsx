@@ -1,8 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TopIssuesTable = ({ tickets = [] }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [sortBy, setSortBy] = useState('frequency');
   const [sortOrder, setSortOrder] = useState('desc');
 
@@ -86,17 +90,16 @@ const TopIssuesTable = ({ tickets = [] }) => {
   const sortedData = [...issuesData]?.sort((a, b) => {
     let aValue = a?.[sortBy];
     let bValue = b?.[sortBy];
-    
+
     if (sortBy === 'frequency') {
       aValue = parseInt(aValue);
       bValue = parseInt(bValue);
     }
-    
+
     if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1;
-    } else {
-      return aValue < bValue ? 1 : -1;
     }
+    return aValue < bValue ? 1 : -1;
   });
 
   return (
@@ -104,16 +107,11 @@ const TopIssuesTable = ({ tickets = [] }) => {
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-foreground mb-1">Top Issues</h3>
-            <p className="text-sm text-muted-foreground">Most frequent issues by category</p>
+            <h3 className="text-lg font-semibold text-foreground mb-1">{t('topIssues', 'Top Issues')}</h3>
+            <p className="text-sm text-muted-foreground">{t('topIssuesByCategory', 'Most frequent issues by category')}</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            iconName="Filter"
-            iconPosition="left"
-          >
-            Filter
+          <Button variant="outline" size="sm" iconName="Filter" iconPosition="left">
+            {t('filter', 'Filter')}
           </Button>
         </div>
       </div>
@@ -122,37 +120,31 @@ const TopIssuesTable = ({ tickets = [] }) => {
           <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                <button 
-                  onClick={() => handleSort('issue')}
-                  className="flex items-center space-x-1 hover:text-foreground"
-                >
-                  <span>Issue</span>
+                <button onClick={() => handleSort('issue')} className="flex items-center space-x-1 hover:text-foreground">
+                  <span>{t('issue', 'Issue')}</span>
                   <Icon name="ArrowUpDown" size={14} />
                 </button>
               </th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                Category
+                {t('serviceCategory', 'Category')}
               </th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                <button 
-                  onClick={() => handleSort('frequency')}
-                  className="flex items-center space-x-1 hover:text-foreground"
-                >
-                  <span>Frequency</span>
+                <button onClick={() => handleSort('frequency')} className="flex items-center space-x-1 hover:text-foreground">
+                  <span>{t('frequency', 'Frequency')}</span>
                   <Icon name="ArrowUpDown" size={14} />
                 </button>
               </th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                Avg Resolution
+                {t('averageResolution', 'Avg Resolution')}
               </th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                Impact
+                {t('impact', 'Impact')}
               </th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                Trend
+                {t('trend', 'Trend')}
               </th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                Root Cause
+                {t('rootCause', 'Root Cause')}
               </th>
             </tr>
           </thead>
@@ -175,7 +167,7 @@ const TopIssuesTable = ({ tickets = [] }) => {
                 <td className="p-4">
                   <div className="flex items-center space-x-2">
                     <span className="font-medium text-foreground">{issue?.frequency}</span>
-                    <span className="text-xs text-muted-foreground">incidents</span>
+                    <span className="text-xs text-muted-foreground">{t('ticketsCount', 'incidents')}</span>
                   </div>
                 </td>
                 <td className="p-4">
@@ -187,11 +179,7 @@ const TopIssuesTable = ({ tickets = [] }) => {
                   </span>
                 </td>
                 <td className="p-4">
-                  <Icon 
-                    name={getTrendIcon(issue?.trend)} 
-                    size={16} 
-                    className={getTrendColor(issue?.trend)}
-                  />
+                  <Icon name={getTrendIcon(issue?.trend)} size={16} className={getTrendColor(issue?.trend)} />
                 </td>
                 <td className="p-4">
                   <span className="text-sm text-muted-foreground">{issue?.rootCause}</span>
@@ -203,9 +191,9 @@ const TopIssuesTable = ({ tickets = [] }) => {
       </div>
       <div className="p-4 border-t border-border bg-muted/20">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Showing top 8 issues from last 30 days</span>
+          <span>{t('showingTopIssues', 'Showing top 8 issues from last 30 days')}</span>
           <Button variant="ghost" size="sm">
-            View All Issues
+            {t('viewAllIssues', 'View All Issues')}
             <Icon name="ArrowRight" size={14} className="ml-2" />
           </Button>
         </div>

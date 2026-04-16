@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -14,8 +14,12 @@ import ApprovalModal from './components/ApprovalModal';
 import { approvalsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
 import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ApprovalQueueManager = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('urgency');
   const [selectedRequests, setSelectedRequests] = useState([]);
@@ -85,17 +89,17 @@ const ApprovalQueueManager = () => {
   }, [approvalRequests, selectedRequest]);
 
   const stats = [
-    { label: 'Pending Approvals', value: approvalRequests.length.toString(), icon: 'Clock', color: 'text-warning' },
-    { label: 'Overdue', value: approvalRequests.filter(r => r.isOverdue).length.toString(), icon: 'AlertTriangle', color: 'text-error' },
-    { label: 'Approved Today', value: '0', icon: 'CheckCircle', color: 'text-success' },
-    { label: 'Total Value', value: `${approvalRequests.reduce((sum, request) => sum + parseCurrencyValue(request?.value), 0).toLocaleString()} ريال`, icon: 'Banknote', color: 'text-primary' }
+    { label: t('pendingApprovals', 'Pending Approvals'), value: approvalRequests.length.toString(), icon: 'Clock', color: 'text-warning' },
+    { label: t('overdue', 'Overdue'), value: approvalRequests.filter(r => r.isOverdue).length.toString(), icon: 'AlertTriangle', color: 'text-error' },
+    { label: t('approvedToday', 'Approved Today'), value: '0', icon: 'CheckCircle', color: 'text-success' },
+    { label: t('totalValue', 'Total Value'), value: `${approvalRequests.reduce((sum, request) => sum + parseCurrencyValue(request?.value), 0).toLocaleString()} ريال`, icon: 'Banknote', color: 'text-primary' }
   ];
 
   const sortOptions = [
-    { value: 'urgency', label: 'Sort by Urgency' },
-    { value: 'sla', label: 'Sort by SLA' },
-    { value: 'date', label: 'Sort by Date' },
-    { value: 'value', label: 'Sort by Value' }
+    { value: 'urgency', label: t('sortByUrgency', 'Sort by Urgency') },
+    { value: 'sla', label: t('sortBySLA', 'Sort by SLA') },
+    { value: 'date', label: t('sortByDate', 'Sort by Date') },
+    { value: 'value', label: t('sortByValue', 'Sort by Value') }
   ];
 
   const handleRequestSelect = (request) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import MetricCard from './components/MetricCard';
@@ -8,9 +8,12 @@ import TopIssuesTable from './components/TopIssuesTable';
 import TrendAnalysisSection from './components/TrendAnalysisSection';
 import { dashboardAPI, reportsAPI, ticketsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ServicePerformanceAnalytics = () => {
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [filters, setFilters] = useState({
     timeRange: '30d',
     department: 'all',
@@ -24,13 +27,7 @@ const ServicePerformanceAnalytics = () => {
     categories: [],
     tickets: []
   });
-  const [loading, setLoading] = useState(true);
-
-  // Check for saved language preference
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferredLanguage') || 'en';
-    setCurrentLanguage(savedLanguage);
-  }, []);
+  const [, setLoading] = useState(true);
 
   // Fetch KPI data from API
   useEffect(() => {
@@ -124,8 +121,8 @@ const ServicePerformanceAnalytics = () => {
   return (
     <>
       <Helmet>
-        <title>Service Performance Analytics - ITSM Hub</title>
-        <meta name="description" content="Comprehensive analytical dashboard for tracking IT service KPI trends, performance patterns, and data-driven optimization decisions." />
+        <title>{t('servicePerformance', 'Service Performance Analytics')} - ITSM Hub</title>
+        <meta name="description" content={t('servicePerformanceSubtitle', 'Comprehensive analytical dashboard for tracking IT service KPI trends, performance patterns, and data-driven optimization decisions.')} />
       </Helmet>
       <div className="min-h-screen bg-background">
         <Header />
@@ -137,14 +134,14 @@ const ServicePerformanceAnalytics = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-foreground mb-2">
-                    Service Performance Analytics
+                    {t('servicePerformance', 'Service Performance Analytics')}
                   </h1>
                   <p className="text-muted-foreground">
-                    Track KPI trends, identify performance patterns, and make data-driven optimization decisions
+                    {t('servicePerformanceSubtitle', 'Track KPI trends, identify performance patterns, and make data-driven optimization decisions')}
                   </p>
                 </div>
                 <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
-                  <span>Dashboard refreshed:</span>
+                  <span>{t('dashboardRefreshed', 'Dashboard refreshed')}:</span>
                   <span className="font-medium">Sep 21, 2024 8:48 AM</span>
                 </div>
               </div>
@@ -193,64 +190,64 @@ const ServicePerformanceAnalytics = () => {
             {/* Additional Insights */}
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-                <h4 className="text-lg font-semibold text-foreground mb-4">Key Insights</h4>
+                <h4 className="text-lg font-semibold text-foreground mb-4">{t('keyInsightsShort', 'Key Insights')}</h4>
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm text-foreground font-medium">SLA Performance Improving</p>
-                      <p className="text-xs text-muted-foreground">2.3% increase in compliance rate this period</p>
+                      <p className="text-sm text-foreground font-medium">{t('slaPerformanceImprovingShort', 'SLA Performance Improving')}</p>
+                      <p className="text-xs text-muted-foreground">زيادة بنسبة 2.3% في معدل الالتزام خلال هذه الفترة</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-warning rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm text-foreground font-medium">Email Issues Trending Up</p>
-                  <p className="text-xs text-muted-foreground">45 incidents reported, requires attention</p>
+                      <p className="text-sm text-foreground font-medium">{t('emailIssuesTrendingUpShort', 'Email Issues Trending Up')}</p>
+                      <p className="text-xs text-muted-foreground">تم تسجيل 45 حادثًا، ويحتاج الأمر إلى متابعة</p>
                   </div>
                 </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm text-foreground font-medium">Employee Satisfaction High</p>
-                  <p className="text-xs text-muted-foreground">4.4/5 average rating across all services</p>
+                      <p className="text-sm text-foreground font-medium">{t('employeeSatisfactionHighShort', 'Employee Satisfaction High')}</p>
+                      <p className="text-xs text-muted-foreground">متوسط التقييم 4.4/5 عبر جميع الخدمات</p>
                 </div>
               </div>
                 </div>
               </div>
 
               <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-                <h4 className="text-lg font-semibold text-foreground mb-4">Recommendations</h4>
+                <h4 className="text-lg font-semibold text-foreground mb-4">{t('recommendations', 'Recommendations')}</h4>
                 <div className="space-y-3">
                   <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                    <p className="text-sm text-foreground font-medium mb-1">Focus on Email Infrastructure</p>
-                    <p className="text-xs text-muted-foreground">Address recurring connectivity issues to reduce ticket volume</p>
+                    <p className="text-sm text-foreground font-medium mb-1">{t('focusOnEmailInfrastructure', 'Focus on Email Infrastructure')}</p>
+                    <p className="text-xs text-muted-foreground">{t('addressRecurringIssues', 'Address recurring connectivity issues to reduce ticket volume')}</p>
                   </div>
                   <div className="p-3 bg-success/5 border border-success/20 rounded-lg">
-                    <p className="text-sm text-foreground font-medium mb-1">Expand User Training</p>
-                    <p className="text-xs text-muted-foreground">Reduce password reset requests through better education</p>
+                    <p className="text-sm text-foreground font-medium mb-1">{t('expandUserTraining', 'Expand User Training')}</p>
+                    <p className="text-xs text-muted-foreground">{t('reducePasswordResets', 'Reduce password reset requests through better education')}</p>
                   </div>
                   <div className="p-3 bg-secondary/5 border border-secondary/20 rounded-lg">
-                    <p className="text-sm text-foreground font-medium mb-1">Optimize Workflows</p>
-                    <p className="text-xs text-muted-foreground">Streamline approval processes for faster resolution</p>
+                    <p className="text-sm text-foreground font-medium mb-1">{t('optimizeWorkflows', 'Optimize Workflows')}</p>
+                    <p className="text-xs text-muted-foreground">{t('streamlineApprovals', 'Streamline approval processes for faster resolution')}</p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-                <h4 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h4>
+                <h4 className="text-lg font-semibold text-foreground mb-4">{t('quickActions', 'Quick Actions')}</h4>
                 <div className="space-y-3">
                   <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                    <p className="text-sm text-foreground font-medium">Generate Monthly Report</p>
-                    <p className="text-xs text-muted-foreground">Create comprehensive performance summary</p>
+                    <p className="text-sm text-foreground font-medium">{t('generateMonthlyReport', 'Generate Monthly Report')}</p>
+                    <p className="text-xs text-muted-foreground">{t('createPerformanceSummary', 'Create comprehensive performance summary')}</p>
                   </button>
                   <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                    <p className="text-sm text-foreground font-medium">Schedule Review Meeting</p>
-                    <p className="text-xs text-muted-foreground">Discuss findings with stakeholders</p>
+                    <p className="text-sm text-foreground font-medium">{t('scheduleReviewMeeting', 'Schedule Review Meeting')}</p>
+                    <p className="text-xs text-muted-foreground">{t('discussFindings', 'Discuss findings with stakeholders')}</p>
                   </button>
                   <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                    <p className="text-sm text-foreground font-medium">Configure Alerts</p>
-                    <p className="text-xs text-muted-foreground">Set up proactive monitoring thresholds</p>
+                    <p className="text-sm text-foreground font-medium">{t('configureAlerts', 'Configure Alerts')}</p>
+                    <p className="text-xs text-muted-foreground">{t('setMonitoringThresholds', 'Set up proactive monitoring thresholds')}</p>
                   </button>
                 </div>
               </div>

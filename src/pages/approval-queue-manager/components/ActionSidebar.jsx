@@ -4,8 +4,13 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import { usersAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelected }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  
   const [activeSection, setActiveSection] = useState('templates');
   const [delegateUser, setDelegateUser] = useState('');
   const [delegateStartDate, setDelegateStartDate] = useState('');
@@ -19,26 +24,26 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
   const approvalTemplates = [
     {
       id: 1,
-      name: 'Standard Approval',
-      description: 'Approved as per standard operating procedures',
+      name: t('standardApproval', 'Standard Approval'),
+      description: t('approvedPerStandardProcedures', 'Approved as per standard operating procedures'),
       icon: 'CheckCircle'
     },
     {
       id: 2,
-      name: 'Budget Approved',
-      description: 'Approved within allocated budget constraints',
+      name: t('budgetApproved', 'Budget Approved'),
+      description: t('approvedWithinBudget', 'Approved within allocated budget constraints'),
       icon: 'Banknote'
     },
     {
       id: 3,
-      name: 'Conditional Approval',
-      description: 'Approved with specific conditions to be met',
+      name: t('conditionalApproval', 'Conditional Approval'),
+      description: t('approvedWithConditions', 'Approved with specific conditions to be met'),
       icon: 'AlertCircle'
     },
     {
       id: 4,
-      name: 'Emergency Approval',
-      description: 'Approved due to urgent business requirements',
+      name: t('emergencyApproval', 'Emergency Approval'),
+      description: t('approvedDueToUrgent', 'Approved due to urgent business requirements'),
       icon: 'Zap'
     }
   ];
@@ -46,26 +51,26 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
   const denialTemplates = [
     {
       id: 1,
-      name: 'Budget Constraints',
-      description: 'Denied due to insufficient budget allocation',
+      name: t('budgetConstraints', 'Budget Constraints'),
+      description: t('deniedDueToInsufficientBudget', 'Denied due to insufficient budget allocation'),
       icon: 'XCircle'
     },
     {
       id: 2,
-      name: 'Policy Violation',
-      description: 'Denied as request violates company policy',
+      name: t('policyViolation', 'Policy Violation'),
+      description: t('deniedPolicyViolation', 'Denied as request violates company policy'),
       icon: 'Shield'
     },
     {
       id: 3,
-      name: 'Insufficient Justification',
-      description: 'Denied due to inadequate business justification',
+      name: t('insufficientJustification', 'Insufficient Justification'),
+      description: t('deniedInsufficientJustification', 'Denied due to inadequate business justification'),
       icon: 'FileText'
     },
     {
       id: 4,
-      name: 'Alternative Solution',
-      description: 'Denied - alternative solution recommended',
+      name: t('alternativeSolution', 'Alternative Solution'),
+      description: t('deniedAlternativeSolution', 'Denied - alternative solution recommended'),
       icon: 'RefreshCw'
     }
   ];
@@ -95,16 +100,16 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
   }, []);
 
   const sections = [
-    { id: 'templates', label: 'Templates', icon: 'FileText' },
-    { id: 'delegation', label: 'Delegation', icon: 'Users' },
-    { id: 'bulk', label: 'Bulk Actions', icon: 'Layers' }
+    { id: 'templates', label: t('templates', 'Templates'), icon: 'FileText' },
+    { id: 'delegation', label: t('delegation', 'Delegation'), icon: 'Users' },
+    { id: 'bulk', label: t('bulkActions', 'Bulk Actions'), icon: 'Layers' }
   ];
 
   return (
     <div className="h-full flex flex-col bg-card">
       <div className="p-4 md:p-6 border-b border-border">
         <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">
-          Quick Actions
+          {t('quickActions', 'Quick Actions')}
         </h2>
         <div className="flex gap-1 overflow-x-auto">
           {sections?.map((section) => (

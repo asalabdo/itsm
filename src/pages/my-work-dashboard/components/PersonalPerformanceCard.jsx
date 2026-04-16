@@ -1,8 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 
 const PersonalPerformanceCard = ({ tickets = [] }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [timeRange, setTimeRange] = useState('week');
   
   const data = useMemo(() => {

@@ -2,8 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TrendAnalysisChart = ({ data = [] }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
 
   const monthlyData = useMemo(() => {
@@ -62,17 +66,17 @@ const TrendAnalysisChart = ({ data = [] }) => {
   };
 
   const periods = [
-    { key: 'monthly', label: 'Monthly', icon: 'Calendar' },
-    { key: 'quarterly', label: 'Quarterly', icon: 'BarChart3' },
-    { key: 'yearly', label: 'Yearly', icon: 'TrendingUp' }
+    { key: 'monthly', label: t('monthly', 'Monthly'), icon: 'Calendar' },
+    { key: 'quarterly', label: t('quarterly', 'Quarterly'), icon: 'BarChart3' },
+    { key: 'yearly', label: t('yearly', 'Yearly'), icon: 'TrendingUp' }
   ];
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Performance Trend Analysis</h3>
-          <p className="text-sm text-muted-foreground">Key metrics trending over time</p>
+          <h3 className="text-lg font-semibold text-foreground">{t('performanceTrendAnalysis', 'Performance Trend Analysis')}</h3>
+          <p className="text-sm text-muted-foreground">{t('keyMetricsTrendingOverTime', 'Key metrics trending over time')}</p>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -118,7 +122,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
               dataKey="availability" 
               stroke="var(--color-success)" 
               strokeWidth={3}
-              name="Availability %"
+              name={t('availabilityPercent', 'Availability %')}
               dot={{ fill: 'var(--color-success)', strokeWidth: 2, r: 4 }}
             />
             <Line 
@@ -126,7 +130,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
               dataKey="satisfaction" 
               stroke="var(--color-primary)" 
               strokeWidth={3}
-              name="Satisfaction Score"
+              name={t('satisfactionScore', 'Satisfaction Score')}
               dot={{ fill: 'var(--color-primary)', strokeWidth: 2, r: 4 }}
             />
             <Line 
@@ -134,7 +138,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
               dataKey="resolution" 
               stroke="var(--color-accent)" 
               strokeWidth={3}
-              name="Avg Resolution (hrs)"
+              name={t('avgResolutionHours', 'Avg Resolution (hrs)')}
               dot={{ fill: 'var(--color-accent)', strokeWidth: 2, r: 4 }}
             />
           </LineChart>
@@ -144,25 +148,25 @@ const TrendAnalysisChart = ({ data = [] }) => {
         <div className="text-center p-3 bg-success/10 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <Icon name="TrendingUp" size={16} className="text-success" />
-            <span className="text-sm font-medium text-success">Availability</span>
+            <span className="text-sm font-medium text-success">{t('availability', 'Availability')}</span>
           </div>
-          <p className="text-xs text-muted-foreground">Trending upward +0.8%</p>
+          <p className="text-xs text-muted-foreground">{t('trendingUpwardXpercent', 'Trending upward +0.8%')}</p>
         </div>
         
         <div className="text-center p-3 bg-primary/10 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <Icon name="TrendingUp" size={16} className="text-primary" />
-            <span className="text-sm font-medium text-primary">Satisfaction</span>
+            <span className="text-sm font-medium text-primary">{t('satisfaction', 'Satisfaction')}</span>
           </div>
-          <p className="text-xs text-muted-foreground">Steady improvement +0.4</p>
+          <p className="text-xs text-muted-foreground">{t('steadyImprovementX', 'Steady improvement +0.4')}</p>
         </div>
         
         <div className="text-center p-3 bg-accent/10 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <Icon name="TrendingDown" size={16} className="text-accent" />
-            <span className="text-sm font-medium text-accent">Resolution Time</span>
+            <span className="text-sm font-medium text-accent">{t('resolutionTime', 'Resolution Time')}</span>
           </div>
-          <p className="text-xs text-muted-foreground">Faster by 1.1 hours</p>
+          <p className="text-xs text-muted-foreground">{t('fasterByXhours', 'Faster by 1.1 hours')}</p>
         </div>
       </div>
     </div>

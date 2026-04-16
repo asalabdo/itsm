@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import Icon from '../../components/AppIcon';
 import serviceRequestService from '../../services/serviceRequestService';
 
 const FulfillmentCenter = () => {
   const location = useLocation();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -118,13 +122,13 @@ const FulfillmentCenter = () => {
     }
   };
 
-  if (loading) return <div className="p-8">Loading queue...</div>;
+  if (loading) return <div className="p-8">{t('loadingQueue', 'Loading queue...')}</div>;
 
   return (
     <div className="flex flex-col space-y-8 pb-12 animate-fade-in">
       <div className="flex flex-col">
-        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Fulfillment Center</h1>
-        <p className="text-muted-foreground mt-1">Manage service request approvals and tasks</p>
+        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{t('fulfillmentCenter', 'Fulfillment Center')}</h1>
+        <p className="text-muted-foreground mt-1">{t('manageApprovals', 'Manage service request approvals and tasks')}</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -133,7 +137,7 @@ const FulfillmentCenter = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Icon name="List" size={20} className="text-primary" />
-              Active Queue ({queue.length})
+              {t('activeQueue', 'Active Queue')} ({queue.length})
             </h2>
           </div>
 
@@ -141,11 +145,11 @@ const FulfillmentCenter = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-muted/40 border-b border-border">
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Number</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Request</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Priority</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">SLA Status</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('number', 'Number')}</th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('request', 'Request')}</th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('priority', 'Priority')}</th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('slaStatus', 'SLA Status')}</th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">{t('actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

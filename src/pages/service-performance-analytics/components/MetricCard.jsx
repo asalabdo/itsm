@@ -1,7 +1,11 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const MetricCard = ({ title, value, unit, change, trend, sparklineData, icon, color = 'primary' }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const getChangeColor = () => {
     if (change > 0) return trend === 'up' ? 'text-success' : 'text-error';
     if (change < 0) return trend === 'down' ? 'text-success' : 'text-error';
@@ -67,7 +71,7 @@ const MetricCard = ({ title, value, unit, change, trend, sparklineData, icon, co
           <span className={`text-sm font-medium ${getChangeColor()}`}>
             {Math.abs(change)}%
           </span>
-          <span className="text-sm text-muted-foreground">vs last period</span>
+          <span className="text-sm text-muted-foreground">{t('vsLastPeriod', 'vs last period')}</span>
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import React from 'react';
 import Icon from '../AppIcon';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const defaultSteps = [
   'Intake',
@@ -21,6 +23,8 @@ const WorkflowStatusStrip = ({
   steps = defaultSteps,
   onShowAll,
 }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const resolvedSteps = Array.isArray(steps) && steps.length > 0 ? steps : defaultSteps;
 
   return (
@@ -30,27 +34,27 @@ const WorkflowStatusStrip = ({
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-muted-foreground">
               <Icon name="Workflow" size={14} />
-              <span>{title}</span>
+              <span>{t('workflowRoute', title)}</span>
             </div>
             <h2 className="text-xl md:text-2xl font-semibold text-foreground">{service}</h2>
-            <p className="text-sm text-muted-foreground max-w-2xl">{subtitle}</p>
+            <p className="text-sm text-muted-foreground max-w-2xl">{t('showingCurrentExecutionPath', subtitle)}</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <div className="px-3 py-2 rounded-xl bg-background border border-border">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Service</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t('dynamicService', 'Service')}</p>
               <p className="text-sm font-semibold text-foreground">{service}</p>
             </div>
             <div className="px-3 py-2 rounded-xl bg-background border border-border">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Organization</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t('unassignedOrganization', 'Organization')}</p>
               <p className="text-sm font-semibold text-foreground">{organization}</p>
             </div>
             <div className="px-3 py-2 rounded-xl bg-background border border-border">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Mode</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t('mode', 'Mode')}</p>
               <p className="text-sm font-semibold text-foreground">{mode}</p>
             </div>
             <div className="px-3 py-2 rounded-xl bg-background border border-border">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Last action</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t('lastAction', 'Last action')}</p>
               <p className="text-sm font-semibold text-foreground max-w-[260px] truncate">{lastAction}</p>
             </div>
           </div>
@@ -62,7 +66,7 @@ const WorkflowStatusStrip = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-3">
               <Icon name="Route" size={16} className="text-primary" />
-              <span className="text-sm font-semibold text-foreground">Workflow stages</span>
+              <span className="text-sm font-semibold text-foreground">{t('workflowStages', 'Workflow stages')}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
               {resolvedSteps.map((step, index) => {
@@ -113,7 +117,7 @@ const WorkflowStatusStrip = ({
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-background text-sm font-semibold text-foreground hover:bg-muted transition-colors"
               >
                 <Icon name="List" size={16} />
-                Show all actions
+                {t('showAllActions', 'Show all actions')}
               </button>
             </div>
           )}

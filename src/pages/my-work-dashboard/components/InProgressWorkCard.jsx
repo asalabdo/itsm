@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 
 const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [activeWork, setActiveWork] = useState([]);
 
   useEffect(() => {
@@ -90,7 +94,7 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
       return {
         ...work,
         progress: nextProgress,
-        nextSteps: nextProgress >= 100 ? 'Ready for closure and final review' : 'Continue working through the active checklist'
+        nextSteps: nextProgress >= 100 ? t('readyForClosure', 'Ready for closure and final review') : t('continueWorking', 'Continue working through the active checklist')
       };
     }));
   };
@@ -101,7 +105,7 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
             <Icon name="Play" size={20} />
-            <span>In Progress ({activeWork?.length})</span>
+            <span>{t('inProgressCard', 'In Progress')} ({activeWork?.length})</span>
           </h3>
           <div className="flex items-center space-x-2">
             <button
@@ -121,10 +125,10 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
       </div>
       <div className="max-h-96 overflow-y-auto">
         {loading ? (
-          <div className="p-6 text-sm text-muted-foreground">Loading active work...</div>
+          <div className="p-6 text-sm text-muted-foreground">{t('loadingActiveWork', 'Loading active work...')}</div>
         ) : activeWork.length === 0 ? (
           <div className="p-6 text-sm text-muted-foreground">
-            No tickets are currently in progress.
+            {t('noTicketsInProgress', 'No tickets are currently in progress.')}
           </div>
         ) : activeWork?.map((work) => (
           <div key={work?.id} className="p-4 border-b border-border last:border-b-0">
@@ -154,7 +158,7 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
               {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Progress</span>
+                  <span className="text-muted-foreground">{t('progressLabel', 'Progress')}</span>
                   <span className="text-foreground font-medium">{work?.progress}%</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
@@ -178,7 +182,7 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
 
               {/* Next Steps */}
               <div className="bg-muted/30 rounded-lg p-3">
-                <p className="text-xs font-medium text-muted-foreground mb-1">Next Steps:</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">{t('nextSteps', 'Next Steps')}:</p>
                 <p className="text-sm text-foreground">{work?.nextSteps}</p>
               </div>
 
@@ -186,7 +190,7 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-1">
                   <Icon name="Users" size={14} className="text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Collaborating with:</span>
+                  <span className="text-xs text-muted-foreground">{t('collaboratingWith', 'Collaborating with')}:</span>
                 </div>
                 <div className="flex space-x-1">
                   {work?.collaborators?.map((collab, index) => (
@@ -207,13 +211,13 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
                     onClick={() => setSelectedWork(work)}
                     className="px-3 py-1 bg-accent text-accent-foreground text-xs rounded hover:bg-accent/90 transition-colors"
                   >
-                    Add Note
+                    {t('addNote', 'Add Note')}
                   </button>
                   <button
                     onClick={() => updateWorkStatus(work?.id)}
                     className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded hover:bg-secondary/90 transition-colors"
                   >
-                    Update Status
+                    {t('updateStatus', 'Update Status')}
                   </button>
                 </div>
                 
@@ -239,7 +243,7 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
           <div className="bg-card border border-border rounded-lg max-w-lg w-full">
             <div className="p-6 border-b border-border">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Add Note - {selectedWork?.id}</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t('addNote', 'Add Note')} - {selectedWork?.id}</h3>
                 <button
                   onClick={() => setSelectedWork(null)}
                   className="p-2 hover:bg-muted rounded-lg transition-colors"
@@ -252,19 +256,19 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
             <div className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Current Notes</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('currentNotes', 'Current Notes')}</label>
                   <p className="text-sm text-foreground bg-muted/30 p-3 rounded-lg mt-1">
                     {selectedWork?.notes}
                   </p>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Add New Note</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('addNewNote', 'Add New Note')}</label>
                   <textarea
                     value={newNote}
                     onChange={(e) => setNewNote(e?.target?.value)}
                     className="w-full p-3 mt-1 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground"
-                    placeholder="Enter work update, findings, or next steps..."
+                    placeholder={t('enterWorkUpdate', 'Enter work update, findings, or next steps...')}
                     rows={4}
                   />
                 </div>
@@ -274,13 +278,13 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
                     onClick={() => setSelectedWork(null)}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
                   >
-                    Cancel
+                    {t('cancel', 'Cancel')}
                   </button>
                   <button
                     onClick={() => addNote(selectedWork?.id)}
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                   >
-                    Add Note
+                    {t('addNote', 'Add Note')}
                   </button>
                 </div>
               </div>

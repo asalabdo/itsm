@@ -1,32 +1,36 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const TicketCreationCard = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const ticketCategories = [
     {
       id: 'incident',
-      title: 'Report an Incident',
-      description: 'Report technical issues, bugs, or service disruptions that need immediate attention',
+      title: t('reportIncident', 'Report an Incident'),
+      description: t('reportTechnicalIssues', 'Report technical issues, bugs, or service disruptions that need immediate attention'),
       icon: 'AlertCircle',
       color: 'var(--color-error)',
       bgColor: 'bg-error/10',
     },
     {
       id: 'problem',
-      title: 'Report a Problem',
-      description: 'Identify recurring issues or root causes that require investigation and permanent fix',
+      title: t('reportProblem', 'Report a Problem'),
+      description: t('identifyRecurringIssues', 'Identify recurring issues or root causes that require investigation and permanent fix'),
       icon: 'AlertTriangle',
       color: 'var(--color-warning)',
       bgColor: 'bg-warning/10',
     },
     {
       id: 'change',
-      title: 'Request a Change',
-      description: 'Submit requests for new features, modifications, or system enhancements',
+      title: t('requestChange', 'Request a Change'),
+      description: t('submitRequests', 'Submit requests for new features, modifications, or system enhancements'),
       icon: 'GitBranch',
       color: 'var(--color-primary)',
       bgColor: 'bg-primary/10',
@@ -52,10 +56,10 @@ const TicketCreationCard = () => {
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
           <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-1 md:mb-2">
-            Create New Ticket
+            {t('createNewTicket', 'Create New Ticket')}
           </h2>
           <p className="text-sm md:text-base text-muted-foreground">
-            Select a category to get started with your support request
+            {t('selectCategoryGetStarted', 'Select a category to get started with your support request')}
           </p>
         </div>
         <div className="hidden lg:block">
@@ -91,10 +95,10 @@ const TicketCreationCard = () => {
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="text-sm md:text-base font-medium text-foreground mb-1">
-              Need help choosing?
+              {t('needHelpChoosing', 'Need help choosing?')}
             </h4>
             <p className="text-xs md:text-sm text-muted-foreground mb-3">
-              Not sure which category fits your issue? Check our knowledge base for common solutions or contact support for guidance.
+              {t('notSureWhichCategory', 'Not sure which category fits your issue? Check our knowledge base for common solutions or contact support for guidance.')}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button
@@ -104,10 +108,10 @@ const TicketCreationCard = () => {
                 iconPosition="left"
                 onClick={() => navigate('/knowledge-base')}
               >
-                Browse Knowledge Base
+                {t('browseKnowledgeBase', 'Browse Knowledge Base')}
               </Button>
               <Button variant="ghost" size="sm" iconName="MessageCircle" iconPosition="left" onClick={() => navigate('/ticket-chatbot')}>
-                Chat with Support
+                {t('chatWithSupport', 'Chat with Support')}
               </Button>
             </div>
           </div>

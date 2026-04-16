@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 import { ticketsAPI } from '../../../services/api';
 
 const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const activeTickets = tickets.length > 0 ? tickets.map(t => ({
     backendId: t.id,
     id: t.ticketNumber,
@@ -70,7 +74,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
             <Icon name="Inbox" size={20} />
-            <span>Active Tickets ({filteredTickets?.length})</span>
+            <span>{t('activeTicketsCard', 'Active Tickets')} ({filteredTickets?.length})</span>
           </h3>
           <div className="flex space-x-2">
             <button className="p-2 hover:bg-muted rounded-lg transition-colors">
@@ -84,10 +88,10 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
       </div>
       <div className="max-h-96 overflow-y-auto">
         {loading ? (
-          <div className="p-6 text-sm text-muted-foreground">Loading active tickets...</div>
+          <div className="p-6 text-sm text-muted-foreground">{t('loadingActiveTickets', 'Loading active tickets...')}</div>
         ) : filteredTickets.length === 0 ? (
           <div className="p-6 text-sm text-muted-foreground">
-            No open tickets match the current filter.
+            {t('noOpenTickets', 'No open tickets match the current filter.')}
           </div>
         ) : filteredTickets?.map((ticket) => (
           <div
@@ -134,7 +138,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
                   }}
                   className="px-3 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/90 transition-colors"
                 >
-                  Start Work
+                  {t('startWork', 'Start Work')}
                 </button>
                 <button
                   onClick={async (e) => {
@@ -146,18 +150,18 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
                   }}
                   className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded hover:bg-secondary/90 transition-colors"
                 >
-                  Escalate
+                  {t('escalate', 'Escalate')}
                 </button>
               </div>
               
               <div className="flex space-x-1">
-                <button onClick={() => ticket?.backendId && navigate(`/ticket-details/${ticket.backendId}`)} className="p-1 hover:bg-muted rounded" title="Open details">
+                <button onClick={() => ticket?.backendId && navigate(`/ticket-details/${ticket.backendId}`)} className="p-1 hover:bg-muted rounded" title={t('openDetails', 'Open details')}>
                   <Icon name="MessageSquare" size={14} className="text-muted-foreground" />
                 </button>
-                <button onClick={() => ticket?.backendId && navigate(`/ticket-details/${ticket.backendId}`)} className="p-1 hover:bg-muted rounded" title="Attachments">
+                <button onClick={() => ticket?.backendId && navigate(`/ticket-details/${ticket.backendId}`)} className="p-1 hover:bg-muted rounded" title={t('attachments', 'Attachments')}>
                   <Icon name="Paperclip" size={14} className="text-muted-foreground" />
                 </button>
-                <button onClick={() => ticket?.backendId && navigate(`/ticket-details/${ticket.backendId}`)} className="p-1 hover:bg-muted rounded" title="More actions">
+                <button onClick={() => ticket?.backendId && navigate(`/ticket-details/${ticket.backendId}`)} className="p-1 hover:bg-muted rounded" title={t('moreActions', 'More actions')}>
                   <Icon name="MoreHorizontal" size={14} className="text-muted-foreground" />
                 </button>
               </div>
@@ -184,28 +188,28 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
             <div className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Description</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('description', 'Description')}</label>
                   <p className="text-foreground">{selectedTicket?.description}</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Customer</label>
+                    <label className="text-sm font-medium text-muted-foreground">{t('customer', 'Customer')}</label>
                     <p className="text-foreground">{selectedTicket?.customer}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Department</label>
+                    <label className="text-sm font-medium text-muted-foreground">{t('department', 'Department')}</label>
                     <p className="text-foreground">{selectedTicket?.department}</p>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status Update</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('statusUpdate', 'Status Update')}</label>
                   <textarea
                     value={statusUpdate}
                     onChange={(e) => setStatusUpdate(e?.target?.value)}
                     className="w-full p-3 mt-1 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground"
-                    placeholder="Add a status update..."
+                    placeholder={t('addStatusUpdate', 'Add a status update...')}
                     rows={3}
                   />
                 </div>
@@ -215,13 +219,13 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
                     onClick={() => setSelectedTicket(null)}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
                   >
-                    Cancel
+                    {t('cancel', 'Cancel')}
                   </button>
                   <button
                     onClick={() => handleStatusChange(selectedTicket?.id, 'In Progress')}
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                   >
-                    Update Status
+                    {t('updateStatus', 'Update Status')}
                   </button>
                 </div>
               </div>

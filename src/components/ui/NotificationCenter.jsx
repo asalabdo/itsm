@@ -1,13 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import notificationService from '../../services/notificationService';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const NotificationCenter = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { isRtl, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const dropdownRef = useRef(null);
 
@@ -122,27 +126,27 @@ const NotificationCenter = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
-        className="relative p-2 rounded-md hover:bg-muted transition-smooth"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Notifications"
-      >
+        <button
+          className="relative p-2 rounded-md hover:bg-muted transition-smooth"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={t('notificationsTitle', 'Notifications')}
+        >
         <Icon name="Bell" size={20} />
         {unreadCount > 0 && (
           <span className="notification-badge">{unreadCount}</span>
         )}
       </button>
       {isOpen && (
-        <div className="absolute right-0 top-12 w-96 bg-popover border border-border rounded-md shadow-lg z-dropdown overflow-hidden">
+        <div className={`absolute top-12 w-96 bg-popover border border-border rounded-md shadow-lg z-dropdown overflow-hidden ${isRtl ? 'left-0' : 'right-0'}`}>
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <h3 className="font-semibold text-foreground">Notifications</h3>
+            <h3 className="font-semibold text-foreground">{t('notificationsTitle', 'Notifications')}</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   className="text-xs text-primary hover:underline"
                   onClick={markAllAsRead}
                 >
-                  Mark all read
+                  {t('markAllReadShort', 'Mark all read')}
                 </button>
               )}
               {notifications?.length > 0 && (
@@ -150,7 +154,7 @@ const NotificationCenter = () => {
                   className="text-xs text-muted-foreground hover:text-foreground"
                   onClick={clearAll}
                 >
-                  Clear all
+                  {t('clearAll', 'Clear all')}
                 </button>
               )}
             </div>
@@ -158,11 +162,11 @@ const NotificationCenter = () => {
 
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="p-8 text-center text-muted-foreground">Loading notifications...</div>
+              <div className="p-8 text-center text-muted-foreground">{t('loadingNotifications', 'Loading notifications...')}</div>
             ) : normalized?.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 <Icon name="Bell" size={48} className="mx-auto mb-3 opacity-30" />
-                <p>No notifications</p>
+                <p>{t('noNotifications', 'No notifications')}</p>
               </div>
             ) : (
               normalized?.map((notification) => {
@@ -171,7 +175,7 @@ const NotificationCenter = () => {
                   <button
                     key={notification?.id}
                     type="button"
-                    className={`w-full text-left p-4 border-b border-border hover:bg-muted cursor-pointer transition-smooth ${
+                    className={`w-full p-4 border-b border-border hover:bg-muted cursor-pointer transition-smooth ${isRtl ? 'text-right' : 'text-left'} ${
                       !notification?.read ? 'bg-primary/10' : ''
                     }`}
                     onClick={() => handleNotificationClick(notification)}
@@ -204,7 +208,7 @@ const NotificationCenter = () => {
           {normalized?.length > 0 && (
             <div className="p-3 border-t border-border text-center">
               <button className="text-sm text-primary hover:underline" onClick={() => navigate('/search')}>
-                View all notifications
+                {t('viewAllNotifications', 'View all notifications')}
               </button>
             </div>
           )}

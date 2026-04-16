@@ -22,11 +22,11 @@ const AssetLifecycleFunnel = ({ data = [], onStageClick, onExport }) => {
           <p className="text-sm text-muted-foreground mb-2">{data?.description}</p>
           <div className="space-y-1">
             <div className="flex justify-between">
-              <span className="text-sm">Count:</span>
+              <span className="text-sm">العدد:</span>
               <span className="text-sm font-medium">{data?.count?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm">Percentage:</span>
+              <span className="text-sm">النسبة:</span>
               <span className="text-sm font-medium">{data?.percentage}%</span>
             </div>
           </div>
@@ -40,16 +40,16 @@ const AssetLifecycleFunnel = ({ data = [], onStageClick, onExport }) => {
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Asset Lifecycle Distribution</h3>
-          <p className="text-sm text-muted-foreground">Click on stages to view detailed breakdown</p>
+          <h3 className="text-lg font-semibold text-foreground">توزيع دورة حياة الأصول</h3>
+          <p className="text-sm text-muted-foreground">انقر على المراحل لعرض التفاصيل</p>
         </div>
         <div className="flex items-center space-x-2">
           <Icon name="Filter" size={18} className="text-muted-foreground" />
           <select className="text-sm border border-border rounded px-2 py-1 bg-background">
-            <option>All Categories</option>
-            <option>Hardware</option>
-            <option>Software</option>
-            <option>Network</option>
+            <option>كل الفئات</option>
+            <option>الأجهزة</option>
+            <option>البرمجيات</option>
+            <option>الشبكات</option>
           </select>
         </div>
       </div>
@@ -84,7 +84,7 @@ const AssetLifecycleFunnel = ({ data = [], onStageClick, onExport }) => {
       {selectedStage && (
         <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-medium text-foreground">{selectedStage?.stage} Stage Details</h4>
+            <h4 className="font-medium text-foreground">تفاصيل مرحلة {selectedStage?.stage}</h4>
             <button 
               onClick={() => setSelectedStage(null)}
               className="text-muted-foreground hover:text-foreground"
@@ -107,11 +107,11 @@ const AssetLifecycleFunnel = ({ data = [], onStageClick, onExport }) => {
         <div className="flex items-center space-x-4">
           <button className="flex items-center space-x-2 text-sm text-primary hover:text-primary/80" onClick={onExport}>
             <Icon name="Download" size={16} />
-            <span>Export Report</span>
+            <span>تصدير التقرير</span>
           </button>
           <button className="flex items-center space-x-2 text-sm text-primary hover:text-primary/80">
             <Icon name="RefreshCw" size={16} />
-            <span>Refresh Data</span>
+            <span>تحديث البيانات</span>
           </button>
         </div>
         <div className="text-xs text-muted-foreground">

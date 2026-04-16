@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import { dashboardAPI, ticketsAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const StatCard = ({ title, value, subtitle, icon, color }) => (
   <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1">
@@ -18,6 +20,8 @@ const StatCard = ({ title, value, subtitle, icon, color }) => (
 );
 
 const AdvancedAnalyticsHub = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [summary, setSummary] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,8 +63,8 @@ const AdvancedAnalyticsHub = () => {
       <BreadcrumbTrail />
       <main className="px-4 md:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Advanced Analytics</h1>
-          <p className="text-sm text-muted-foreground mt-1">Deep insights into service performance and trends</p>
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">{t('advancedAnalytics', 'Advanced Analytics')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('deepInsights', 'Deep insights into service performance and trends')}</p>
         </div>
 
         {loading ? (
@@ -70,18 +74,18 @@ const AdvancedAnalyticsHub = () => {
         ) : (
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard title="Total Tickets" value={summary?.totalTickets ?? tickets.length} subtitle="All time" icon="Ticket" color="var(--color-primary)" />
-              <StatCard title="Open Tickets" value={summary?.openTickets ?? tickets.filter(t => t.status === 'Open').length} subtitle="Awaiting resolution" icon="AlertCircle" color="var(--color-warning)" />
-              <StatCard title="Resolution Rate" value={`${resolutionRate}%`} subtitle={`${resolved} resolved`} icon="CheckCircle" color="var(--color-success)" />
-              <StatCard title="Avg Resolution" value={summary?.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : 'N/A'} subtitle="Average time" icon="Clock" color="var(--color-accent)" />
+              <StatCard title={t('totalTickets', 'Total Tickets')} value={summary?.totalTickets ?? tickets.length} subtitle={t('allTime', 'All time')} icon="Ticket" color="var(--color-primary)" />
+              <StatCard title={t('openTickets', 'Open Tickets')} value={summary?.openTickets ?? tickets.filter(t => t.status === 'Open').length} subtitle={t('awaitingResolution', 'Awaiting resolution')} icon="AlertCircle" color="var(--color-warning)" />
+              <StatCard title={t('resolutionRate', 'Resolution Rate')} value={`${resolutionRate}%`} subtitle={`${resolved} ${t('resolved', 'resolved')}`} icon="CheckCircle" color="var(--color-success)" />
+              <StatCard title={t('avgResolution', 'Avg Resolution')} value={summary?.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : 'N/A'} subtitle={t('averageTime', 'Average time')} icon="Clock" color="var(--color-accent)" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1">
-                <h3 className="font-semibold text-foreground mb-4">Tickets by Priority</h3>
+                <h3 className="font-semibold text-foreground mb-4">{t('ticketsByPriority', 'Tickets by Priority')}</h3>
                 <div className="space-y-3">
                   {Object.entries(byPriority).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No data available</p>
+                    <p className="text-sm text-muted-foreground">{t('noDataAvailable', 'No data available')}</p>
                   ) : Object.entries(byPriority).map(([priority, count]) => {
                     const pct = tickets.length ? Math.round((count / tickets.length) * 100) : 0;
                     const colors = { Urgent: 'bg-error', High: 'bg-warning', Medium: 'bg-primary', Low: 'bg-success' };
@@ -101,10 +105,10 @@ const AdvancedAnalyticsHub = () => {
               </div>
 
               <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1">
-                <h3 className="font-semibold text-foreground mb-4">Tickets by Category</h3>
+                <h3 className="font-semibold text-foreground mb-4">{t('ticketsByCategory', 'Tickets by Category')}</h3>
                 <div className="space-y-3">
                   {Object.entries(byCategory).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No data available</p>
+                    <p className="text-sm text-muted-foreground">{t('noDataAvailable', 'No data available')}</p>
                   ) : Object.entries(byCategory).map(([cat, count]) => {
                     const pct = tickets.length ? Math.round((count / tickets.length) * 100) : 0;
                     return (

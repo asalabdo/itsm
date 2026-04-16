@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
@@ -10,8 +10,12 @@ import DepartmentPerformance from './components/DepartmentPerformance';
 import KeyInsightsSummary from './components/KeyInsightsSummary';
 import KPICorrelationMatrix from './components/KPICorrelationMatrix';
 import { dashboardAPI, reportsAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ExecutiveITServiceSummary = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [metrics, setMetrics] = useState([]);
@@ -19,7 +23,7 @@ const ExecutiveITServiceSummary = () => {
   const [trendMetrics, setTrendMetrics] = useState([]);
   const [categoryMetrics, setCategoryMetrics] = useState([]);
   const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -76,7 +80,7 @@ const ExecutiveITServiceSummary = () => {
   // Fallback if no metrics returned
   const displayMetrics = primaryMetrics.length > 0 ? primaryMetrics.slice(0, 4) : [
     {
-      title: "IT Service Availability",
+      title: t('itServiceAvailability', 'IT Service Availability'),
       value: summary ? "99.8" : "--",
       unit: "%",
       trend: "up",
@@ -84,10 +88,10 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "99.5",
       status: "excellent",
       icon: "Activity",
-      description: "Overall system uptime across all services"
+      description: t('overallSystemUptime', 'Overall system uptime across all services')
     },
     {
-      title: "Employee Satisfaction",
+      title: t('employeeSatisfaction', 'Employee Satisfaction'),
       value: "4.5",
       unit: "/5.0",
       trend: "up",
@@ -95,10 +99,10 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "4.0",
       status: "excellent",
       icon: "Heart",
-      description: "Average user satisfaction rating"
+      description: t('averageUserSatisfaction', 'Average user satisfaction rating')
     },
     {
-      title: "Cost per Ticket",
+      title: t('costPerTicket', 'Cost per Ticket'),
       value: "42",
       unit: "ريال",
       trend: "down",
@@ -106,10 +110,10 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "50",
       status: "good",
       icon: "Banknote",
-      description: "Average cost to resolve each ticket"
+      description: t('averageCostToResolve', 'Average cost to resolve each ticket')
     },
     {
-      title: "Business Impact Score",
+      title: t('businessImpactScore', 'Business Impact Score'),
       value: "8.7",
       unit: "/10",
       trend: "up",
@@ -117,7 +121,7 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "8.0",
       status: "excellent",
       icon: "TrendingUp",
-      description: "IT contribution to business objectives"
+      description: t('successRate', 'IT contribution to business objectives')
     }
   ];
 
@@ -183,35 +187,35 @@ const ExecutiveITServiceSummary = () => {
 
   const correlations = {
     availability: {
-      name: 'Service Availability',
+      name: t('itServiceAvailability', 'Service Availability'),
       correlations: [
-        { metric: 'Resolved Tickets', correlation: 0.82, trend: 'positive', impact: `Resolution volume is ${summary?.resolvedTickets ?? 0}, which supports availability tracking.` },
-        { metric: 'Open Tickets', correlation: -0.74, trend: 'negative', impact: `There are ${summary?.openTickets ?? 0} open tickets left to reduce.` },
+        { metric: t('resolved', 'Resolved Tickets'), correlation: 0.82, trend: 'positive', impact: `Resolution volume is ${summary?.resolvedTickets ?? 0}, which supports availability tracking.` },
+        { metric: t('openTickets', 'Open Tickets'), correlation: -0.74, trend: 'negative', impact: `There are ${summary?.openTickets ?? 0} open tickets left to reduce.` },
         { metric: 'Asset Utilization', correlation: 0.61, trend: 'positive', impact: `Active assets are at ${summary?.activeAssets ?? 0} and help maintain uptime.` }
       ]
     },
     satisfaction: {
-      name: 'Employee Satisfaction',
+      name: t('employeeSatisfaction', 'Employee Satisfaction'),
       correlations: [
-        { metric: 'Resolved Tickets', correlation: 0.79, trend: 'positive', impact: 'More completed work generally improves user confidence.' },
-        { metric: 'Pending Approvals', correlation: -0.68, trend: 'negative', impact: `Pending approvals are currently ${summary?.pendingApprovals ?? 0}.` },
+        { metric: t('resolved', 'Resolved Tickets'), correlation: 0.79, trend: 'positive', impact: 'More completed work generally improves user confidence.' },
+        { metric: t('pendingApprovals', 'Pending Approvals'), correlation: -0.68, trend: 'negative', impact: `Pending approvals are currently ${summary?.pendingApprovals ?? 0}.` },
         { metric: 'Response Time', correlation: -0.71, trend: 'negative', impact: 'Faster responses improve perception of the service desk.' }
       ]
     },
     cost: {
-      name: 'Cost per Ticket',
+      name: t('costPerTicket', 'Cost per Ticket'),
       correlations: [
         { metric: 'Asset Count', correlation: -0.44, trend: 'negative', impact: `A total of ${summary?.totalAssets ?? 0} tracked assets influences support cost.` },
-        { metric: 'Open Tickets', correlation: 0.71, trend: 'positive', impact: 'Backlog growth usually increases handling cost.' },
+        { metric: t('openTickets', 'Open Tickets'), correlation: 0.71, trend: 'positive', impact: 'Backlog growth usually increases handling cost.' },
         { metric: 'Automation Coverage', correlation: -0.65, trend: 'negative', impact: 'Automation and self-service reduce per-ticket effort.' }
       ]
     },
     business: {
-      name: 'Business Impact Score',
+      name: t('businessImpactScore', 'Business Impact Score'),
       correlations: [
-        { metric: 'Resolved Tickets', correlation: 0.88, trend: 'positive', impact: 'Throughput directly improves service continuity.' },
+        { metric: t('resolved', 'Resolved Tickets'), correlation: 0.88, trend: 'positive', impact: 'Throughput directly improves service continuity.' },
         { metric: 'Total Assets', correlation: 0.57, trend: 'positive', impact: 'Asset visibility improves business resilience.' },
-        { metric: 'Pending Approvals', correlation: -0.63, trend: 'negative', impact: 'Approvals waiting in queue delay business change.' }
+        { metric: t('pendingApprovals', 'Pending Approvals'), correlation: -0.63, trend: 'negative', impact: 'Approvals waiting in queue delay business change.' }
       ]
     }
   };
@@ -233,7 +237,7 @@ const ExecutiveITServiceSummary = () => {
   return (
     <>
       <Helmet>
-        <title>Executive IT Service Summary - ITSM Hub</title>
+        <title>{t('executiveITServiceSummary', 'Executive IT Service Summary')} - ITSM Hub</title>
         <meta name="description" content="High-level strategic dashboard for IT directors and business stakeholders with executive-level KPI monitoring and business impact visibility" />
       </Helmet>
       <div className="min-h-screen bg-background">
@@ -249,8 +253,8 @@ const ExecutiveITServiceSummary = () => {
                     <Icon name="BarChart3" size={24} color="white" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-foreground">Executive IT Service Summary</h1>
-                    <p className="text-muted-foreground">Strategic overview and business impact analysis</p>
+                    <h1 className="text-3xl font-bold text-foreground">{t('executiveITServiceSummary', 'Executive IT Service Summary')}</h1>
+                    <p className="text-muted-foreground">{t('executiveSummaryDescription', 'Strategic overview and business impact analysis')}</p>
                   </div>
                 </div>
               </div>
@@ -258,7 +262,7 @@ const ExecutiveITServiceSummary = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-4 lg:mt-0">
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <Icon name="Clock" size={16} />
-                  <span>Last updated: {lastUpdated?.toLocaleTimeString()}</span>
+                  <span>{t('lastUpdated', 'Last Updated')}: {lastUpdated?.toLocaleTimeString()}</span>
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -270,7 +274,7 @@ const ExecutiveITServiceSummary = () => {
                     iconPosition="left"
                     iconSize={16}
                   >
-                    Refresh
+                    {t('refresh', 'Refresh')}
                   </Button>
                   
                   <div className="relative group">
@@ -281,7 +285,7 @@ const ExecutiveITServiceSummary = () => {
                       iconPosition="left"
                       iconSize={16}
                     >
-                      Export
+                      {t('export', 'Export')}
                     </Button>
                     
                     {/* Export Dropdown */}
@@ -292,21 +296,21 @@ const ExecutiveITServiceSummary = () => {
                           className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition flex items-center space-x-2"
                         >
                           <Icon name="FileText" size={16} />
-                          <span>PDF Report</span>
+                          <span>{t('exportPdf', 'PDF Report')}</span>
                         </button>
                         <button 
                           onClick={() => handleExport('pptx')}
                           className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition flex items-center space-x-2"
                         >
                           <Icon name="Presentation" size={16} />
-                          <span>PowerPoint</span>
+                          <span>{t('exportPowerpoint', 'PowerPoint')}</span>
                         </button>
                         <button 
                           onClick={() => handleExport('excel')}
                           className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition flex items-center space-x-2"
                         >
                           <Icon name="FileSpreadsheet" size={16} />
-                          <span>Excel Data</span>
+                          <span>{t('exportExcel', 'Excel Data')}</span>
                         </button>
                       </div>
                     </div>
@@ -321,7 +325,7 @@ const ExecutiveITServiceSummary = () => {
                       className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
                     />
                     <label htmlFor="autoRefresh" className="text-sm text-muted-foreground">
-                      Auto-refresh
+                      {t('autoRefreshLabel', 'Auto Refresh')}
                     </label>
                   </div>
                 </div>
@@ -364,20 +368,18 @@ const ExecutiveITServiceSummary = () => {
             <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                 <div className="mb-4 lg:mb-0">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Executive Summary</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t('executiveSummary', 'Executive Summary')}</h3>
                   <p className="text-sm text-muted-foreground max-w-2xl">
-                    IT services are performing exceptionally well with 99.8% availability and 4.5/5.0 customer satisfaction. 
-                    Cost optimization initiatives have reduced per-ticket costs by 8%. Key focus areas include database 
-                    performance optimization and continued cloud migration to maintain service excellence.
+                    {t('executiveSummaryFooter', 'IT services are performing strongly with 99.8% availability and 4.5/5.0 customer satisfaction. Cost optimization initiatives have reduced cost per ticket by 8%. Focus priorities include improving database performance and continuing cloud migration to maintain service quality.')}
                   </p>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                   <div className="text-sm text-muted-foreground">
-                    Report Period: September 2024
+                    {t('reportPeriod', 'Report Period: September 2024')}
                   </div>
                   <Button variant="outline" size="sm">
-                    Schedule Email Report
+                    {t('scheduleEmailReport', 'Schedule Email Report')}
                   </Button>
                 </div>
               </div>

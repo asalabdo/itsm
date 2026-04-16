@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@400&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -41,6 +40,7 @@
     --font-heading: 'Inter', sans-serif;
     --font-body: 'Inter', sans-serif;
     --font-caption: 'Inter', sans-serif;
+    --font-arabic: 'Tajawal', 'Inter', sans-serif;
     --font-data: 'JetBrains Mono', monospace;
 
     /* Shadows */
@@ -81,6 +81,12 @@
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.28);
     --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.32);
     --shadow-lg: 0 24px 54px rgba(0, 0, 0, 0.4);
+  }
+
+  html[dir="rtl"] {
+    --font-heading: var(--font-arabic);
+    --font-body: var(--font-arabic);
+    --font-caption: var(--font-arabic);
   }
 
   /* ── Global dark-mode hardcoded color overrides ─────────────────────── */
@@ -161,6 +167,46 @@
   html {
     color-scheme: light dark;
     scroll-behavior: smooth;
+  }
+
+  html[dir="rtl"] body {
+    direction: rtl;
+    unicode-bidi: plaintext;
+  }
+
+  html[dir="rtl"] input,
+  html[dir="rtl"] textarea,
+  html[dir="rtl"] select {
+    direction: rtl;
+    text-align: right;
+  }
+
+  html[dir="rtl"] .font-data {
+    direction: ltr;
+    unicode-bidi: bidi-override;
+    text-align: left;
+  }
+
+  html[dir="rtl"] [class*="space-x-"] {
+    --tw-space-x-reverse: 1;
+  }
+
+  html[dir="rtl"] .ml-auto {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+  }
+
+  html[dir="rtl"] .mr-auto {
+    margin-right: 0 !important;
+    margin-left: auto !important;
+  }
+
+  html[dir="rtl"] .text-left {
+    text-align: right !important;
+  }
+
+  html[dir="rtl"] .text-right {
+    text-align: left !important;
   }
 
   h1, h2, h3, h4, h5, h6 {

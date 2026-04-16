@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -6,27 +6,14 @@ import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import { ticketsAPI } from '../../services/api';
-
-const statusOptions = [
-  { value: '', label: 'All Statuses' },
-  { value: 'Open', label: 'Open' },
-  { value: 'In Progress', label: 'In Progress' },
-  { value: 'Pending', label: 'Pending' },
-  { value: 'Resolved', label: 'Resolved' },
-  { value: 'Closed', label: 'Closed' },
-];
-
-const priorityOptions = [
-  { value: '', label: 'All Priorities' },
-  { value: 'Critical', label: 'Critical' },
-  { value: 'High', label: 'High' },
-  { value: 'Medium', label: 'Medium' },
-  { value: 'Low', label: 'Low' },
-];
 
 const SearchResults = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [status, setStatus] = useState(searchParams.get('status') || '');
@@ -34,6 +21,23 @@ const SearchResults = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const statusOptions = [
+    { value: '', label: t('allStatuses', 'All Statuses') },
+    { value: 'Open', label: t('open', 'Open') },
+    { value: 'In Progress', label: t('inProgress', 'In Progress') },
+    { value: 'Pending', label: t('pending', 'Pending') },
+    { value: 'Resolved', label: t('resolved', 'Resolved') },
+    { value: 'Closed', label: t('closed', 'Closed') },
+  ];
+
+  const priorityOptions = [
+    { value: '', label: t('allPriorities', 'All Priorities') },
+    { value: 'Critical', label: t('critical', 'Critical') },
+    { value: 'High', label: t('high', 'High') },
+    { value: 'Medium', label: t('medium', 'Medium') },
+    { value: 'Low', label: t('low', 'Low') },
+  ];
 
   const runSearch = async (params = {}) => {
     setLoading(true);
@@ -43,7 +47,7 @@ const SearchResults = () => {
       setResults(response.data || []);
     } catch (searchError) {
       console.error('Ticket search failed:', searchError);
-      setError('We could not load search results right now.');
+      setError(t('loadingTicketResults', 'Failed to load search results.'));
       setResults([]);
     } finally {
       setLoading(false);
@@ -81,10 +85,10 @@ const SearchResults = () => {
       <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground">
-            Search Results
+            {t('searchResults', 'Search Results')}
           </h1>
           <p className="text-sm md:text-base text-muted-foreground caption mt-1">
-            Search the live ticket API, then jump directly into ticket details.
+            {t('searchResultsDescription', 'Search the live ticket interface then jump directly to ticket details.')}
           </p>
         </div>
 
@@ -92,26 +96,26 @@ const SearchResults = () => {
           <div className="grid grid-cols-1 md:grid-cols-[1fr_220px_220px_auto] gap-3">
             <Input
               type="search"
-              label="Search"
-              placeholder="Ticket number, title, requester, or description"
+              label={t('search', 'Search')}
+              placeholder={t('searchPlaceholderLong', 'Ticket number, title, requester, or description')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
             <Select
-              label="Status"
+              label={t('status', 'Status')}
               options={statusOptions}
               value={status}
               onChange={setStatus}
             />
             <Select
-              label="Priority"
+              label={t('priority', 'Priority')}
               options={priorityOptions}
               value={priority}
               onChange={setPriority}
             />
             <div className="flex items-end">
               <Button type="submit" variant="default" iconName="Search" iconPosition="left" className="w-full md:w-auto">
-                Search
+                {t('search', 'Search')}
               </Button>
             </div>
           </div>
@@ -126,14 +130,14 @@ const SearchResults = () => {
         <div className="space-y-4">
           {loading ? (
             <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-              Loading ticket results...
+              {t('loadingTicketResults', 'Loading ticket results...')}
             </div>
           ) : results.length === 0 ? (
             <div className="rounded-lg border border-border bg-card p-8 text-center">
               <Icon name="Inbox" size={40} className="mx-auto mb-3 text-muted-foreground" />
-              <h2 className="text-lg font-semibold text-foreground mb-1">No tickets found</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-1">{t('noTicketsFound', 'No tickets found')}</h2>
               <p className="text-sm text-muted-foreground">
-                Try a different search term or loosen the filters.
+                {t('tryDifferentSearch', 'Try a different search term or relax the filters.')}
               </p>
             </div>
           ) : (
@@ -165,7 +169,7 @@ const SearchResults = () => {
                     <span className="px-2 py-1 rounded-full bg-muted">{ticket.priority}</span>
                     <span className="px-2 py-1 rounded-full bg-muted">{ticket.category}</span>
                     <span className="px-2 py-1 rounded-full bg-muted">
-                      {ticket.requestedBy?.username || 'Unassigned'}
+                        {ticket.requestedBy?.username || t('notAssigned', 'Not assigned')}
                     </span>
                   </div>
                 </div>

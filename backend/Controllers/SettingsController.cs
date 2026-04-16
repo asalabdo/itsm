@@ -59,6 +59,20 @@ public class SettingsController : ControllerBase
         var currentUser = await GetCurrentUserAsync();
         if (currentUser != null && updatedProfile.NotificationPreferences != null)
         {
+            if (!string.IsNullOrWhiteSpace(updatedProfile.DisplayName))
+            {
+                var nameParts = updatedProfile.DisplayName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                currentUser.FirstName = nameParts.FirstOrDefault() ?? currentUser.FirstName;
+                currentUser.LastName = nameParts.Length > 1
+                    ? string.Join(' ', nameParts.Skip(1))
+                    : currentUser.LastName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(updatedProfile.NotificationEmail))
+            {
+                currentUser.Email = updatedProfile.NotificationEmail.Trim();
+            }
+
             currentUser.EmailUpdatesEnabled = updatedProfile.NotificationPreferences.EmailUpdates;
             currentUser.SmsAlertsEnabled = updatedProfile.NotificationPreferences.SmsAlerts;
             currentUser.PushNotificationsEnabled = updatedProfile.NotificationPreferences.PushNotifications;
@@ -114,7 +128,8 @@ public class SettingsController : ControllerBase
         var currentUser = await GetCurrentUserAsync();
         if (currentUser != null)
         {
-            snapshot.DisplayName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
+            var displayName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
+            snapshot.DisplayName = string.IsNullOrWhiteSpace(displayName) ? currentUser.Username : displayName;
             snapshot.Role = currentUser.Role.ToString();
             snapshot.NotificationEmail = currentUser.Email;
             snapshot.NotificationPreferences = new NotificationPreferencesDto

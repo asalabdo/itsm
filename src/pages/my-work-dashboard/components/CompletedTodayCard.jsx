@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 
 const CompletedTodayCard = ({ tickets = [], loading }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const completedTickets = tickets
     .filter((ticket) => String(ticket?.status).toLowerCase() === 'resolved')
     .map((t) => ({
@@ -99,10 +103,10 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
       </div>
       <div className="max-h-80 overflow-y-auto">
         {loading ? (
-          <div className="p-6 text-sm text-muted-foreground">Loading completed tickets...</div>
+          <div className="p-6 text-sm text-muted-foreground">{t('loadingCompletedTickets', 'Loading completed tickets...')}</div>
         ) : completedTickets.length === 0 ? (
           <div className="p-6 text-sm text-muted-foreground">
-            No tickets have been completed today yet.
+            {t('noCompletedToday', 'No tickets have been completed today yet.')}
           </div>
         ) : completedTickets?.map((ticket) => (
           <div

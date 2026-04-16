@@ -1,35 +1,39 @@
 import React, { useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ChangeCalendar = ({ changes = [] }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [viewMode, setViewMode] = useState('month'); // month, week
   const mappedChanges = useMemo(() => (changes || []).map(change => ({
     id: change?.changeNumber || `CHG-${change?.id}`,
-    title: change?.title || 'Untitled Change',
-    type: change?.category || 'Standard',
-    status: change?.status || 'Proposed',
-    priority: change?.priority || 'Medium',
-    environment: 'Production',
+    title: change?.title || t('untitledChange', 'Untitled Change'),
+    type: change?.category || t('standard', 'Standard'),
+    status: change?.status || t('proposed', 'Proposed'),
+    priority: change?.priority || t('medium', 'Medium'),
+    environment: t('production', 'Production'),
     startDate: change?.scheduledStartDate ? new Date(change.scheduledStartDate) : new Date(change?.createdAt || Date.now()),
     endDate: change?.scheduledEndDate ? new Date(change.scheduledEndDate) : new Date((new Date(change?.createdAt || Date.now())).getTime() + 4 * 60 * 60 * 1000),
-    assignee: change?.requestedBy?.username || change?.requestedBy?.firstName || 'Unassigned',
-    riskLevel: change?.riskLevel || 'Low',
+    assignee: change?.requestedBy?.username || change?.requestedBy?.firstName || t('unassigned', 'Unassigned'),
+    riskLevel: change?.riskLevel || t('low', 'Low'),
     isEmergency: change?.category === 'Emergency',
-    successRate: change?.status === 'Completed' ? 'Success' : null
-  })), [changes]);
+    successRate: change?.status === 'Completed' ? t('success', 'Success') : null
+  })), [changes, t]);
 
   const getStatusColor = (status, successRate) => {
-    if (successRate === 'Success') return 'bg-success text-success-foreground';
-    if (successRate === 'Failed') return 'bg-error text-error-foreground';
+    if (successRate === t('success', 'Success')) return 'bg-success text-success-foreground';
+    if (successRate === t('failed', 'Failed')) return 'bg-error text-error-foreground';
     
     switch (status) {
-      case 'Scheduled': return 'bg-secondary text-secondary-foreground';
-      case 'In Progress': return 'bg-warning text-warning-foreground';
-      case 'Approved': return 'bg-accent text-accent-foreground';
-      case 'Completed': return 'bg-muted text-muted-foreground';
+      case t('scheduled', 'Scheduled'): return 'bg-secondary text-secondary-foreground';
+      case t('inProgress', 'In Progress'): return 'bg-warning text-warning-foreground';
+      case t('approved', 'Approved'): return 'bg-accent text-accent-foreground';
+      case t('completed', 'Completed'): return 'bg-muted text-muted-foreground';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -100,7 +104,7 @@ const ChangeCalendar = ({ changes = [] }) => {
               onClick={() => setSelectedDate(date)}
             >
               <div className={`text-sm font-medium mb-2 ${isToday ? 'text-primary' : 'text-foreground'}`}>
-                {date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+                {date.toLocaleDateString('ar-SA', { weekday: 'short', day: 'numeric', month: 'short' })}
               </div>
               <div className="space-y-2">
                 {dayChanges.slice(0, 3).map((change) => (
@@ -114,7 +118,7 @@ const ChangeCalendar = ({ changes = [] }) => {
                     {change?.title}
                   </div>
                 ))}
-                {dayChanges.length > 3 && <div className="text-xs text-muted-foreground">+{dayChanges.length - 3} more</div>}
+                {dayChanges.length > 3 && <div className="text-xs text-muted-foreground">+{dayChanges.length - 3} {t('more', 'more')}</div>}
               </div>
             </button>
           );
@@ -127,7 +131,15 @@ const ChangeCalendar = ({ changes = [] }) => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDay = getFirstDayOfMonth(currentDate);
     const days = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNames = [
+      t('sunday', 'Sunday'), 
+      t('monday', 'Monday'), 
+      t('tuesday', 'Tuesday'), 
+      t('wednesday', 'Wednesday'), 
+      t('thursday', 'Thursday'), 
+      t('friday', 'Friday'), 
+      t('saturday', 'Saturday')
+    ];
 
     // Day headers
     dayNames?.forEach(day => {
@@ -175,7 +187,7 @@ const ChangeCalendar = ({ changes = [] }) => {
             ))}
             {dayChanges?.length > 2 && (
               <div className="text-xs text-muted-foreground">
-                +{dayChanges?.length - 2} more
+                +{dayChanges?.length - 2} {t('more', 'more')}
               </div>
             )}
           </div>
@@ -191,7 +203,7 @@ const ChangeCalendar = ({ changes = [] }) => {
       {/* Calendar Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-4">
-          <h3 className="text-lg font-semibold text-foreground">Change Calendar</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('changeCalendar', 'Change Calendar')}</h3>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -201,7 +213,7 @@ const ChangeCalendar = ({ changes = [] }) => {
               <Icon name="ChevronLeft" size={16} />
             </Button>
             <span className="text-sm font-medium min-w-[120px] text-center">
-              {currentDate?.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              {currentDate?.toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}
             </span>
             <Button
               variant="outline"
@@ -219,16 +231,16 @@ const ChangeCalendar = ({ changes = [] }) => {
             size="sm"
             onClick={() => setViewMode('month')}
           >
-            Month
+            {t('month', 'Month')}
           </Button>
           <Button
             variant={viewMode === 'week' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('week')}
           >
-            Week
+            {t('week', 'Week')}
           </Button>
-          <Button variant="ghost" size="sm" title="Refresh Calendar">
+          <Button variant="ghost" size="sm" title={t('refreshCalendar', 'Refresh Calendar')}>
             <Icon name="RefreshCw" size={16} />
           </Button>
         </div>
@@ -237,23 +249,23 @@ const ChangeCalendar = ({ changes = [] }) => {
       <div className="flex flex-wrap items-center gap-4 p-4 border-b border-border bg-muted/30">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-secondary rounded"></div>
-          <span className="text-xs text-muted-foreground">Scheduled</span>
+          <span className="text-xs text-muted-foreground">{t('scheduled', 'Scheduled')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-warning rounded"></div>
-          <span className="text-xs text-muted-foreground">In Progress</span>
+          <span className="text-xs text-muted-foreground">{t('inProgress', 'In Progress')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-success rounded"></div>
-          <span className="text-xs text-muted-foreground">Success</span>
+          <span className="text-xs text-muted-foreground">{t('successful', 'Successful')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-error rounded"></div>
-          <span className="text-xs text-muted-foreground">Failed</span>
+          <span className="text-xs text-muted-foreground">{t('failed', 'Failed')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-error rounded animate-pulse ring-1 ring-error"></div>
-          <span className="text-xs text-muted-foreground">Emergency</span>
+          <span className="text-xs text-muted-foreground">{t('emergency', 'Emergency')}</span>
         </div>
       </div>
       {/* Calendar Grid */}
@@ -268,7 +280,7 @@ const ChangeCalendar = ({ changes = [] }) => {
       {selectedDate && (
         <div className="p-4 border-t border-border bg-muted/30">
           <h4 className="font-medium text-foreground mb-2">
-            Changes for {selectedDate?.toLocaleDateString('en-US', { 
+            {t('changesForDate', 'Changes for')} {selectedDate?.toLocaleDateString('ar-SA', { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
@@ -290,7 +302,7 @@ const ChangeCalendar = ({ changes = [] }) => {
                 </div>
                 <div className="text-right">
                   <div className={`text-xs font-medium ${getRiskColor(change?.riskLevel)}`}>
-                    {change?.riskLevel} Risk
+                    {change?.riskLevel} {t('risk', 'Risk')}
                   </div>
                   <div className="text-xs text-muted-foreground">{change?.assignee}</div>
                 </div>
@@ -298,7 +310,7 @@ const ChangeCalendar = ({ changes = [] }) => {
             ))}
             {getChangesForDate(selectedDate)?.length === 0 && (
               <div className="text-sm text-muted-foreground text-center py-4">
-                No changes scheduled for this date
+                {t('noChangesScheduled', 'No changes scheduled for this date')}
               </div>
             )}
           </div>

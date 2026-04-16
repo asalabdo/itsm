@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const QuickActionsPanel = ({ tickets = [] }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [notificationPreferences, setNotificationPreferences] = useState({
     emailUpdates: true,
     smsAlerts: false,
@@ -27,8 +31,8 @@ const QuickActionsPanel = ({ tickets = [] }) => {
   const quickActions = [
     {
       id: 'track-ticket',
-      title: 'Track Ticket Status',
-      description: 'Get real-time updates on your ticket progress',
+      title: t('trackTicketStatus', 'Track Ticket Status'),
+      description: t('getRealTimeUpdates', 'Get real-time updates on your ticket progress'),
       icon: 'MapPin',
       color: 'var(--color-primary)',
       bgColor: 'bg-primary/10',
@@ -36,8 +40,8 @@ const QuickActionsPanel = ({ tickets = [] }) => {
     },
     {
       id: 'track-request',
-      title: 'Track Service Requests',
-      description: 'Follow submitted service requests and fulfillment progress',
+      title: t('trackServiceRequests', 'Track Service Requests'),
+      description: t('followSubmittedRequests', 'Follow submitted service requests and fulfillment progress'),
       icon: 'ClipboardList',
       color: 'var(--color-success)',
       bgColor: 'bg-success/10',
@@ -45,8 +49,8 @@ const QuickActionsPanel = ({ tickets = [] }) => {
     },
     {
       id: 'view-history',
-      title: 'Communication History',
-      description: 'Review all interactions and responses',
+      title: t('communicationHistory', 'Communication History'),
+      description: t('reviewAllInteractions', 'Review all interactions and responses'),
       icon: 'MessageSquare',
       color: 'var(--color-secondary)',
       bgColor: 'bg-secondary/10',
@@ -57,8 +61,8 @@ const QuickActionsPanel = ({ tickets = [] }) => {
     },
     {
       id: 'download-reports',
-      title: 'Download Reports',
-      description: 'Export your ticket history and analytics',
+      title: t('downloadReports', 'Download Reports'),
+      description: t('exportTicketHistory', 'Export your ticket history and analytics'),
       icon: 'Download',
       color: 'var(--color-success)',
       bgColor: 'bg-success/10',
@@ -66,8 +70,8 @@ const QuickActionsPanel = ({ tickets = [] }) => {
     },
     {
       id: 'feedback',
-      title: 'Provide Feedback',
-      description: 'Share your experience with our service',
+      title: t('provideFeedback', 'Provide Feedback'),
+      description: t('shareYourExperience', 'Share your experience with our service'),
       icon: 'Star',
       color: 'var(--color-warning)',
       bgColor: 'bg-warning/10',
@@ -88,14 +92,14 @@ const QuickActionsPanel = ({ tickets = [] }) => {
     }));
 
   const formatTimestamp = (dateString) => {
-    if (!dateString) return 'Just now';
+    if (!dateString) return t('justNow', 'Just now');
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
-    if (diffMins < 60) return `${diffMins} min ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffMins < 60) return `${diffMins} ${t('minAgo', 'min ago')}`;
+    if (diffHours < 24) return `${diffHours} ${diffHours > 1 ? t('hoursAgo', 'hours ago') : t('hourAgo', 'hour ago')}`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -115,7 +119,7 @@ const QuickActionsPanel = ({ tickets = [] }) => {
     <div className="space-y-6 md:space-y-8">
       <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
         <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6">
-          Quick Actions
+          {t('quickActions', 'Quick Actions')}
         </h3>
         <div className="grid grid-cols-1 gap-4">
           {quickActions.map((action) => (
@@ -144,39 +148,39 @@ const QuickActionsPanel = ({ tickets = [] }) => {
       <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h3 className="text-lg md:text-xl font-semibold text-foreground">
-            Notification Preferences
+            {t('notificationPreferences', 'Notification Preferences')}
           </h3>
           <Icon name="Bell" size={24} color="var(--color-primary)" />
         </div>
         <div className="space-y-4">
           <Checkbox
-            label="Email Updates"
-            description="Receive ticket updates via email"
+            label={t('emailUpdates', 'Email Updates')}
+            description={t('receiveTicketUpdates', 'Receive ticket updates via email')}
             checked={notificationPreferences?.emailUpdates}
             onChange={() => handleNotificationChange('emailUpdates')}
           />
           <Checkbox
-            label="SMS Alerts"
-            description="Get urgent notifications via text message"
+            label={t('smsAlerts', 'SMS Alerts')}
+            description={t('getUrgentNotifications', 'Get urgent notifications via text message')}
             checked={notificationPreferences?.smsAlerts}
             onChange={() => handleNotificationChange('smsAlerts')}
           />
           <Checkbox
-            label="Push Notifications"
-            description="Browser notifications for real-time updates"
+            label={t('pushNotifications', 'Push Notifications')}
+            description={t('browserNotifications', 'Browser notifications for real-time updates')}
             checked={notificationPreferences?.pushNotifications}
             onChange={() => handleNotificationChange('pushNotifications')}
           />
           <Checkbox
-            label="Weekly Digest"
-            description="Summary of your tickets and activity"
+            label={t('weeklyDigest', 'Weekly Digest')}
+            description={t('summaryTicketsActivity', 'Summary of your tickets and activity')}
             checked={notificationPreferences?.weeklyDigest}
             onChange={() => handleNotificationChange('weeklyDigest')}
           />
         </div>
         <div className="mt-6 pt-6 border-t border-border">
           <Button variant="default" fullWidth onClick={handleRefresh}>
-            Refresh Portal
+            {t('refreshPortal', 'Refresh Portal')}
           </Button>
         </div>
       </div>
@@ -184,10 +188,10 @@ const QuickActionsPanel = ({ tickets = [] }) => {
       <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h3 className="text-lg md:text-xl font-semibold text-foreground">
-            Recent Activity
+            {t('recentActivity', 'Recent Activity')}
           </h3>
           <Button variant="ghost" size="sm" iconName="RefreshCw" iconPosition="left" onClick={handleRefresh}>
-            Refresh
+            {t('refresh', 'Refresh')}
           </Button>
         </div>
         <div className="space-y-4">
@@ -210,7 +214,7 @@ const QuickActionsPanel = ({ tickets = [] }) => {
               </div>
             </div>
           )) : (
-            <p className="text-sm text-muted-foreground">No recent activity yet.</p>
+            <p className="text-sm text-muted-foreground">{t('noRecentActivity', 'No recent activity yet.')}</p>
           )}
         </div>
         <div className="mt-6">
@@ -224,7 +228,7 @@ const QuickActionsPanel = ({ tickets = [] }) => {
               navigate(latest?.id ? `/ticket-details/${latest.id}` : '/search');
             }}
           >
-            View Full History
+            {t('viewFullHistory', 'View Full History')}
           </Button>
         </div>
       </div>
@@ -236,13 +240,13 @@ const QuickActionsPanel = ({ tickets = [] }) => {
           </div>
           <div className="flex-1">
             <h4 className="text-base md:text-lg font-semibold text-foreground mb-2">
-              Pro Tip: Faster Resolution
+              {t('proTipFasterResolution', 'Pro Tip: Faster Resolution')}
             </h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Include screenshots, error messages, and detailed steps to reproduce issues in your tickets. This helps our support team resolve your requests faster.
+              {t('includeScreenshots', 'Include screenshots, error messages, and detailed steps to reproduce issues in your tickets. This helps our support team resolve your requests faster.')}
             </p>
             <Button variant="outline" size="sm" iconName="ExternalLink" iconPosition="right" onClick={() => navigate('/ticket-chatbot')}>
-              Learn More
+              {t('learnMore', 'Learn More')}
             </Button>
           </div>
         </div>

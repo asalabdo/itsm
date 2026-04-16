@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 import { Checkbox } from '../../../components/ui/Checkbox';
 
 const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll, onTicketClick }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
 
   const handleSort = (key) => {
@@ -45,10 +49,10 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
   };
 
   const formatSLA = (hours) => {
-    if (hours < 0) return `${Math.abs(hours)}h overdue`;
-    if (hours < 24) return `${hours}h remaining`;
+    if (hours < 0) return `${Math.abs(hours)}${t('hoursOverdue', 'h overdue')}`;
+    if (hours < 24) return `${hours}${t('hoursRemaining', 'h remaining')}`;
     const days = Math.floor(hours / 24);
-    return `${days}d remaining`;
+    return `${days}${t('daysRemaining', 'd remaining')}`;
   };
 
   const allSelected = tickets?.length > 0 && selectedTickets?.length === tickets?.length;
@@ -73,7 +77,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('id')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  ID
+                  {t('id', 'ID')}
                   <Icon name={getSortIcon('id')} size={14} />
                 </button>
               </th>
@@ -82,7 +86,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('title')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  Title
+                  {t('title', 'Title')}
                   <Icon name={getSortIcon('title')} size={14} />
                 </button>
               </th>
@@ -91,7 +95,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('requester')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  Requester
+                  {t('requester', 'Requester')}
                   <Icon name={getSortIcon('requester')} size={14} />
                 </button>
               </th>
@@ -100,7 +104,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('assignee')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  Assignee
+                  {t('assignee', 'Assignee')}
                   <Icon name={getSortIcon('assignee')} size={14} />
                 </button>
               </th>
@@ -109,7 +113,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('status')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  Status
+                  {t('status', 'Status')}
                   <Icon name={getSortIcon('status')} size={14} />
                 </button>
               </th>
@@ -118,7 +122,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('priority')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  Priority
+                  {t('priority', 'Priority')}
                   <Icon name={getSortIcon('priority')} size={14} />
                 </button>
               </th>
@@ -127,7 +131,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('sla')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  SLA
+                  {t('sla', 'SLA')}
                   <Icon name={getSortIcon('sla')} size={14} />
                 </button>
               </th>
@@ -136,7 +140,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   onClick={() => handleSort('lastActivity')}
                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-smooth"
                 >
-                  Last Activity
+                  {t('lastActivity', 'Last Activity')}
                   <Icon name={getSortIcon('lastActivity')} size={14} />
                 </button>
               </th>
@@ -186,12 +190,12 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                       <div className="min-w-0">
                         <span className="block text-sm font-medium truncate max-w-[140px]">{ticket?.assignee}</span>
                         <span className="block text-xs text-muted-foreground truncate max-w-[140px]">
-                          {ticket?.assigneeDepartment || ticket?.department || 'Unassigned'}
+                          {ticket?.assigneeDepartment || ticket?.department || t('unassigned', 'Unassigned')}
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground">Unassigned</span>
+                    <span className="text-sm text-muted-foreground">{t('unassigned', 'Unassigned')}</span>
                   )}
                 </td>
                 <td className="px-4 py-3">

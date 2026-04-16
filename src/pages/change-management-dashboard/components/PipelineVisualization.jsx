@@ -96,10 +96,10 @@ const PipelineVisualization = ({ changes = [] }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h3 className="text-lg font-semibold text-foreground">Release Pipeline Visualization</h3>
+          <h3 className="text-lg font-semibold text-foreground">تصور خط الإصدار</h3>
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <Icon name="Activity" size={16} />
-            <span>Success Rate: {calculateOverallSuccessRate()}%</span>
+            <span>معدل النجاح: {calculateOverallSuccessRate()}%</span>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -108,16 +108,16 @@ const PipelineVisualization = ({ changes = [] }) => {
             size="sm"
             onClick={() => setViewMode('current')}
           >
-            Current
+            الحالي
           </Button>
           <Button
             variant={viewMode === 'historical' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('historical')}
           >
-            Historical
+            تاريخي
           </Button>
-          <Button variant="ghost" size="sm" title="Refresh Pipelines">
+          <Button variant="ghost" size="sm" title="تحديث الخطوط">
             <Icon name="RefreshCw" size={16} />
           </Button>
         </div>
@@ -127,7 +127,7 @@ const PipelineVisualization = ({ changes = [] }) => {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Active Pipelines</div>
+              <div className="text-sm text-muted-foreground">الخطوط النشطة</div>
               <div className="text-2xl font-semibold text-foreground">
                 {pipelineData?.filter(p => p?.status === 'In Progress')?.length}
               </div>
@@ -139,7 +139,7 @@ const PipelineVisualization = ({ changes = [] }) => {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Success Rate</div>
+              <div className="text-sm text-muted-foreground">معدل النجاح</div>
               <div className="text-2xl font-semibold text-success">
                 {calculateOverallSuccessRate()}%
               </div>
@@ -151,7 +151,7 @@ const PipelineVisualization = ({ changes = [] }) => {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Failed Deployments</div>
+              <div className="text-sm text-muted-foreground">عمليات النشر الفاشلة</div>
               <div className="text-2xl font-semibold text-error">
                 {pipelineData?.filter(p => p?.status === 'Failed')?.length}
               </div>
@@ -163,7 +163,7 @@ const PipelineVisualization = ({ changes = [] }) => {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Avg Deploy Time</div>
+              <div className="text-sm text-muted-foreground">متوسط وقت النشر</div>
               <div className="text-2xl font-semibold text-accent">
                 3.2h
               </div>
@@ -197,7 +197,7 @@ const PipelineVisualization = ({ changes = [] }) => {
               </div>
               <div className="text-right">
                 <div className={`text-sm font-medium ${getPriorityColor(pipeline?.priority)}`}>
-                  {pipeline?.priority} Priority
+                  أولوية {pipeline?.priority}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {pipeline?.environment}
@@ -208,7 +208,7 @@ const PipelineVisualization = ({ changes = [] }) => {
             {/* Progress Bar */}
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>Overall Progress</span>
+                  <span>التقدم الكلي</span>
                 <span>{pipeline?.overallProgress}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
@@ -252,10 +252,10 @@ const PipelineVisualization = ({ changes = [] }) => {
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-4">
                 <span className="text-muted-foreground">
-                  Started: {pipeline?.startTime?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  بدأ: {pipeline?.startTime?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </span>
                 <span className="text-muted-foreground">
-                  Current: {pipeline?.currentStage}
+                  الحالي: {pipeline?.currentStage}
                 </span>
               </div>
               <div className="text-muted-foreground">
@@ -269,7 +269,7 @@ const PipelineVisualization = ({ changes = [] }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Stage Details */}
                   <div>
-                    <h5 className="font-medium text-foreground mb-3">Stage Details</h5>
+                    <h5 className="font-medium text-foreground mb-3">تفاصيل المراحل</h5>
                     <div className="space-y-3">
                       {pipeline?.stages?.map((stage, index) => (
                         <div key={index} className="flex items-start space-x-3">
@@ -283,13 +283,13 @@ const PipelineVisualization = ({ changes = [] }) => {
                               <span className="text-sm font-medium text-foreground">{stage?.name}</span>
                               {stage?.successRate !== null && (
                                 <span className="text-xs text-muted-foreground">
-                                  {stage?.successRate}% success
+                                  {stage?.successRate}% نجاح
                                 </span>
                               )}
                             </div>
                             {stage?.duration && (
                               <div className="text-xs text-muted-foreground">
-                                Duration: {stage?.duration} minutes
+                                المدة: {stage?.duration} دقيقة
                               </div>
                             )}
                             {stage?.issues?.length > 0 && (
@@ -309,28 +309,28 @@ const PipelineVisualization = ({ changes = [] }) => {
 
                   {/* Pipeline Metadata */}
                   <div>
-                    <h5 className="font-medium text-foreground mb-3">Pipeline Information</h5>
+                    <h5 className="font-medium text-foreground mb-3">معلومات الخط</h5>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Business Impact:</span>
+                        <span className="text-muted-foreground">الأثر التجاري:</span>
                         <span className="text-foreground">{pipeline?.businessImpact}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Risk Level:</span>
+                        <span className="text-muted-foreground">مستوى المخاطر:</span>
                         <span className="text-foreground">{pipeline?.riskLevel}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Rollback Plan:</span>
+                        <span className="text-muted-foreground">خطة التراجع:</span>
                         <span className="text-foreground">{pipeline?.rollbackPlan}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Started:</span>
+                        <span className="text-muted-foreground">بدأ:</span>
                         <span className="text-foreground">
                           {pipeline?.startTime?.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Est. Completion:</span>
+                        <span className="text-muted-foreground">الاكتمال المتوقع:</span>
                         <span className="text-foreground">
                           {pipeline?.estimatedCompletion?.toLocaleString()}
                         </span>
@@ -348,13 +348,13 @@ const PipelineVisualization = ({ changes = [] }) => {
         <div className="bg-card rounded-lg border border-border p-6">
           <h4 className="font-medium text-foreground mb-4 flex items-center space-x-2">
             <Icon name="AlertTriangle" size={16} className="text-warning" />
-            <span>Common Failure Points</span>
+            <span>نقاط الفشل الشائعة</span>
           </h4>
           <div className="space-y-2">
             {getFailurePoints()?.map(([stage, count]) => (
               <div key={stage} className="flex items-center justify-between text-sm">
                 <span className="text-foreground">{stage}</span>
-                <span className="text-error font-medium">{count} failure{count > 1 ? 's' : ''}</span>
+                <span className="text-error font-medium">{count} فشل{count > 1 ? 'ات' : ''}</span>
               </div>
             ))}
           </div>

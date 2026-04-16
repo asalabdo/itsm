@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import { organizationUnitAPI } from '../../../services/api';
@@ -119,6 +120,8 @@ const buildAssignedUserPayload = ({ identity, source, name, email }) => {
 
 const TicketActions = ({ ticket, onStatusChange, onPriorityChange, onAssign, onEscalate }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [selectedStatus, setSelectedStatus] = useState(ticket?.status);
   const [selectedPriority, setSelectedPriority] = useState(ticket?.priority);
   const [selectedAgent, setSelectedAgent] = useState(ticket?.assignedTo?.id ? String(ticket.assignedTo.id) : '');
@@ -268,14 +271,14 @@ const TicketActions = ({ ticket, onStatusChange, onPriorityChange, onAssign, onE
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
-        <h3 className="text-base md:text-lg font-semibold text-foreground mb-4 md:mb-6">Quick Actions</h3>
+        <h3 className="text-base md:text-lg font-semibold text-foreground mb-4 md:mb-6">{t('quickActions', 'Quick Actions')}</h3>
         <div className="space-y-4 md:space-y-6">
-          <Select label="Status" options={statusOptions} value={selectedStatus} onChange={handleStatusChange} />
-          <Select label="Priority" options={priorityOptions} value={selectedPriority} onChange={handlePriorityChange} />
-          <Select label="Assign To" options={agentOptions} value={selectedAgent} onChange={handleAgentChange} searchable />
+          <Select label={t('status', 'Status')} options={statusOptions} value={selectedStatus} onChange={handleStatusChange} />
+          <Select label={t('priority', 'Priority')} options={priorityOptions} value={selectedPriority} onChange={handlePriorityChange} />
+          <Select label={t('assignTo', 'Assign To')} options={agentOptions} value={selectedAgent} onChange={handleAgentChange} searchable />
           <div className="pt-4 border-t border-border">
             <Button variant="destructive" fullWidth iconName="AlertTriangle" iconPosition="left" onClick={onEscalate}>
-              Escalate Ticket
+              {t('escalateTicketBtn', 'Escalate Ticket')}
             </Button>
           </div>
         </div>
@@ -285,16 +288,16 @@ const TicketActions = ({ ticket, onStatusChange, onPriorityChange, onAssign, onE
         <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Additional Actions</h3>
         <div className="space-y-2">
           <Button variant="outline" fullWidth iconName="Link" iconPosition="left" size="sm" onClick={handleLinkRelatedTicket}>
-            Link Related Ticket
+            {t('linkRelatedTicket', 'Link Related Ticket')}
           </Button>
           <Button variant="outline" fullWidth iconName="Copy" iconPosition="left" size="sm" onClick={handleDuplicateTicket}>
-            Duplicate Ticket
+            {t('duplicateTicket', 'Duplicate Ticket')}
           </Button>
           <Button variant="outline" fullWidth iconName="Archive" iconPosition="left" size="sm" onClick={handleArchiveTicket}>
-            Archive
+            {t('archive', 'Archive')}
           </Button>
           <Button variant="outline" fullWidth iconName="Share2" iconPosition="left" size="sm" onClick={handleShareWithTeam}>
-            Share with Team
+            {t('shareWithTeam', 'Share with Team')}
           </Button>
         </div>
       </div>

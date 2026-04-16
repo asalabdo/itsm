@@ -17,49 +17,49 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
   });
 
   const categoryOptions = [
-    { value: '', label: 'All Categories' },
-    { value: 'computers', label: 'Computers & Laptops' },
-    { value: 'furniture', label: 'Office Furniture' },
-    { value: 'equipment', label: 'Equipment & Machinery' },
-    { value: 'vehicles', label: 'Vehicles & Transportation' },
-    { value: 'software', label: 'Software Licenses' },
-    { value: 'mobile', label: 'Mobile Devices' },
-    { value: 'networking', label: 'Networking Equipment' }
+    { value: '', label: 'كل الفئات' },
+    { value: 'computers', label: 'أجهزة الكمبيوتر والحواسيب المحمولة' },
+    { value: 'furniture', label: 'أثاث المكاتب' },
+    { value: 'equipment', label: 'معدات وآلات' },
+    { value: 'vehicles', label: 'مركبات ونقل' },
+    { value: 'software', label: 'تراخيص البرمجيات' },
+    { value: 'mobile', label: 'الأجهزة المحمولة' },
+    { value: 'networking', label: 'معدات الشبكات' }
   ];
 
   const locationOptions = [
-    { value: '', label: 'All Locations' },
-    { value: 'hq-floor1', label: 'HQ - Floor 1' },
-    { value: 'hq-floor2', label: 'HQ - Floor 2' },
-    { value: 'hq-floor3', label: 'HQ - Floor 3' },
-    { value: 'warehouse-a', label: 'Warehouse A' },
-    { value: 'warehouse-b', label: 'Warehouse B' },
-    { value: 'remote', label: 'Remote/Field' },
-    { value: 'branch-ny', label: 'New York Branch' },
-    { value: 'branch-la', label: 'Los Angeles Branch' }
+    { value: '', label: 'كل المواقع' },
+    { value: 'hq-floor1', label: 'المقر - الطابق 1' },
+    { value: 'hq-floor2', label: 'المقر - الطابق 2' },
+    { value: 'hq-floor3', label: 'المقر - الطابق 3' },
+    { value: 'warehouse-a', label: 'المستودع A' },
+    { value: 'warehouse-b', label: 'المستودع B' },
+    { value: 'remote', label: 'عن بُعد/ميداني' },
+    { value: 'branch-ny', label: 'فرع نيويورك' },
+    { value: 'branch-la', label: 'فرع لوس أنجلوس' }
   ];
 
   const ownershipOptions = [
-    { value: '', label: 'All Ownership Types' },
-    { value: 'owned', label: 'Company Owned' },
-    { value: 'leased', label: 'Leased' },
-    { value: 'rented', label: 'Rented' },
-    { value: 'borrowed', label: 'Borrowed' }
+    { value: '', label: 'كل أنواع الملكية' },
+    { value: 'owned', label: 'مملوك للشركة' },
+    { value: 'leased', label: 'مؤجر' },
+    { value: 'rented', label: 'مستأجر' },
+    { value: 'borrowed', label: 'مستعار' }
   ];
 
   const statusTypes = [
-    { id: 'active', label: 'Active' },
-    { id: 'inactive', label: 'Inactive' },
-    { id: 'maintenance', label: 'Under Maintenance' },
-    { id: 'retired', label: 'Retired' },
-    { id: 'lost', label: 'Lost/Missing' }
+    { id: 'active', label: 'نشط' },
+    { id: 'inactive', label: 'غير نشط' },
+    { id: 'maintenance', label: 'تحت الصيانة' },
+    { id: 'retired', label: 'متقاعد' },
+    { id: 'lost', label: 'مفقود/ضائع' }
   ];
 
   const maintenanceTypes = [
-    { id: 'due', label: 'Maintenance Due' },
-    { id: 'overdue', label: 'Maintenance Overdue' },
-    { id: 'scheduled', label: 'Scheduled' },
-    { id: 'completed', label: 'Recently Completed' }
+    { id: 'due', label: 'الصيانة المستحقة' },
+    { id: 'overdue', label: 'الصيانة المتأخرة' },
+    { id: 'scheduled', label: 'مجدولة' },
+    { id: 'completed', label: 'مكتملة حديثًا' }
   ];
 
   const handleFilterChange = (key, value) => {
@@ -102,7 +102,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         <button
           onClick={onToggleCollapse}
           className="p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring"
-          aria-label="Expand filters"
+          aria-label="توسيع الفلاتر"
         >
           <Icon name="ChevronRight" size={20} />
         </button>
@@ -113,11 +113,11 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
   return (
     <div className="w-full lg:w-80 bg-card border-r border-border flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-semibold">Filters</h2>
+        <h2 className="text-lg font-semibold">الفلاتر</h2>
         <button
           onClick={onToggleCollapse}
           className="p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring lg:block hidden"
-          aria-label="Collapse filters"
+          aria-label="طي الفلاتر"
         >
           <Icon name="ChevronLeft" size={20} />
         </button>
@@ -126,7 +126,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         <div>
           <Input
             type="search"
-            placeholder="Search by ID, name, serial..."
+            placeholder="ابحث بالمعرف أو الاسم أو الرقم التسلسلي..."
             value={filters?.searchQuery}
             onChange={(e) => handleFilterChange('searchQuery', e?.target?.value)}
             className="w-full"
@@ -135,7 +135,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
 
         <div>
           <Select
-            label="Category"
+            label="الفئة"
             options={categoryOptions}
             value={filters?.category}
             onChange={(value) => handleFilterChange('category', value)}
@@ -144,7 +144,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
 
         <div>
           <Select
-            label="Location"
+            label="الموقع"
             options={locationOptions}
             value={filters?.location}
             onChange={(value) => handleFilterChange('location', value)}
@@ -154,7 +154,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
 
         <div>
           <Select
-            label="Ownership Type"
+            label="نوع الملكية"
             options={ownershipOptions}
             value={filters?.ownershipType}
             onChange={(value) => handleFilterChange('ownershipType', value)}
@@ -162,7 +162,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-3 block">Asset Status</label>
+          <label className="text-sm font-medium mb-3 block">حالة الأصل</label>
           <div className="space-y-2">
             {statusTypes?.map((status) => (
               <Checkbox
@@ -176,7 +176,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-3 block">Maintenance Status</label>
+          <label className="text-sm font-medium mb-3 block">حالة الصيانة</label>
           <div className="space-y-2">
             {maintenanceTypes?.map((maintenance) => (
               <Checkbox
@@ -190,17 +190,17 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-3 block">Value Range (ريال)</label>
+          <label className="text-sm font-medium mb-3 block">نطاق القيمة (ريال)</label>
           <div className="space-y-3">
             <Input
               type="number"
-              placeholder="Min value"
+              placeholder="القيمة الدنيا"
               value={filters?.valueRange?.min}
               onChange={(e) => handleFilterChange('valueRange', { ...filters?.valueRange, min: e?.target?.value })}
             />
             <Input
               type="number"
-              placeholder="Max value"
+              placeholder="القيمة العليا"
               value={filters?.valueRange?.max}
               onChange={(e) => handleFilterChange('valueRange', { ...filters?.valueRange, max: e?.target?.value })}
             />
@@ -215,7 +215,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
           iconPosition="left"
           onClick={handleReset}
         >
-          Reset Filters
+          إعادة ضبط الفلاتر
         </Button>
       </div>
     </div>

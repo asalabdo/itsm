@@ -7,14 +7,14 @@ const AssetGridView = ({ assets, selectedAssets, onSelectAsset, onSelectAll, onA
   const [sortConfig, setSortConfig] = useState({ key: 'assetId', direction: 'asc' });
 
   const columns = [
-    { key: 'assetId', label: 'Asset ID', sortable: true, width: '10%' },
-    { key: 'description', label: 'Description', sortable: true, width: '20%' },
-    { key: 'currentOwner', label: 'Current Owner', sortable: true, width: '15%' },
-    { key: 'location', label: 'Location', sortable: true, width: '15%' },
-    { key: 'status', label: 'Status', sortable: true, width: '10%' },
-    { key: 'value', label: 'Value', sortable: true, width: '10%', roleRequired: ['admin', 'finance'] },
-    { key: 'maintenance', label: 'Next Maintenance', sortable: true, width: '12%', roleRequired: ['admin', 'custodian'] },
-    { key: 'actions', label: 'Actions', sortable: false, width: '8%' }
+    { key: 'assetId', label: 'معرف الأصل', sortable: true, width: '10%' },
+    { key: 'description', label: 'الوصف', sortable: true, width: '20%' },
+    { key: 'currentOwner', label: 'المالك الحالي', sortable: true, width: '15%' },
+    { key: 'location', label: 'الموقع', sortable: true, width: '15%' },
+    { key: 'status', label: 'الحالة', sortable: true, width: '10%' },
+    { key: 'value', label: 'القيمة', sortable: true, width: '10%', roleRequired: ['admin', 'finance'] },
+    { key: 'maintenance', label: 'الصيانة القادمة', sortable: true, width: '12%', roleRequired: ['admin', 'custodian'] },
+    { key: 'actions', label: 'الإجراءات', sortable: false, width: '8%' }
   ];
 
   const getStatusColor = (status) => {
@@ -172,7 +172,7 @@ const AssetGridView = ({ assets, selectedAssets, onSelectAsset, onSelectAll, onA
                         {asset?.maintenance}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {asset?.maintenanceDaysUntil < 0 ? 'Overdue' : `${asset?.maintenanceDaysUntil} days`}
+                        {asset?.maintenanceDaysUntil < 0 ? 'متأخرة' : `${asset?.maintenanceDaysUntil} يومًا`}
                       </p>
                     </div>
                   </td>
@@ -181,7 +181,7 @@ const AssetGridView = ({ assets, selectedAssets, onSelectAsset, onSelectAll, onA
                   <div className="flex items-center gap-1">
                     <button
                       className="p-1.5 rounded hover:bg-muted transition-smooth press-scale focus-ring"
-                      aria-label="Quick actions"
+                      aria-label="إجراءات سريعة"
                     >
                       <Icon name="MoreVertical" size={16} />
                     </button>

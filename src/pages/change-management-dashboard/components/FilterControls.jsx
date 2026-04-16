@@ -3,8 +3,12 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [filters, setFilters] = useState({
     dateRange: '30d',
     changeType: 'all',
@@ -21,67 +25,67 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
 
   useEffect(() => {
     setSavedFilters([
-      { id: 1, name: 'High Priority Changes', filters: { priority: 'high', riskLevel: 'high' } },
-      { id: 2, name: 'Production Only', filters: { environment: 'production' } },
-      { id: 3, name: 'Emergency Changes', filters: { changeType: 'emergency', priority: 'critical' } }
+      { id: 1, name: t('highPriorityChanges', 'High Priority Changes'), filters: { priority: 'high', riskLevel: 'high' } },
+      { id: 2, name: t('productionOnly', 'Production Only'), filters: { environment: 'production' } },
+      { id: 3, name: t('emergencyChanges', 'Emergency Changes'), filters: { changeType: 'emergency', priority: 'critical' } }
     ]);
-  }, []);
+  }, [t]);
 
   const dateRangeOptions = [
-    { value: '7d', label: 'Last 7 days' },
-    { value: '30d', label: 'Last 30 days' },
-    { value: '90d', label: 'Last 90 days' },
-    { value: 'custom', label: 'Custom range' }
+    { value: '7d', label: t('last7Days', 'Last 7 days') },
+    { value: '30d', label: t('last30Days', 'Last 30 days') },
+    { value: '90d', label: t('last90Days', 'Last 90 days') },
+    { value: 'custom', label: t('customRange', 'Custom range') }
   ];
 
   const changeTypeOptions = [
-    { value: 'all', label: 'All Types' },
-    { value: 'standard', label: 'Standard' },
-    { value: 'emergency', label: 'Emergency' },
-    { value: 'major', label: 'Major' },
-    { value: 'minor', label: 'Minor' }
+    { value: 'all', label: t('allTypes', 'All Types') },
+    { value: 'standard', label: t('standard', 'Standard') },
+    { value: 'emergency', label: t('emergency', 'Emergency') },
+    { value: 'major', label: t('major', 'Major') },
+    { value: 'minor', label: t('minor', 'Minor') }
   ];
 
   const environmentOptions = [
-    { value: 'all', label: 'All Environments' },
-    { value: 'production', label: 'Production' },
-    { value: 'staging', label: 'Staging' },
-    { value: 'test', label: 'Test' },
-    { value: 'development', label: 'Development' }
+    { value: 'all', label: t('allEnvironments', 'All Environments') },
+    { value: 'production', label: t('production', 'Production') },
+    { value: 'staging', label: t('staging', 'Staging') },
+    { value: 'test', label: t('test', 'Test') },
+    { value: 'development', label: t('development', 'Development') }
   ];
 
   const riskLevelOptions = [
-    { value: 'all', label: 'All Risk Levels' },
-    { value: 'low', label: 'Low Risk' },
-    { value: 'medium', label: 'Medium Risk' },
-    { value: 'high', label: 'High Risk' },
-    { value: 'critical', label: 'Critical Risk' }
+    { value: 'all', label: t('allRiskLevels', 'All Risk Levels') },
+    { value: 'low', label: t('lowRisk', 'Low Risk') },
+    { value: 'medium', label: t('mediumRisk', 'Medium Risk') },
+    { value: 'high', label: t('highRisk', 'High Risk') },
+    { value: 'critical', label: t('criticalRisk', 'Critical Risk') }
   ];
 
   const statusOptions = [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'scheduled', label: 'Scheduled' },
-    { value: 'in-progress', label: 'In Progress' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'failed', label: 'Failed' },
-    { value: 'cancelled', label: 'Cancelled' }
+    { value: 'all', label: t('allStatuses', 'All Statuses') },
+    { value: 'scheduled', label: t('scheduled', 'Scheduled') },
+    { value: 'in-progress', label: t('inProgress', 'In Progress') },
+    { value: 'completed', label: t('completed', 'Completed') },
+    { value: 'failed', label: t('failed', 'Failed') },
+    { value: 'cancelled', label: t('cancelled', 'Cancelled') }
   ];
 
   const priorityOptions = [
-    { value: 'all', label: 'All Priorities' },
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' },
-    { value: 'critical', label: 'Critical' }
+    { value: 'all', label: t('allPriorities', 'All Priorities') },
+    { value: 'low', label: t('low', 'Low') },
+    { value: 'medium', label: t('medium', 'Medium') },
+    { value: 'high', label: t('high', 'High') },
+    { value: 'critical', label: t('critical', 'Critical') }
   ];
 
   const assigneeOptions = [
-    { value: 'all', label: 'All Assignees' },
-    { value: 'database-team', label: 'Database Team' },
-    { value: 'security-team', label: 'Security Team' },
-    { value: 'development-team', label: 'Development Team' },
-    { value: 'network-team', label: 'Network Team' },
-    { value: 'platform-team', label: 'Platform Team' }
+    { value: 'all', label: t('allAssignees', 'All Assignees') },
+    { value: 'database-team', label: t('databaseTeam', 'Database Team') },
+    { value: 'security-team', label: t('securityTeam', 'Security Team') },
+    { value: 'development-team', label: t('developmentTeam', 'Development Team') },
+    { value: 'network-team', label: t('networkTeam', 'Network Team') },
+    { value: 'platform-team', label: t('platformTeam', 'Platform Team') }
   ];
 
   const handleFilterChange = (key, value) => {
@@ -127,10 +131,10 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
       {/* Filter Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-3">
-          <h3 className="font-medium text-foreground">Filters</h3>
+          <h3 className="font-medium text-foreground">{t('filters', 'Filters')}</h3>
           {getActiveFilterCount() > 0 && (
             <span className="bg-accent text-accent-foreground text-xs px-2 py-1 rounded-full">
-              {getActiveFilterCount()} active
+              {getActiveFilterCount()} {t('active', 'active')}
             </span>
           )}
         </div>
@@ -141,7 +145,7 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={16} />
-            <span className="ml-1">{isExpanded ? 'Less' : 'More'}</span>
+            <span className="ml-1">{isExpanded ? t('less', 'Less') : t('more', 'More')}</span>
           </Button>
           <Button
             variant="ghost"
@@ -150,7 +154,7 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
             disabled={getActiveFilterCount() === 0}
           >
             <Icon name="RotateCcw" size={16} />
-            <span className="ml-1">Reset</span>
+            <span className="ml-1">{t('resetFilters', 'Reset')}</span>
           </Button>
         </div>
       </div>
@@ -158,28 +162,28 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
       <div className="p-4 border-b border-border">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Select
-            label="Date Range"
+          label={t('dateRange', 'Date Range')}
             options={dateRangeOptions}
             value={filters?.dateRange}
             onChange={(value) => handleFilterChange('dateRange', value)}
           />
           
           <Select
-            label="Change Type"
+          label={t('changeType', 'Change Type')}
             options={changeTypeOptions}
             value={filters?.changeType}
             onChange={(value) => handleFilterChange('changeType', value)}
           />
           
           <Select
-            label="Environment"
+          label={t('environment', 'Environment')}
             options={environmentOptions}
             value={filters?.environment}
             onChange={(value) => handleFilterChange('environment', value)}
           />
           
           <Select
-            label="Risk Level"
+          label={t('riskLevel', 'Risk Level')}
             options={riskLevelOptions}
             value={filters?.riskLevel}
             onChange={(value) => handleFilterChange('riskLevel', value)}
@@ -190,7 +194,7 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
       <div className="p-4 border-b border-border">
         <Input
           type="search"
-          placeholder="Search changes by title, ID, or description..."
+          placeholder={t('searchChanges', 'Search changes by title, ID, or description...')}
           value={filters?.searchTerm}
           onChange={handleSearchChange}
           className="w-full"
@@ -201,21 +205,21 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
         <div className="p-4 border-b border-border bg-muted/30">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
-              label="Status"
+              label={t('status', 'Status')}
               options={statusOptions}
               value={filters?.status}
               onChange={(value) => handleFilterChange('status', value)}
             />
             
             <Select
-              label="Priority"
+              label={t('priority', 'Priority')}
               options={priorityOptions}
               value={filters?.priority}
               onChange={(value) => handleFilterChange('priority', value)}
             />
             
             <Select
-              label="Assignee"
+              label={t('assignee', 'Assignee')}
               options={assigneeOptions}
               value={filters?.assignee}
               onChange={(value) => handleFilterChange('assignee', value)}
@@ -226,10 +230,10 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
       {/* Saved Filters */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-medium text-foreground">Quick Filters</h4>
+          <h4 className="text-sm font-medium text-foreground">{t('quickFilters', 'Quick Filters')}</h4>
           <Button variant="ghost" size="sm">
             <Icon name="Plus" size={14} />
-            <span className="ml-1">Save Current</span>
+            <span className="ml-1">{t('saveCurrent', 'Save Current')}</span>
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -250,7 +254,7 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
       <div className="p-4">
         <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Export filtered results for compliance and reporting
+          {t('exportResults', 'Export filtered results for compliance and reporting')}
         </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -281,7 +285,7 @@ const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
         </div>
       </div>
       <div className="px-4 pb-4 text-xs text-muted-foreground">
-        Live change count: {changeCount}
+        {t('liveChangeCount', 'Live change count')}: {changeCount}
       </div>
     </div>
   );

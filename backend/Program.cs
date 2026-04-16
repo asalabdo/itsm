@@ -234,13 +234,11 @@ try
             Console.WriteLine("Seed-only database initialization successful.");
             return;
         }
-        await EnsureUserNotificationPreferenceColumnsAsync(db);
-        /* 
         else if (db.Database.GetPendingMigrations().Any())
         {
-            db.Database.Migrate();
+            Console.WriteLine("Applying pending database migrations...");
+            await db.Database.MigrateAsync();
         }
-        */
         
         // Demo seed data is opt-in only.
         var seedDemoData = builder.Configuration.GetValue<bool>("Database:SeedDemoData");
@@ -261,21 +259,6 @@ catch (Exception ex)
     Console.WriteLine("API will start but database operations may fail until connection is restored.");
 }
 
-async Task EnsureUserNotificationPreferenceColumnsAsync(ApplicationDbContext context)
-{
-    var commands = new[]
-    {
-        "IF COL_LENGTH('Users', 'EmailUpdatesEnabled') IS NULL ALTER TABLE [Users] ADD [EmailUpdatesEnabled] bit NOT NULL CONSTRAINT [DF_Users_EmailUpdatesEnabled] DEFAULT (1);",
-        "IF COL_LENGTH('Users', 'SmsAlertsEnabled') IS NULL ALTER TABLE [Users] ADD [SmsAlertsEnabled] bit NOT NULL CONSTRAINT [DF_Users_SmsAlertsEnabled] DEFAULT (0);",
-        "IF COL_LENGTH('Users', 'PushNotificationsEnabled') IS NULL ALTER TABLE [Users] ADD [PushNotificationsEnabled] bit NOT NULL CONSTRAINT [DF_Users_PushNotificationsEnabled] DEFAULT (1);",
-        "IF COL_LENGTH('Users', 'WeeklyDigestEnabled') IS NULL ALTER TABLE [Users] ADD [WeeklyDigestEnabled] bit NOT NULL CONSTRAINT [DF_Users_WeeklyDigestEnabled] DEFAULT (1);",
-    };
-
-    foreach (var command in commands)
-    {
-        await context.Database.ExecuteSqlRawAsync(command);
-    }
-}
 
 app.Run();
 

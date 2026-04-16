@@ -1064,6 +1064,12 @@ namespace ITSMBackend.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExternalSystem")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1080,12 +1086,6 @@ namespace ITSMBackend.Migrations
 
                     b.Property<int?>("RequestedById")
                         .HasColumnType("int");
-
-                    b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ExternalSystem")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ServiceType")
                         .IsRequired()
@@ -1555,6 +1555,9 @@ namespace ITSMBackend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<bool>("EmailUpdatesEnabled")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ExternalId")
                         .HasColumnType("nvarchar(450)");
 
@@ -1589,8 +1592,14 @@ namespace ITSMBackend.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("PushNotificationsEnabled")
+                        .HasColumnType("bit");
+
                     b.Property<int>("Role")
                         .HasColumnType("int");
+
+                    b.Property<bool>("SmsAlertsEnabled")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("TenantId")
                         .HasColumnType("int");
@@ -1601,6 +1610,9 @@ namespace ITSMBackend.Migrations
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("WeeklyDigestEnabled")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 

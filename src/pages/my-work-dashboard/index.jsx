@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import PriorityBanner from './components/PriorityBanner';
 import ActiveTicketsCard from './components/ActiveTicketsCard';
 import InProgressWorkCard from './components/InProgressWorkCard';
@@ -11,6 +13,8 @@ import QuickActionsPanel from './components/QuickActionsPanel';
 import { ticketsAPI, usersAPI } from '../../services/api';
 
 const MyWorkDashboard = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [tickets, setTickets] = useState([]);
@@ -100,7 +104,7 @@ const MyWorkDashboard = () => {
   return (
     <>
       <Helmet>
-        <title>My Work Dashboard - Personal Task Management</title>
+        <title>{t('myWorkDashboard', 'My Work Dashboard')} - {t('personalTaskManagement', 'Personal Task Management')}</title>
         <meta name="description" content="Personalized task management interface for individual technicians and service desk agents to efficiently manage their assigned workload and track performance metrics." />
         <meta name="keywords" content="personal dashboard, task management, ticket assignment, SLA tracking, technician workspace" />
       </Helmet>
@@ -136,11 +140,11 @@ const MyWorkDashboard = () => {
               
               <div className="flex items-center space-x-4 text-sm">
                 <span className="text-muted-foreground">
-                  Last Updated: <span className="font-medium text-foreground">{formatLastUpdated(lastUpdated)}</span>
+                  {t('lastUpdated', 'Last Updated')}: <span className="font-medium text-foreground">{formatLastUpdated(lastUpdated)}</span>
                 </span>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
-                  <span className="text-muted-foreground">Online</span>
+                  <span className="text-muted-foreground">{t('online', 'Online')}</span>
                 </div>
               </div>
             </div>
@@ -149,7 +153,7 @@ const MyWorkDashboard = () => {
           {/* Filter Controls */}
           <div className="bg-muted/50 border-b border-border px-6 py-3">
             <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-foreground">Filter by:</span>
+              <span className="text-sm font-medium text-foreground">{t('filterBy', 'Filter by')}:</span>
               <div className="flex space-x-2">
                 {['all', 'urgent', 'overdue', 'assigned']?.map((filter) => (
                   <button
@@ -161,7 +165,7 @@ const MyWorkDashboard = () => {
                         : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
-                    {filter}
+                    {t(`${filter}Filter`, filter)}
                   </button>
                 ))}
               </div>

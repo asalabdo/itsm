@@ -5,6 +5,8 @@ import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import { knowledgeBaseAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const fallbackArticles = [
   {
@@ -66,6 +68,8 @@ const categoryPalette = {
 
 const KnowledgeBase = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [articles, setArticles] = useState([]);
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -123,34 +127,34 @@ const KnowledgeBase = () => {
               <div className="space-y-3 max-w-3xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em]">
                   <Icon name="BookOpen" size={14} />
-                  Knowledge Base
+                  {t('knowledgeBaseTitle', 'Knowledge Base')}
                 </div>
                 <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
-                  One place for fixes, runbooks, and service desk guidance.
+                  {t('knowledgeBaseSubtitle', 'Find answers and solutions to common questions')}
                 </h1>
                 <p className="text-white/75 max-w-2xl">
-                  Search approved articles, open related tickets, and reduce escalations with fast self-service resolution.
+                  {t('knowledgeBaseDescription', 'Search approved articles, open related tickets, and reduce escalations with fast self-service resolution.')}
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-3 min-w-[280px]">
                 <div className="rounded-2xl bg-white/10 border border-white/10 p-4">
                   <div className="text-2xl font-semibold">{articles.length}</div>
-                  <div className="text-xs uppercase tracking-wide text-white/70">Articles</div>
+                  <div className="text-xs uppercase tracking-wide text-white/70">{t('articles', 'Articles')}</div>
                 </div>
                 <div className="rounded-2xl bg-white/10 border border-white/10 p-4">
                   <div className="text-2xl font-semibold">{featuredArticles.length}</div>
-                  <div className="text-xs uppercase tracking-wide text-white/70">Featured</div>
+                  <div className="text-xs uppercase tracking-wide text-white/70">{t('featured', 'Featured')}</div>
                 </div>
                 <div className="rounded-2xl bg-white/10 border border-white/10 p-4">
                   <div className="text-2xl font-semibold">{filteredArticles.length}</div>
-                  <div className="text-xs uppercase tracking-wide text-white/70">Shown</div>
+                  <div className="text-xs uppercase tracking-wide text-white/70">{t('shown', 'Shown')}</div>
                 </div>
               </div>
             </div>
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.9fr] gap-6">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="bg-card border border-border rounded-2xl p-4 md:p-5 shadow-elevation-1">
                 <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
                   <div className="relative flex-1">
@@ -158,12 +162,12 @@ const KnowledgeBase = () => {
                     <input
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search troubleshooting steps, policies, or runbooks..."
+                      placeholder={t('searchArticlesPlaceholder', 'Search troubleshooting steps, policies, or runbooks...')}
                       className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
                   <Button variant="outline" onClick={() => navigate('/ticket-creation')}>
-                    Create Ticket
+                    {t('createTicket', 'Create Ticket')}
                   </Button>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -184,55 +188,152 @@ const KnowledgeBase = () => {
                 </div>
               </div>
 
-              <div className="grid gap-4">
-                {(loading ? Array.from({ length: 3 }) : filteredArticles).map((article, index) => (
-                  <button
-                    key={article?.id || index}
-                    type="button"
-                    onClick={() => article && setSelectedArticle(article)}
-                    className={`text-left rounded-2xl border p-5 transition-all ${
-                      selectedArticle?.id === article?.id ? 'border-primary bg-primary/5 shadow-elevation-2' : 'border-border bg-card hover:border-primary/40 hover:shadow-elevation-1'
-                    }`}
-                  >
-                    {loading ? (
-                      <div className="animate-pulse space-y-3">
-                        <div className="h-5 w-2/3 rounded bg-muted" />
-                        <div className="h-4 w-full rounded bg-muted" />
-                        <div className="h-4 w-5/6 rounded bg-muted" />
+              {/* Categories Overview */}
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1">
+                <h2 className="text-xl font-semibold text-foreground mb-4">{t('allTopics', 'All Topics')}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { name: t('gettingStarted', 'Getting Started'), count: 1, icon: 'Play' },
+                    { name: t('accountBilling', 'Account & Billing'), count: 2, icon: 'CreditCard' },
+                    { name: t('technicalIssues', 'Technical Issues'), count: 1, icon: 'AlertTriangle' },
+                    { name: t('featuresUsage', 'Features & Usage'), count: 1, icon: 'Settings' },
+                    { name: t('securityPrivacy', 'Security & Privacy'), count: 1, icon: 'Shield' },
+                  ].map((category) => (
+                    <button
+                      key={category.name}
+                      type="button"
+                      onClick={() => setSelectedCategory(category.name)}
+                      className="text-left p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Icon name={category.icon} size={16} className="text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-foreground">{category.name}</h3>
+                          <p className="text-xs text-muted-foreground">{category.count} {t('articles', 'articles')}</p>
+                        </div>
                       </div>
-                    ) : (
-                      <>
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className={`rounded-full border px-2 py-1 text-[11px] font-semibold ${categoryPalette[article.category] || 'bg-muted text-muted-foreground border-border'}`}>
-                                {article.category}
-                              </span>
-                              {article.isFeatured && (
-                                <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] font-semibold text-amber-700 border border-amber-200">
-                                  Featured
-                                </span>
-                              )}
-                            </div>
-                            <h3 className="text-lg font-semibold text-foreground">{article.title}</h3>
-                            <p className="mt-1 text-sm text-muted-foreground">{article.summary}</p>
-                          </div>
-                          <div className="text-right text-xs text-muted-foreground">
-                            <div>{article.views} views</div>
-                            <div className="mt-1">{article.tags?.length || 0} tags</div>
-                          </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Popular Articles */}
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1">
+                <h2 className="text-xl font-semibold text-foreground mb-4">{t('popularArticles', 'Popular Articles')}</h2>
+                <div className="space-y-4">
+                  {[
+                    {
+                      category: t('accountBilling', 'Account & Billing'),
+                      title: t('howToResetPassword', 'How to reset your password'),
+                      description: t('resetPasswordDesc', 'Step-by-step guide to recover and reset your account password securely'),
+                      views: '2,847',
+                      rating: '94%',
+                      readTime: '3 min'
+                    },
+                    {
+                      category: t('technicalIssues', 'Technical Issues'),
+                      title: t('troubleshootingLogin', 'Troubleshooting login issues'),
+                      description: t('troubleshootingLoginDesc', 'Common solutions for authentication problems and login errors'),
+                      views: '2,156',
+                      rating: '89%',
+                      readTime: '5 min'
+                    },
+                    {
+                      category: t('accountBilling', 'Account & Billing'),
+                      title: t('understandingBilling', 'Understanding your billing cycle'),
+                      description: t('understandingBillingDesc', 'Learn about subscription plans, payment methods, and invoice management'),
+                      views: '1,923',
+                      rating: '92%',
+                      readTime: '4 min'
+                    },
+                    {
+                      category: t('securityPrivacy', 'Security & Privacy'),
+                      title: t('settingUp2FA', 'Setting up two-factor authentication'),
+                      description: t('settingUp2FADesc', 'Enhance your account security with 2FA setup instructions'),
+                      views: '1,745',
+                      rating: '96%',
+                      readTime: '6 min'
+                    },
+                    {
+                      category: t('gettingStarted', 'Getting Started'),
+                      title: t('mobileAppGuide', 'Mobile app installation guide'),
+                      description: t('mobileAppGuideDesc', 'Download and install our mobile application on iOS and Android devices'),
+                      views: '1,632',
+                      rating: '88%',
+                      readTime: '4 min'
+                    },
+                    {
+                      category: t('featuresUsage', 'Features & Usage'),
+                      title: t('dataExportBackup', 'Data export and backup options'),
+                      description: t('dataExportBackupDesc', 'Export your data and create backups for safekeeping'),
+                      views: '1,421',
+                      rating: '85%',
+                      readTime: '7 min'
+                    }
+                  ].map((article, index) => (
+                    <div key={index} className="flex items-start gap-4 p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                            {article.category}
+                          </span>
                         </div>
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {article.tags?.map((tag) => (
-                            <span key={tag} className="rounded-full bg-muted px-2.5 py-1 text-[11px] text-muted-foreground">
-                              #{tag}
-                            </span>
-                          ))}
+                        <h3 className="font-semibold text-foreground mb-1">{article.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">{article.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>{article.views}</span>
+                          <span>{article.rating}</span>
+                          <span>{article.readTime}</span>
                         </div>
-                      </>
-                    )}
-                  </button>
-                ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Troubleshooting Guides */}
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1">
+                <h2 className="text-xl font-semibold text-foreground mb-4">{t('quickTroubleshootingGuides', 'Quick Troubleshooting Guides')}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">{t('paymentProcessingErrors', 'Payment Processing Errors')}</h3>
+                    <ol className="space-y-2 text-sm text-muted-foreground">
+                      <li>1. {t('verifyCardDetails', 'Verify card details')}</li>
+                      <li>2. {t('checkBillingAddress', 'Check billing address')}</li>
+                      <li>3. {t('contactYourBank', 'Contact your bank')}</li>
+                      <li>4. {t('tryAlternativePayment', 'Try alternative payment method')}</li>
+                    </ol>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">{t('emailNotificationIssues', 'Email Notification Issues')}</h3>
+                    <ol className="space-y-2 text-sm text-muted-foreground">
+                      <li>1. {t('checkSpamFolder', 'Check spam folder')}</li>
+                      <li>2. {t('verifyEmailSettings', 'Verify email settings')}</li>
+                      <li>3. {t('whitelistDomain', 'Whitelist our domain')}</li>
+                      <li>4. {t('updateNotificationPrefs', 'Update notification preferences')}</li>
+                    </ol>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">{t('slowPerformance', 'Slow Performance')}</h3>
+                    <ol className="space-y-2 text-sm text-muted-foreground">
+                      <li>1. {t('clearBrowserCache', 'Clear browser cache')}</li>
+                      <li>2. {t('disableExtensions', 'Disable extensions')}</li>
+                      <li>3. {t('checkInternetConnection', 'Check internet connection')}</li>
+                      <li>4. {t('tryDifferentBrowser', 'Try different browser')}</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              {/* Support Contact */}
+              <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 text-white">
+                <h2 className="text-xl font-semibold mb-2">{t('cantFindLookingFor', 'Can\'t find what you\'re looking for?')}</h2>
+                <p className="text-white/90 mb-4">{t('supportTeamHelp', 'Our support team is here to help. Get personalized assistance from our experts.')}</p>
+                <Button variant="secondary" onClick={() => navigate('/ticket-chatbot')}>
+                  {t('chatWithSupport', 'Chat with Support')}
+                </Button>
               </div>
             </div>
 
@@ -240,8 +341,8 @@ const KnowledgeBase = () => {
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">Article Detail</h2>
-                    <p className="text-sm text-muted-foreground">Open a topic to see the full article.</p>
+                    <h2 className="text-lg font-semibold text-foreground">{t('articleDetail', 'Article Detail')}</h2>
+                    <p className="text-sm text-muted-foreground">{t('openTopicToSeeArticle', 'Open a topic to see the full article.')}</p>
                   </div>
                   <Icon name="FileText" size={20} className="text-primary" />
                 </div>
@@ -254,51 +355,51 @@ const KnowledgeBase = () => {
                       </span>
                       {selectedArticle.isFeatured && (
                         <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
-                          Recommended
+                          {t('recommended', 'Recommended')}
                         </span>
                       )}
                     </div>
                     <h3 className="text-xl font-semibold text-foreground">{selectedArticle.title}</h3>
                     <p className="text-sm text-muted-foreground">{selectedArticle.content}</p>
                     <div className="rounded-xl bg-muted/40 p-4 text-sm text-foreground">
-                      <div className="mb-2 font-medium">Suggested next steps</div>
+                      <div className="mb-2 font-medium">{t('suggestedNextSteps', 'Suggested next steps')}</div>
                       <ul className="space-y-2 text-muted-foreground">
-                        <li>• Check the relevant service or category in ticket creation.</li>
-                        <li>• Open a ticket if the issue is unresolved after following the steps.</li>
-                        <li>• Escalate to the right queue if SLA risk is high.</li>
+                        <li>• {t('checkRelevantService', 'Check the relevant service or category in ticket creation.')}</li>
+                        <li>• {t('openTicketIfUnresolved', 'Open a ticket if the issue is unresolved after following the steps.')}</li>
+                        <li>• {t('escalateIfSLARisk', 'Escalate to the right queue if SLA risk is high.')}</li>
                       </ul>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Button variant="default" onClick={() => navigate('/ticket-creation')}>
-                        Create Ticket
+                        {t('createTicket', 'Create Ticket')}
                       </Button>
                       <Button variant="outline" onClick={() => navigate('/ticket-chatbot')}>
-                        Ask Assistant
+                        {t('askAssistant', 'Ask Assistant')}
                       </Button>
                       <Button variant="outline" onClick={() => navigate('/service-catalog')}>
-                        Open Services
+                        {t('openServices', 'Open Services')}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-                    Select an article to read the approved steps and related actions.
+                    {t('selectArticleToRead', 'Select an article to read the approved steps and related actions.')}
                   </div>
                 )}
               </div>
 
               <div className="rounded-2xl border border-border bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-elevation-1">
-                <h3 className="text-lg font-semibold">Self-service shortcuts</h3>
-                <p className="mt-2 text-sm text-white/70">Use these when the answer is not in the article.</p>
+                <h3 className="text-lg font-semibold">{t('selfServiceShortcuts', 'Self-service shortcuts')}</h3>
+                <p className="mt-2 text-sm text-white/70">{t('useWhenAnswerNotInArticle', 'Use these when the answer is not in the article.')}</p>
                 <div className="mt-4 space-y-2">
                   <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={() => navigate('/ticket-chatbot')}>
-                    Virtual Agent
+                    {t('virtualAgent', 'Virtual Agent')}
                   </Button>
                   <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={() => navigate('/customer-portal')}>
-                    Customer Portal
+                    {t('employeePortal', 'Customer Portal')}
                   </Button>
                   <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={() => navigate('/ticket-management-center')}>
-                    Service Desk
+                    {t('ticketManagement', 'Service Desk')}
                   </Button>
                 </div>
               </div>

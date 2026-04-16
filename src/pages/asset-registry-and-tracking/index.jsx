@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import QuickStatsBar from './components/QuickStatsBar';
 import BulkOperationsToolbar from './components/BulkOperationsToolbar';
 import AssetFilterPanel from './components/AssetFilterPanel';
@@ -14,6 +16,8 @@ import assetService from '../../services/assetService';
 
 const AssetRegistryAndTracking = () => {
     const navigate = useNavigate();
+    const { language } = useLanguage();
+    const t = (key, fallback) => getTranslation(language, key, fallback);
     const [userRole] = useState('admin');
     const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState(null);
@@ -34,9 +38,9 @@ const AssetRegistryAndTracking = () => {
                 assetId: asset.assetTag,
                 description: asset.name,
                 category: asset.assetType,
-                currentOwner: asset.owner ? `${asset.owner.username}` : 'Unassigned',
+                currentOwner: asset.owner ? `${asset.owner.username}` : t('unassigned', 'Unassigned'),
                 location: asset.location,
-                status: (asset.status || 'Active').toLowerCase(),
+                status: (asset.status || t('active', 'Active')).toLowerCase(),
                 value: asset.costAmount ? `$${asset.costAmount.toLocaleString()}` : '$0.00',
                 costAmount: asset.costAmount,
                 manufacturer: asset.manufacturer,
@@ -162,7 +166,7 @@ const AssetRegistryAndTracking = () => {
 
     setFeedback({
       type: 'info',
-      message: `Executed ${action} on ${selectedAssets?.length} asset(s).`,
+      message: `${t('executed', 'Executed')} ${action} ${t('on', 'on')} ${selectedAssets?.length} ${t('assets', 'assets')}.`,
     });
   };
 
@@ -190,14 +194,14 @@ const AssetRegistryAndTracking = () => {
     if (asset) {
       setFeedback({
         type: 'success',
-        message: `Found ${asset.description} from scan ${barcode}.`,
+        message: `${t('found', 'Found')} ${asset.description} ${t('from', 'from')} ${t('scan', 'scan')} ${barcode}.`,
       });
       setSelectedAsset(asset);
       setShowDetailPanel(true);
     } else {
       setFeedback({
         type: 'error',
-        message: `No asset found with barcode/serial: ${barcode}`,
+        message: `${t('noAssetFound', 'No asset found with barcode/serial')}: ${barcode}`,
       });
     }
   };
@@ -225,8 +229,8 @@ const AssetRegistryAndTracking = () => {
   return (
     <>
       <Helmet>
-        <title>Asset Registry and Tracking - WorkflowHub</title>
-        <meta name="description" content="Comprehensive asset management interface for tracking, custody operations, and maintenance scheduling across your organization" />
+        <title>{t('assetRegistry', 'Asset Registry')} - WorkflowHub</title>
+        <meta name="description" content={t('assetRegistryDescription', 'Comprehensive interface for managing assets, tracking, custody operations, and maintenance scheduling across the organization')} />
       </Helmet>
       <div className="min-h-screen bg-background">
         <Header />
@@ -235,9 +239,9 @@ const AssetRegistryAndTracking = () => {
           <div className="bg-card border-b border-border px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Asset Registry</h1>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">{t('assetRegistry', 'Asset Registry')}</h1>
                 <p className="text-sm sm:text-base text-muted-foreground mt-1">
-                  Track and manage organizational assets with comprehensive custody chain
+                  {t('trackManageAssets', 'Track and manage organizational assets with comprehensive custody chain')}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -248,7 +252,7 @@ const AssetRegistryAndTracking = () => {
                   onClick={() => setShowScanner(true)}
                   className="text-sm sm:text-base">
 
-                  Scan Barcode
+                  {t('scanBarcode', 'Scan Barcode')}
                 </Button>
                 <Button
                   variant="outline"
@@ -257,7 +261,7 @@ const AssetRegistryAndTracking = () => {
                   onClick={handleExport}
                   className="text-sm sm:text-base">
 
-                  Export
+                  {t('export', 'Export')}
                 </Button>
                 <Button
                   variant="default"
@@ -266,7 +270,7 @@ const AssetRegistryAndTracking = () => {
                   onClick={() => navigate('/manage/assets')}
                   className="text-sm sm:text-base">
 
-                  New Asset
+                  {t('newAsset', 'New Asset')}
                 </Button>
               </div>
             </div>
@@ -332,19 +336,19 @@ const AssetRegistryAndTracking = () => {
 
 
         <div className="fixed bottom-4 right-4 bg-card border border-border rounded-lg shadow-elevation-3 p-3 hidden lg:block">
-          <p className="text-xs font-medium mb-2">Keyboard Shortcuts</p>
+          <p className="text-xs font-medium mb-2">{t('keyboardShortcuts', 'Keyboard Shortcuts')}</p>
           <div className="space-y-1 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Ctrl+N</kbd>
-              <span>New Asset</span>
+              <span>{t('newAsset', 'New Asset')}</span>
             </div>
             <div className="flex items-center gap-2">
               <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Ctrl+T</kbd>
-              <span>Transfer</span>
+              <span>{t('transfer', 'Transfer')}</span>
             </div>
             <div className="flex items-center gap-2">
               <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Ctrl+F</kbd>
-              <span>Search</span>
+              <span>{t('search', 'Search')}</span>
             </div>
           </div>
         </div>

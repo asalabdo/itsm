@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
@@ -8,9 +8,13 @@ import TicketVolumeMetrics from './components/TicketVolumeMetrics';
 import IncidentAgingHeatmap from './components/IncidentAgingHeatmap';
 import TechnicianWorkload from './components/TechnicianWorkload';
 import SLAComplianceGauges from './components/SLAComplianceGauges';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ITOperationsCommandCenter = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [selectedService, setSelectedService] = useState('all');
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -71,9 +75,9 @@ const ITOperationsCommandCenter = () => {
   return (
     <>
       <Helmet>
-        <title>IT Operations Command Center - ITSM Hub</title>
-        <meta name="description" content="Real-time IT service monitoring dashboard providing comprehensive visibility into incident response, SLA compliance, and technician workload management." />
-        <meta name="keywords" content="IT operations, incident management, SLA monitoring, technician workload, real-time dashboard" />
+        <title>{t('itOperationsCommandCenter', 'IT Operations Command Center')} - ITSM Hub</title>
+        <meta name="description" content={t('itOperationsDescription', 'Real-time IT services monitoring dashboard providing comprehensive visibility for incident response, SLA compliance, and workload management.')} />
+        <meta name="keywords" content="IT operations, incident management, SLA monitoring, workload, real-time dashboard" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -96,10 +100,10 @@ const ITOperationsCommandCenter = () => {
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-4">
                 <span className="text-muted-foreground">
-                  Service Filter: <span className="font-medium text-foreground capitalize">{selectedService}</span>
+                  {t('serviceFilter', 'Service Filter')}: <span className="font-medium text-foreground capitalize">{selectedService}</span>
                 </span>
                 <span className="text-muted-foreground">
-                  Last Updated: <span className="font-medium text-foreground">{formatLastUpdated(lastUpdated)}</span>
+                  {t('lastUpdated', 'Last Updated')}: <span className="font-medium text-foreground">{formatLastUpdated(lastUpdated)}</span>
                 </span>
               </div>
               
@@ -108,7 +112,7 @@ const ITOperationsCommandCenter = () => {
                   connectionStatus === 'connected' ? 'bg-success animate-pulse' : 
                   connectionStatus === 'warning' ? 'bg-warning animate-pulse' : 'bg-error'
                 }`}></div>
-                <span className="text-muted-foreground capitalize">{connectionStatus}</span>
+              <span className="text-muted-foreground capitalize">{t(connectionStatus, connectionStatus)}</span>
               </div>
             </div>
           </div>
@@ -142,19 +146,19 @@ const ITOperationsCommandCenter = () => {
           <div className="bg-card border-t border-border p-4 mt-6">
             <div className="flex flex-wrap items-center justify-center gap-4">
               <button onClick={() => navigate('/incident-management-workflow')} className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-                <span className="text-sm font-medium">Create Incident</span>
+                <span className="text-sm font-medium">{t('createIncident', 'Create Incident')}</span>
               </button>
               
               <button onClick={() => navigate('/manager-dashboard')} className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
-                <span className="text-sm font-medium">Escalate to Manager</span>
+                <span className="text-sm font-medium">{t('escalateToManager', 'Escalate to Manager')}</span>
               </button>
               
               <button onClick={() => navigate('/reports-analytics')} className="flex items-center space-x-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors">
-                <span className="text-sm font-medium">Generate Report</span>
+                <span className="text-sm font-medium">{t('generateReport', 'Generate Report')}</span>
               </button>
               
               <button onClick={() => navigate('/reporting-and-analytics-hub')} className="flex items-center space-x-2 px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 transition-colors">
-                <span className="text-sm font-medium">Export Data</span>
+                <span className="text-sm font-medium">{t('exportData', 'Export Data')}</span>
               </button>
             </div>
           </div>

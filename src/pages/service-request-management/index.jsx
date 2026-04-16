@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '../../components/ui/Header';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import ServiceCatalog from './components/ServiceCatalog';
 import RequestCreationWizard from './components/RequestCreationWizard';
 import ActiveRequestsDashboard from './components/ActiveRequestsDashboard';
@@ -13,6 +15,8 @@ import { serviceRequestsAPI } from '../../services/api';
 
 const ServiceRequestManagement = () => {
   const location = useLocation();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [activeFilters, setActiveFilters] = useState({});
@@ -66,9 +70,9 @@ const ServiceRequestManagement = () => {
 
   const handleExport = (format) => {
     const rows = [
-      ['Service Request Report', new Date().toISOString()],
-      ['Format', format],
-      ['Filters', JSON.stringify(activeFilters || {})]
+      [t('serviceRequestManagement', 'Service Request Management'), new Date().toISOString()],
+      [t('filters', 'Filters'), format],
+      [t('filters', 'Filters'), JSON.stringify(activeFilters || {})]
     ];
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -176,10 +180,10 @@ const ServiceRequestManagement = () => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-semibold text-foreground font-heading">
-                Service Request Management
+                {t('serviceRequestManagement', 'Service Request Management')}
               </h1>
               <p className="text-muted-foreground mt-2">
-                Streamlined request fulfillment platform for service catalog management and lifecycle tracking
+                {t('serviceRequestManagementDescription', 'Simplified platform for request fulfillment, service catalog management, and lifecycle tracking')}
               </p>
             </div>
             
@@ -192,12 +196,18 @@ const ServiceRequestManagement = () => {
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Icon name="Plus" size={16} />
-                <span className="ml-2">New Request</span>
+                <span className="ml-2">{t('newRequest', 'New Request')}</span>
               </Button>
 
               {/* View Mode Toggle */}
               <div className="flex items-center space-x-1 bg-muted rounded-lg p-1">
-                {['overview', 'catalog', 'requests', 'approvals', 'metrics']?.map((mode) => (
+                {[
+                  ['overview', t('overview', 'Overview')],
+                  ['catalog', t('catalog', 'Catalog')],
+                  ['requests', t('requests', 'Requests')],
+                  ['approvals', t('approvals', 'Approvals')],
+                  ['metrics', t('metrics', 'Metrics')],
+                ]?.map(([mode, label]) => (
                   <Button
                     key={mode}
                     variant={viewMode === mode ? 'default' : 'ghost'}
@@ -206,7 +216,7 @@ const ServiceRequestManagement = () => {
                     className="capitalize"
                   >
                     <Icon name={getViewModeIcon(mode)} size={16} />
-                    <span className="ml-1 hidden sm:inline">{mode}</span>
+                    <span className="ml-1 hidden sm:inline">{label}</span>
                   </Button>
                 ))}
               </div>
@@ -224,13 +234,13 @@ const ServiceRequestManagement = () => {
                   className={refreshing ? 'animate-spin' : ''} 
                 />
                 <span className="ml-2 hidden sm:inline">
-                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                  {refreshing ? t('refreshing', 'Refreshing...') : t('refresh', 'Refresh')}
                 </span>
               </Button>
 
               {/* Last Refresh Indicator */}
               <div className="text-sm text-muted-foreground hidden md:block">
-                Last updated: {lastRefresh?.toLocaleTimeString('en-US', { 
+                {t('lastRefresh', 'Last Refresh')}: {lastRefresh?.toLocaleTimeString('en-US', { 
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
@@ -302,11 +312,11 @@ const ServiceRequestManagement = () => {
               <div className="bg-accent text-accent-foreground px-4 py-3 rounded-lg operations-shadow flex items-center space-x-3 max-w-sm">
                 <Icon name="Clock" size={20} className="animate-pulse" />
                 <div>
-                  <div className="font-medium text-sm">SLA Alert</div>
+                  <div className="font-medium text-sm">{t('slaAlert', 'SLA Alert')}</div>
                   <div className="text-xs opacity-90">
                     {slaAlert?.overdue?.length > 0
-                      ? `${slaAlert.overdue.length} requests are overdue`
-                      : `${slaAlert?.dueSoon?.length} requests are approaching deadline`}
+                      ? `${slaAlert.overdue.length} ${t('requestsOverdue', 'requests are overdue')}`
+                      : `${slaAlert?.dueSoon?.length} ${t('requestsApproachingDeadline', 'requests are approaching deadline')}`}
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" className="text-accent-foreground hover:bg-accent/20">

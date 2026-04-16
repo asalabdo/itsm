@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
@@ -7,6 +7,8 @@ import ThemeToggle from './ThemeToggle';
 import notificationService from '../../services/notificationService';
 import { ticketsAPI } from '../../services/api';
 import { isBackendReady, markBackendReady } from '../../services/backendAvailability';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const Header = () => {
   const location = useLocation();
@@ -16,7 +18,7 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState('connected');
   const [criticalAlerts, setCriticalAlerts] = useState(0);
-  const [userRole, setUserRole] = useState('IT Service Manager');
+  const [userRole] = useState('IT Service Manager');
   const [headerSearch, setHeaderSearch] = useState('');
   const [isHeaderSearchOpen, setIsHeaderSearchOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
@@ -26,6 +28,8 @@ const Header = () => {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const prevTicketIdsRef = useRef(null);
   const statsRef = useRef(null);
+  const { isRtl, setLanguage, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   useEffect(() => {
     if (!isStatsOpen) return;
@@ -198,27 +202,27 @@ const Header = () => {
 
   const navigationItems = [
     {
-      label: 'Operations',
+      label: t('operations', 'Operations'),
       path: '/it-operations-command-center',
       icon: 'Activity',
       description: 'Real-time monitoring and incident response'
     },
     {
-      label: 'Analytics',
+      label: t('analytics', 'Analytics'),
       path: '/service-performance-analytics',
       icon: 'BarChart3',
       description: 'Performance analysis and reporting',
       submenu: [
-        { label: 'Service Performance', path: '/service-performance-analytics' },
-        { label: 'Advanced Analytics', path: '/advanced-analytics' },
-        { label: 'Reports & Analytics', path: '/reporting-and-analytics-hub' },
-        { label: 'Change Management', path: '/change-management-dashboard' },
-        { label: 'Asset Lifecycle', path: '/asset-lifecycle-management' },
-        { label: 'Manager Dashboard', path: '/manager-dashboard', icon: 'LineChart' },
+        { label: t('servicePerformance', 'Service Performance'), path: '/service-performance-analytics' },
+        { label: t('advancedAnalytics', 'Advanced Analytics'), path: '/advanced-analytics' },
+        { label: t('reportsAnalytics', 'Reports & Analytics'), path: '/reporting-and-analytics-hub' },
+        { label: t('changeManagement', 'Change Management'), path: '/change-management-dashboard' },
+        { label: t('assetLifecycle', 'Asset Lifecycle'), path: '/asset-lifecycle-management' },
+        { label: t('managerDashboard', 'Manager Dashboard'), path: '/manager-dashboard', icon: 'LineChart' },
       ]
     },
     {
-      label: 'Executive',
+      label: t('executive', 'Executive'),
       path: '/executive-it-service-summary',
       icon: 'TrendingUp',
       description: 'Strategic overview and business metrics'
@@ -257,27 +261,27 @@ const Header = () => {
 
   const workflowContext = (() => {
     if (currentPath.includes('/workflow-builder-studio') || currentPath.includes('/workflow-builder')) {
-      return { label: 'Workflow Builder', path: '/workflow-builder-studio', icon: 'GitBranch' };
+      return { label: t('workflowBuilder', 'Workflow Builder'), path: '/workflow-builder-studio', icon: 'GitBranch' };
     }
 
     if (currentPath.includes('/approval-queue-manager')) {
-      return { label: 'Approval Workflow', path: '/approval-queue-manager', icon: 'ClipboardCheck' };
+      return { label: t('approvalQueue', 'Approval Workflow'), path: '/approval-queue-manager', icon: 'ClipboardCheck' };
     }
 
     if (currentPath.includes('/incident-management-workflow')) {
-      return { label: 'Incident Workflow', path: '/incident-management-workflow', icon: 'Workflow' };
+      return { label: t('incidentManagement', 'Incident Workflow'), path: '/incident-management-workflow', icon: 'Workflow' };
     }
 
     if (currentPath.includes('/ticket-details')) {
-      return { label: 'Ticket Workflow', path: '/ticket-details', icon: 'Workflow' };
+      return { label: t('ticketWorkflow', 'Ticket Workflow'), path: '/ticket-details', icon: 'Workflow' };
     }
 
     if (currentPath.includes('/ticket-management-center')) {
-      return { label: 'Ticket Workflow', path: '/ticket-management-center', icon: 'Workflow' };
+      return { label: t('ticketWorkflow', 'Ticket Workflow'), path: '/ticket-management-center', icon: 'Workflow' };
     }
 
     if (currentPath.includes('/service-request-management') || currentPath.includes('/fulfillment-center')) {
-      return { label: 'Service Workflow', path: '/service-request-management', icon: 'Layers3' };
+      return { label: t('workCenter', 'Service Workflow'), path: '/service-request-management', icon: 'Layers3' };
     }
 
     return null;
@@ -288,18 +292,18 @@ const Header = () => {
       {/* New Ticket Alert Banner */}
       {newTicketAlert && (
         <div className="fixed top-0 left-0 right-0 bg-primary text-primary-foreground px-4 py-2 z-[1101]">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between max-w-7xl mx-auto gap-3">
+            <div className="flex items-center gap-3">
               <Icon name="TicketPlus" size={18} className="animate-bounce" />
               <span className="text-sm font-medium">
                 {newTicketAlert.count > 1
-                  ? `${newTicketAlert.count} new tickets submitted`
-                  : `New ticket: ${newTicketAlert.title}`}
+                  ? `${newTicketAlert.count} ${t('newTicketsSubmitted', 'new tickets submitted')}`
+                  : `${t('newTicket', 'New ticket')}: ${newTicketAlert.title}`}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/80 h-7 px-3 text-xs">
-                <Link to="/ticket-management-center">View</Link>
+                <Link to="/ticket-management-center">{t('view', 'View')}</Link>
               </Button>
               <button onClick={() => setNewTicketAlert(null)} className="text-primary-foreground/70 hover:text-primary-foreground">
                 <Icon name="X" size={16} />
@@ -311,36 +315,36 @@ const Header = () => {
       {/* Critical Alert Banner */}
       {criticalAlerts > 0 && (
         <div className={`fixed left-0 right-0 bg-error text-error-foreground px-4 py-3 z-[2200] ${newTicketAlert ? 'bottom-9' : 'bottom-0'}`}>
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between max-w-7xl mx-auto gap-3">
+            <div className="flex items-center gap-3">
               <Icon name="AlertTriangle" size={20} className="animate-pulse" />
               <span className="font-medium">
-                {criticalAlerts} Critical Alert{criticalAlerts > 1 ? 's' : ''} - Immediate Action Required
+                {criticalAlerts} {t('criticalAlert', 'Critical Alert')}{criticalAlerts > 1 ? 's' : ''} - {t('immediateActionRequired', 'Immediate Action Required')}
               </span>
             </div>
             <Button asChild variant="ghost" size="sm" className="text-error-foreground hover:bg-error/20">
               <Link to="/search?priority=Critical">
-                View Details
-                <Icon name="ArrowRight" size={16} className="ml-2" />
+                {t('viewDetails', 'View Details')}
+                <Icon name={isRtl ? 'ArrowLeft' : 'ArrowRight'} size={16} className={isRtl ? 'mr-2' : 'ml-2'} />
               </Link>
             </Button>
           </div>
         </div>
       )}
       {/* Main Header */}
-      <header className={`fixed left-0 right-0 bg-card backdrop-blur-sm border-b border-border/50 z-[1000] ${bannerCount === 2 ? 'top-[72px]' : bannerCount === 3 ? 'top-[36px]' : 'top-0'}`}>
+      <header className={`fixed left-0 right-0 bg-card backdrop-blur-sm border-b border-border/50 z-[1000] ${bannerCount === 2 ? 'top-[72px]' : bannerCount === 3 ? 'top-[36px]' : 'top-0'}`} dir={isRtl ? 'rtl' : 'ltr'}>
         <div className="flex items-center justify-between h-16 px-6">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-4">
-            <Link to="/it-operations-command-center" className="flex items-center space-x-3">
+          <div className="flex items-center gap-4">
+            <Link to="/it-operations-command-center" className="flex items-center gap-3">
               <img
                 src="/logo.png"
-                alt="ITSM Hub"
+                alt={t('itsmHub', 'ITSM Hub')}
                 className="w-9 h-9 rounded-lg object-contain bg-background border border-border p-1"
               />
               <div className="hidden sm:block">
                 <h1 className="text-lg font-semibold text-foreground font-heading">
-                  ITSM Hub
+                  {t('itsmHub', 'ITSM Hub')}
                 </h1>
               </div>
             </Link>
@@ -358,12 +362,12 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center gap-8">
             {navigationItems?.map((item) => (
               <div key={item?.path} className="relative group">
                 <Link
                   to={item?.path}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-md nav-transition ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md nav-transition ${
                     isActiveRoute(item?.path)
                       ? 'bg-primary text-primary-foreground'
                       : 'text-foreground hover:bg-muted hover:text-foreground'
@@ -376,7 +380,7 @@ const Header = () => {
 
                 {/* Submenu for Analytics */}
                 {item?.submenu && (
-                  <div className="absolute top-full left-0 mt-1 w-64 bg-popover border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible nav-transition z-1200">
+                  <div className={`absolute top-full mt-1 w-64 bg-popover border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible nav-transition z-1200 ${isRtl ? 'right-0' : 'left-0'}`}>
                     <div className="py-2">
                       {item?.submenu?.map((subItem) => (
                         <Link
@@ -403,23 +407,23 @@ const Header = () => {
 
             {/* Search — icon only, expands on click */}
             <div className="relative">
-              <Button variant="ghost" size="sm" title="Search" onClick={() => setIsHeaderSearchOpen(p => !p)} className="h-9 w-9">
+              <Button variant="ghost" size="sm" title={t('search', 'Search')} onClick={() => setIsHeaderSearchOpen(p => !p)} className="h-9 w-9">
                 <Icon name="Search" size={17} />
               </Button>
               {isHeaderSearchOpen && (
-                <form onSubmit={handleHeaderSearch} className="absolute top-full right-0 mt-2 flex items-center gap-2 rounded-full border border-border bg-popover px-2 py-1.5 z-[1200] shadow-lg">
+                <form onSubmit={handleHeaderSearch} className={`absolute top-full mt-2 flex items-center gap-2 rounded-full border border-border bg-popover px-2 py-1.5 z-[1200] shadow-lg ${isRtl ? 'left-0' : 'right-0'}`}>
                   <Input type="search" value={headerSearch} onChange={e => setHeaderSearch(e.target.value)}
-                    placeholder="Search tickets..." className="h-8 w-52 border-0 bg-transparent px-3 text-sm focus-visible:ring-0" autoFocus />
-                  <Button type="submit" variant="default" size="sm" className="h-8 rounded-full px-3 text-xs">Go</Button>
+                    placeholder={t('searchTickets', 'Search tickets...')} className="h-8 w-52 border-0 bg-transparent px-3 text-sm focus-visible:ring-0" autoFocus />
+                  <Button type="submit" variant="default" size="sm" className="h-8 rounded-full px-3 text-xs">{t('go', 'Go')}</Button>
                 </form>
               )}
             </div>
 
             {/* Quick Create */}
-            <Button asChild variant="default" size="sm" className="h-8 px-2 gap-1" title="New Ticket">
+            <Button asChild variant="default" size="sm" className="h-8 px-2 gap-1" title={t('newTicket', 'New Ticket')}>
               <Link to="/ticket-creation">
                 <Icon name="Plus" size={15} />
-                <span className="hidden md:inline text-xs font-medium">New Ticket</span>
+                <span className="hidden md:inline text-xs font-medium">{t('newTicket', 'New Ticket')}</span>
               </Link>
             </Button>
 
@@ -429,7 +433,7 @@ const Header = () => {
                 className="flex items-center gap-1 px-2 h-8 rounded-md hover:bg-muted transition-colors">
                 <Icon name="Clock" size={15} className="text-warning" />
                 <span className="text-xs font-bold text-warning">{pendingCount}</span>
-                <span className="hidden md:inline text-xs text-muted-foreground">Pending</span>
+                <span className="hidden md:inline text-xs text-muted-foreground">{t('pending', 'Pending')}</span>
               </Link>
             )}
 
@@ -450,7 +454,7 @@ const Header = () => {
                   className="flex flex-col gap-0.5 w-24 px-1 py-1 rounded-md hover:bg-muted transition-colors"
                   title="Ticket progress — click for breakdown">
                   <div className="flex justify-between">
-                    <span className="text-[10px] text-muted-foreground">Progress</span>
+                    <span className="text-[10px] text-muted-foreground">{t('progress', 'Progress')}</span>
                     <span className="text-[10px] font-semibold">{progressPct}%</span>
                   </div>
                   <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden flex">
@@ -459,13 +463,13 @@ const Header = () => {
                   </div>
                 </button>
                 {isStatsOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-52 bg-popover border border-border rounded-xl shadow-lg p-4 z-[1200] space-y-2">
-                    <p className="text-xs font-semibold text-popover-foreground">Ticket Breakdown</p>
+                  <div className={`absolute top-full mt-2 w-52 bg-popover border border-border rounded-xl shadow-lg p-4 z-[1200] space-y-2 ${isRtl ? 'left-0' : 'right-0'}`}>
+                    <p className="text-xs font-semibold text-popover-foreground">{t('ticketBreakdown', 'Ticket Breakdown')}</p>
                     {[
-                      { label: 'Open', value: ticketProgress.open, color: 'bg-warning' },
-                      { label: 'In Progress', value: ticketProgress.inProgress, color: 'bg-primary' },
-                      { label: 'Resolved', value: ticketProgress.resolved, color: 'bg-success' },
-                      { label: 'Total', value: ticketProgress.total, color: 'bg-muted-foreground' },
+                      { label: t('open', 'Open'), value: ticketProgress.open, color: 'bg-warning' },
+                      { label: t('inProgress', 'In Progress'), value: ticketProgress.inProgress, color: 'bg-primary' },
+                      { label: t('resolved', 'Resolved'), value: ticketProgress.resolved, color: 'bg-success' },
+                      { label: t('total', 'Total'), value: ticketProgress.total, color: 'bg-muted-foreground' },
                     ].map(({ label, value, color }) => (
                       <div key={label} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -476,7 +480,9 @@ const Header = () => {
                       </div>
                     ))}
                     <div className="pt-2 border-t border-border">
-                      <Link to="/ticket-management-center" className="text-xs text-primary hover:underline" onClick={() => setIsStatsOpen(false)}>View all tickets →</Link>
+                      <Link to="/ticket-management-center" className="text-xs text-primary hover:underline" onClick={() => setIsStatsOpen(false)}>
+                        {t('viewAllTickets', 'View all tickets')} {isRtl ? '←' : '→'}
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -488,36 +494,47 @@ const Header = () => {
               <Icon name={getConnectionStatusIcon()} size={16} className={getConnectionStatusColor()} />
             </div>
 
+            <Button
+              variant="ghost"
+              size="sm"
+              title={isRtl ? t('switchToEnglish', 'Switch to English') : t('switchToArabic', 'Switch to Arabic')}
+              className="h-9 px-2 text-xs font-semibold"
+              onClick={() => setLanguage(isRtl ? 'en' : 'ar')}
+            >
+              <Icon name="Languages" size={16} className={isRtl ? 'ml-1' : 'mr-1'} />
+              <span>{isRtl ? 'EN' : 'AR'}</span>
+            </Button>
+
             <ThemeToggle />
 
-            <Button variant="ghost" size="sm" title="Refresh" className="h-9 w-9"
+            <Button variant="ghost" size="sm" title={t('autoRefresh', 'Auto Refresh')} className="h-9 w-9"
               onClick={() => window.dispatchEvent(new CustomEvent('itsm:refresh'))}>
               <Icon name="RefreshCw" size={16} />
             </Button>
 
             {/* Notification Bell */}
             <div className="relative">
-              <Button variant="ghost" size="sm" title="Notifications" className="relative h-9 w-9"
+              <Button variant="ghost" size="sm" title={t('notifications', 'Notifications')} className="relative h-9 w-9"
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}>
                 <Icon name="Bell" size={17} className={unreadCount > 0 ? 'text-primary' : ''} />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] bg-error text-error-foreground text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 border border-background">
+                  <span className={`absolute -top-0.5 min-w-[17px] h-[17px] bg-error text-error-foreground text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 border border-background ${isRtl ? '-left-0.5' : '-right-0.5'}`}>
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </Button>
               {isNotificationsOpen && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-popover border border-border rounded-2xl overflow-hidden z-[1200] shadow-xl">
+                <div className={`absolute top-full mt-2 w-80 bg-popover border border-border rounded-2xl overflow-hidden z-[1200] shadow-xl ${isRtl ? 'left-0' : 'right-0'}`}>
                   <div className="p-4 border-b border-border flex items-center justify-between bg-muted/40">
-                    <h3 className="font-bold text-sm text-popover-foreground">Notifications</h3>
+                    <h3 className="font-bold text-sm text-popover-foreground">{t('notificationsTitle', 'Notifications')}</h3>
                     <button onClick={() => notificationService.markAllAsRead().then(fetchNotifications)}
-                      className="text-xs font-semibold text-primary hover:opacity-80">Mark all read</button>
+                      className="text-xs font-semibold text-primary hover:opacity-80">{t('markAllRead', 'Mark all read')}</button>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length === 0 ? (
                       <div className="p-8 text-center text-muted-foreground">
                         <Icon name="Inbox" size={28} className="mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">All caught up!</p>
+                        <p className="text-sm">{t('allCaughtUpShort', 'All caught up!')}</p>
                       </div>
                     ) : notifications.map(n => (
                       <button key={n.id} type="button"
@@ -540,7 +557,7 @@ const Header = () => {
               )}
             </div>
 
-            <Button variant="ghost" size="sm" title="Export CSV" className="h-9 w-9" onClick={handleExportReport}>
+            <Button variant="ghost" size="sm" title={t('exportCsv', 'Export CSV')} className="h-9 w-9" onClick={handleExportReport}>
               <Icon name="Download" size={16} />
             </Button>
           </div>
@@ -554,18 +571,18 @@ const Header = () => {
                 <span className="text-xs font-medium max-w-[100px] truncate">{userRole}</span>
                 <Icon name="ChevronDown" size={14} className="shrink-0" />
               </Button>
-              <div className="absolute top-full right-0 mt-1 w-56 bg-popover border border-border rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible nav-transition z-[1200] shadow-lg">
+              <div className={`absolute top-full mt-1 w-56 bg-popover border border-border rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible nav-transition z-[1200] shadow-lg ${isRtl ? 'left-0' : 'right-0'}`}>
                 <div className="py-2">
                   <div className="px-4 py-2 border-b border-border">
                     <p className="text-sm font-semibold text-popover-foreground">{userRole}</p>
-                    <p className="text-xs text-muted-foreground">Operations Center</p>
+                    <p className="text-xs text-muted-foreground">{t('operationsCenter', 'Operations Center')}</p>
                   </div>
-                  <button onClick={() => navigate('/settings')} className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition">Dashboard Settings</button>
-                  <button onClick={() => navigate('/settings')} className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition">Notification Preferences</button>
-                  <button onClick={() => navigate('/manager-dashboard')} className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition">Switch Role</button>
+                  <button onClick={() => navigate('/settings')} className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition">{t('dashboardSettings', 'Dashboard Settings')}</button>
+                  <button onClick={() => navigate('/settings')} className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition">{t('notificationPreferences', 'Notification Preferences')}</button>
+                  <button onClick={() => navigate('/manager-dashboard')} className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted nav-transition">{t('switchRole', 'Switch Role')}</button>
                   <div className="border-t border-border mt-1 pt-1">
                     <button onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login'); }}
-                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-muted nav-transition">Sign Out</button>
+                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-muted nav-transition">{t('signOut', 'Sign Out')}</button>
                   </div>
                 </div>
               </div>
@@ -583,7 +600,7 @@ const Header = () => {
           </div>
 
           {/* Mobile Navigation */}
-        {isMenuOpen && (
+              {isMenuOpen && (
           <div className="lg:hidden border-t border-border bg-card">
             <nav className="px-4 py-4 space-y-2">
               {workflowContext && (
@@ -598,13 +615,13 @@ const Header = () => {
               )}
               {navigationItems?.map((item) => (
                 <div key={item?.path}>
-                  <Link
-                    to={item?.path}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-md nav-transition ${
-                      isActiveRoute(item?.path)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-foreground hover:bg-muted'
-                    }`}
+                <Link
+                  to={item?.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-md nav-transition ${
+                    isActiveRoute(item?.path)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground hover:bg-muted'
+                  }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Icon name={item?.icon} size={20} />
@@ -616,7 +633,7 @@ const Header = () => {
 
                   {/* Mobile Submenu */}
                   {item?.submenu && isActiveRoute(item?.path) && (
-                    <div className="ml-8 mt-2 space-y-1">
+                    <div className={`${isRtl ? 'mr-8' : 'ml-8'} mt-2 space-y-1`}>
                       {item?.submenu?.map((subItem) => (
                         <Link
                           key={subItem?.path}
@@ -639,19 +656,19 @@ const Header = () => {
               {/* Mobile Stats */}
               <div className="px-4 py-3 border-t border-border mt-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Pending Requests</span>
+                  <span className="text-sm text-muted-foreground">{t('pendingRequests', 'Pending Requests')}</span>
                   <span className="text-sm font-semibold text-warning">{pendingCount}</span>
                 </div>
                 {slaBreaches > 0 && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">SLA Breaches</span>
+                    <span className="text-sm text-muted-foreground">{t('slaBreaches', 'SLA Breaches')}</span>
                     <span className="text-sm font-semibold text-error">{slaBreaches}</span>
                   </div>
                 )}
                 {ticketProgress.total > 0 && (
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Resolution Progress</span>
+                      <span className="text-sm text-muted-foreground">{t('resolutionProgress', 'Resolution Progress')}</span>
                       <span className="text-sm font-semibold text-foreground">{progressPct}%</span>
                     </div>
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden flex">
@@ -661,8 +678,8 @@ const Header = () => {
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Connection Status</span>
-                  <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">{t('connectionStatus', 'Connection Status')}</span>
+                  <div className="flex items-center gap-2">
                     <Icon name={getConnectionStatusIcon()} size={16} className={getConnectionStatusColor()} />
                     <span className={`text-sm capitalize ${getConnectionStatusColor()}`}>{connectionStatus}</span>
                   </div>

@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const ServiceCatalog = ({ expanded = false, onRequestService }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,7 +53,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
     }, {});
 
     return [
-      { value: 'all', label: 'All Categories', count: services?.length },
+      { value: 'all', label: t('allCategories', 'All Categories'), count: services?.length },
       ...Object.values(grouped).sort((a, b) => a.label.localeCompare(b.label)),
     ];
   }, [services]);
@@ -88,7 +92,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
     return (
       <div className="bg-card rounded-lg border border-border operations-shadow p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Service Catalog</h2>
+          <h2 className="text-xl font-semibold text-foreground">{t('serviceCatalog', 'Service Catalog')}</h2>
           <div className="animate-pulse">
             <div className="w-20 h-6 bg-muted rounded"></div>
           </div>
@@ -109,14 +113,14 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Service Catalog</h2>
+          <h2 className="text-xl font-semibold text-foreground">{t('serviceCatalog', 'Service Catalog')}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {filteredServices?.length} services available
+            {filteredServices?.length} {t('servicesAvailable', 'services available')}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate('/service-catalog')}>
           <Icon name="Settings" size={16} />
-          <span className="ml-2">Manage</span>
+          <span className="ml-2">{t('manage', 'Manage')}</span>
         </Button>
       </div>
 
@@ -126,7 +130,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
           <Icon name="Search" size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search services..."
+            placeholder={t('searchServices', 'Search services...')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e?.target?.value)}
             className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -170,14 +174,14 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
                   </h3>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="text-xs text-muted-foreground">
-                      {service?.requiresApproval ? 'Approval required' : 'No approval required'}
+                      {service?.requiresApproval ? t('approvalRequired', 'Approval required') : t('noApprovalRequired', 'No approval required')}
                     </span>
                   </div>
                 </div>
               </div>
               {service?.approvalRequired && (
                 <div className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                  Approval Required
+                  {t('approvalRequired', 'Approval Required')}
                 </div>
               )}
             </div>
@@ -189,15 +193,15 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
 
             <div className="space-y-2 mb-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Category:</span>
+                <span className="text-muted-foreground">{t('category', 'Category')}:</span>
                 <span className="font-medium text-foreground capitalize">{service?.category}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">SLA Hours:</span>
+                <span className="text-muted-foreground">{t('slaHours', 'SLA Hours')}:</span>
                 <span className="font-medium text-foreground">{service?.defaultSlaHours ?? 'N/A'}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Total Requests:</span>
+                <span className="text-muted-foreground">{t('totalRequests', 'Total Requests')}:</span>
                 <span className="font-medium text-foreground">{service?.requestCount?.toLocaleString() || 0}</span>
               </div>
             </div>
@@ -213,7 +217,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
               }}
             >
               <Icon name="Plus" size={14} />
-              <span className="ml-2">Request Service</span>
+              <span className="ml-2">{t('requestService', 'Request Service')}</span>
             </Button>
           </div>
         ))}
@@ -222,9 +226,9 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
       {filteredServices?.length === 0 && (
         <div className="text-center py-12">
           <Icon name="Package" size={48} className="text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">No services found</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">{t('noServicesFound', 'No services found')}</h3>
           <p className="text-muted-foreground">
-            Try adjusting your search or category filter
+            {t('tryAdjustingSearchCategory', 'Try adjusting your search or category filter')}
           </p>
         </div>
       )}

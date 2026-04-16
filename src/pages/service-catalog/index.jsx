@@ -5,8 +5,12 @@ import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import serviceRequestService from '../../services/serviceRequestService';
 import DynamicFormRenderer from '../../components/ui/DynamicFormRenderer';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const ServiceCatalogHub = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -46,12 +50,12 @@ const ServiceCatalogHub = () => {
         catalogItemId: selectedItem.id,
         customDataJson: JSON.stringify(formData)
       });
-      setMessage({ type: 'success', text: 'Request submitted successfully.' });
+      setMessage({ type: 'success', text: t('requestSubmittedSuccess', 'Request submitted successfully.') });
       setSelectedItem(null);
       setFormData({});
     } catch (error) {
       console.error('Error submitting request:', error);
-      setMessage({ type: 'error', text: 'Failed to submit request.' });
+      setMessage({ type: 'error', text: t('failedToSubmitRequest', 'Failed to submit request.') });
     } finally {
       setSubmitting(false);
     }
@@ -72,19 +76,19 @@ const ServiceCatalogHub = () => {
   return (
     <>
       <Helmet>
-        <title>Service Catalog - ITSM</title>
+        <title>{t('serviceCatalogTitle', 'Service Catalog')} - ITSM</title>
       </Helmet>
       <Header />
       <main className="pt-16 min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Service Catalog</h1>
-              <p className="text-muted-foreground mt-1">Browse and request IT services and equipment.</p>
+              <h1 className="text-3xl font-bold text-foreground">{t('serviceCatalogTitle', 'Service Catalog')}</h1>
+              <p className="text-muted-foreground mt-1">{t('serviceCatalogSubtitle', 'Browse and request IT services and equipment.')}</p>
             </div>
             <Input
               type="search"
-              placeholder="Search services, categories, or descriptions..."
+              placeholder={t('searchServicesPlaceholder', 'Search services, categories, or descriptions...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e?.target?.value)}
               className="max-w-xl"
@@ -103,13 +107,13 @@ const ServiceCatalogHub = () => {
 
           {loading ? (
             <div className="rounded-2xl border border-border bg-card p-10 text-center text-muted-foreground">
-              Loading catalog...
+              {t('loadingCatalog', 'Loading catalog...')}
             </div>
           ) : filteredCategories.length === 0 ? (
             <div className="rounded-2xl border border-border bg-card p-10 text-center">
               <Icon name="PackageSearch" size={36} className="mx-auto text-muted-foreground" />
-              <h2 className="text-xl font-semibold mt-4">No services found</h2>
-              <p className="text-muted-foreground mt-2">Try a different keyword or clear the search to see the full catalog.</p>
+              <h2 className="text-xl font-semibold mt-4">{t('noServicesFound', 'No services found')}</h2>
+              <p className="text-muted-foreground mt-2">{t('tryDifferentKeyword', 'Try a different keyword or clear the search to see the full catalog.')}</p>
             </div>
           ) : (
             filteredCategories.map(category => (
@@ -137,7 +141,7 @@ const ServiceCatalogHub = () => {
                         className="mt-6 w-full py-2.5 bg-muted text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center gap-2"
                       >
                         <Icon name="Plus" size={18} />
-                        Request Now
+                        {t('requestNow', 'Request Now')}
                       </button>
                     </div>
                   ))}
@@ -151,7 +155,7 @@ const ServiceCatalogHub = () => {
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-xl font-bold">New {selectedItem.name} Request</h3>
+                  <h3 className="text-xl font-bold">{t('newRequestTitle', 'New {serviceName} Request').replace('{serviceName}', selectedItem.name)}</h3>
                   <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-gray-100 rounded-full">
                     <Icon name="X" size={20} />
                   </button>
@@ -161,7 +165,7 @@ const ServiceCatalogHub = () => {
                   <div className="bg-blue-50 p-4 rounded-2xl flex items-start gap-4">
                     <Icon name="Info" size={20} className="text-blue-600 mt-1" />
                     <p className="text-sm text-blue-800 flex-1">
-                      You are requesting <strong>{selectedItem.name}</strong>. {selectedItem.requiresApproval ? "This request requires manager approval." : "This request will be fulfilled immediately upon submission."}
+                      {t('youAreRequesting', 'You are requesting')} <strong>{selectedItem.name}</strong>. {selectedItem.requiresApproval ? t('requiresManagerApproval', 'This request requires manager approval.') : t('willBeFulfilledImmediately', 'This request will be fulfilled immediately upon submission.')}
                     </p>
                   </div>
 
@@ -180,14 +184,14 @@ const ServiceCatalogHub = () => {
                       onClick={() => setSelectedItem(null)}
                       className="flex-1 py-3 font-bold text-gray-600 rounded-xl hover:bg-gray-100 transition-colors"
                     >
-                      Cancel
+                      {t('cancel', 'Cancel')}
                     </button>
                     <button 
                       type="submit" 
                       disabled={submitting}
                       className="flex-1 py-3 font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
                     >
-                      {submitting ? 'Submitting...' : 'Submit Request'}
+                      {submitting ? t('submitting', 'Submitting...') : t('submitRequest', 'Submit Request')}
                     </button>
                   </div>
                 </form>

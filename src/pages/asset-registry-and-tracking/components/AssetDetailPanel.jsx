@@ -11,16 +11,16 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
       <div className="w-full lg:w-96 bg-card border-l border-border flex items-center justify-center p-8">
         <div className="text-center">
           <Icon name="Package" size={48} className="mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm text-muted-foreground">Select an asset to view details</p>
+          <p className="text-sm text-muted-foreground">اختر أصلًا لعرض التفاصيل</p>
         </div>
       </div>);
 
   }
 
   const tabs = [
-    { id: 'details', label: 'Details', icon: 'Info' },
-    { id: 'relationships', label: 'Relationships', icon: 'Link' },
-    { id: 'history', label: 'History', icon: 'History' }];
+    { id: 'details', label: 'التفاصيل', icon: 'Info' },
+    { id: 'relationships', label: 'العلاقات', icon: 'Link' },
+    { id: 'history', label: 'السجل', icon: 'History' }];
 
   const isTabVisible = (tab) => {
     if (!tab?.roleRequired) return true;
@@ -41,11 +41,11 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
   return (
     <div className="w-full lg:w-96 bg-card border-l border-border flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-semibold">Asset Details</h2>
+        <h2 className="text-lg font-semibold">تفاصيل الأصل</h2>
         <button
           onClick={onClose}
           className="p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring"
-          aria-label="Close details">
+          aria-label="إغلاق التفاصيل">
           <Icon name="X" size={20} />
         </button>
       </div>
@@ -82,33 +82,33 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
         {activeTab === 'details' &&
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Manufacturer / Model</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">المصنّع / الطراز</label>
               <p className="text-sm mt-1">{asset?.manufacturer || 'N/A'} {asset?.model}</p>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">الفئة</label>
               <p className="text-sm mt-1">{asset?.category}</p>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Current Owner</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">المالك الحالي</label>
               <div className="flex items-center gap-2 mt-1">
                 <Icon name="User" size={16} className="text-muted-foreground" />
                 <span className="text-sm">{asset?.currentOwner}</span>
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Location</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">الموقع</label>
               <div className="flex items-center gap-1 mt-1">
                 <Icon name="MapPin" size={14} className="text-muted-foreground" />
                 <span className="text-sm">{asset?.location}</span>
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Serial Number</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">الرقم التسلسلي</label>
               <p className="text-sm mt-1 data-text">{asset?.serialNumber}</p>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Purchase Date</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">تاريخ الشراء</label>
               <p className="text-sm mt-1">{asset?.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : 'N/A'}</p>
             </div>
           </div>
@@ -116,7 +116,7 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
 
         {activeTab === 'relationships' &&
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold">Asset Dependencies</h4>
+            <h4 className="text-sm font-semibold">اعتماديات الأصل</h4>
             {asset?.relationships?.length > 0 ? (
               asset.relationships.map((rel) => (
                 <div key={rel.id} className="p-3 bg-muted/30 rounded-lg flex items-center justify-between">
@@ -128,17 +128,17 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground italic">No relationships mapped.</p>
+              <p className="text-sm text-muted-foreground italic">لا توجد علاقات مرتبطة.</p>
             )}
             <Button variant="outline" size="sm" fullWidth iconName="Plus" iconPosition="left">
-              Link New Asset
+              ربط أصل جديد
             </Button>
           </div>
         }
 
         {activeTab === 'history' &&
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold">Audit Log</h4>
+            <h4 className="text-sm font-semibold">سجل التدقيق</h4>
             <div className="relative pl-4 border-l-2 border-border space-y-6">
               {asset?.history?.length > 0 ? (
                 asset.history.map((item) => (
@@ -147,8 +147,8 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">{item.action}</span>
                       <div className="text-xs text-muted-foreground mt-1">
-                        {item.oldValue && <span>From <span className="text-foreground">{item.oldValue}</span> </span>}
-                        {item.newValue && <span>To <span className="text-foreground">{item.newValue}</span></span>}
+                        {item.oldValue && <span>من <span className="text-foreground">{item.oldValue}</span> </span>}
+                        {item.newValue && <span>إلى <span className="text-foreground">{item.newValue}</span></span>}
                       </div>
                       <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground italic uppercase">
                         <span>{new Date(item.timestamp).toLocaleString()}</span>
@@ -159,7 +159,7 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground italic">No history available.</p>
+              <p className="text-xs text-muted-foreground italic">لا يوجد سجل متاح.</p>
               )}
             </div>
           </div>
@@ -169,10 +169,10 @@ const AssetDetailPanel = ({ asset, onClose, userRole }) => {
       </div>
       <div className="p-4 border-t border-border space-y-2">
         <Button variant="default" fullWidth iconName="ArrowRightLeft" iconPosition="left">
-          Transfer Asset
+          نقل الأصل
         </Button>
         <Button variant="outline" fullWidth iconName="Wrench" iconPosition="left">
-          Schedule Maintenance
+          جدولة الصيانة
         </Button>
       </div>
     </div>);

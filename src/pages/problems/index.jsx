@@ -5,6 +5,8 @@ import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 import { problemAPI } from '../../services/api';
 
 const emptyForm = {
@@ -17,21 +19,23 @@ const emptyForm = {
   status: 'Open',
 };
 
-const priorityOptions = [
-  { value: 'Low', label: 'Low' },
-  { value: 'Medium', label: 'Medium' },
-  { value: 'High', label: 'High' },
-  { value: 'Critical', label: 'Critical' },
+const getPriorityOptions = (t) => [
+  { value: 'Low', label: t('low', 'Low') },
+  { value: 'Medium', label: t('medium', 'Medium') },
+  { value: 'High', label: t('high', 'High') },
+  { value: 'Critical', label: t('critical', 'Critical') },
 ];
 
-const statusOptions = [
-  { value: 'Open', label: 'Open' },
-  { value: 'Investigating', label: 'Investigating' },
-  { value: 'Resolved', label: 'Resolved' },
-  { value: 'Closed', label: 'Closed' },
+const getStatusOptions = (t) => [
+  { value: 'Open', label: t('open', 'Open') },
+  { value: 'Investigating', label: t('investigating', 'Investigating') },
+  { value: 'Resolved', label: t('resolved', 'Resolved') },
+  { value: 'Closed', label: t('closed', 'Closed') },
 ];
 
 const Problems = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProblem, setSelectedProblem] = useState(null);
@@ -89,11 +93,11 @@ const Problems = () => {
   };
 
   const validate = () => {
-    if (!form.title.trim()) return 'Title is required';
-    if (!form.description.trim()) return 'Description is required';
-    if (!form.rootCause.trim()) return 'Root cause is required';
-    if (!form.workaround.trim()) return 'Workaround is required';
-    if (!form.category.trim()) return 'Category is required';
+    if (!form.title.trim()) return t('titleRequired', 'Title is required');
+    if (!form.description.trim()) return t('descriptionRequired', 'Description is required');
+    if (!form.rootCause.trim()) return t('rootCauseRequired', 'Root cause is required');
+    if (!form.workaround.trim()) return t('workaroundRequired', 'Workaround is required');
+    if (!form.category.trim()) return t('categoryRequired', 'Category is required');
     return '';
   };
 
@@ -129,7 +133,7 @@ const Problems = () => {
       await loadProblems();
     } catch (err) {
       console.error('Failed to save problem:', err);
-      setError('Failed to save problem.');
+      setError(t('failedSaveProblem', 'Failed to save problem.'));
     } finally {
       setSaving(false);
     }
@@ -146,7 +150,7 @@ const Problems = () => {
       await loadProblems();
     } catch (err) {
       console.error('Failed to link ticket:', err);
-      setError('Failed to link ticket.');
+      setError(t('failedLinkTicket', 'Failed to link ticket.'));
     } finally {
       setSaving(false);
     }
@@ -162,13 +166,13 @@ const Problems = () => {
       <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8 max-w-[1600px] mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Problems</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">{t('problems', 'Problems')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Backend-backed problem records for root cause tracking and permanent fixes.
+              {t('problemsDescription', 'Backend-backed problem records for root cause tracking and permanent fixes.')}
             </p>
           </div>
           <Button iconName="Plus" iconPosition="left" onClick={openCreate}>
-            New Problem
+            {t('newProblem', 'New Problem')}
           </Button>
         </div>
 
@@ -182,32 +186,32 @@ const Problems = () => {
           <section className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Problem Records</h2>
-                <p className="text-sm text-muted-foreground">{problems.length} problem records loaded</p>
+                <h2 className="text-lg font-semibold text-foreground">{t('problemRecords', 'Problem Records')}</h2>
+                <p className="text-sm text-muted-foreground">{problems.length} {t('problemRecordsLoaded', 'problem records loaded')}</p>
               </div>
               <Button variant="outline" size="sm" onClick={loadProblems}>
-                Refresh
+                {t('refresh', 'Refresh')}
               </Button>
             </div>
 
             {loading ? (
-              <div className="p-10 text-center text-muted-foreground">Loading problems...</div>
+              <div className="p-10 text-center text-muted-foreground">{t('loadingProblems', 'Loading problems...')}</div>
             ) : problems.length === 0 ? (
               <div className="p-10 text-center">
                 <Icon name="AlertTriangle" size={40} className="mx-auto mb-3 text-muted-foreground" />
-                <p className="font-medium text-foreground">No problems found</p>
-                <p className="text-sm text-muted-foreground mt-1">Create the first problem record to track root causes.</p>
+                <p className="font-medium text-foreground">{t('noProblemsFound', 'No problems found')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('createFirstProblem', 'Create the first problem record to track root causes.')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[900px]">
                   <thead className="bg-muted/50 border-b border-border">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Problem</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Priority</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('problem', 'Problem')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('priority', 'Priority')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('status', 'Status')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('category', 'Category')}</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">{t('actions', 'Actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -228,10 +232,10 @@ const Problems = () => {
                         <td className="px-4 py-4">
                           <div className="flex items-center justify-end gap-2">
                             <Button variant="outline" size="sm" onClick={() => setSelectedProblem(problem)}>
-                              View
+                              {t('view', 'View')}
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => openEdit(problem)}>
-                              Edit
+                              {t('edit', 'Edit')}
                             </Button>
                           </div>
                         </td>
@@ -247,8 +251,8 @@ const Problems = () => {
             <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5">
               <div className="flex items-center justify-between gap-3 mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">Problem Detail</h2>
-                  <p className="text-sm text-muted-foreground">Selected backend record</p>
+                  <h2 className="text-lg font-semibold text-foreground">{t('problemDetail', 'Problem Detail')}</h2>
+                  <p className="text-sm text-muted-foreground">{t('selectedBackendRecord', 'Selected backend record')}</p>
                 </div>
                 <Icon name="ClipboardList" size={18} className="text-primary" />
               </div>
@@ -256,29 +260,29 @@ const Problems = () => {
               {selectedDetail ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Title</p>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('title', 'Title')}</p>
                     <p className="font-medium text-foreground">{selectedDetail.title}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Root Cause</p>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('rootCause', 'Root Cause')}</p>
                     <p className="text-sm text-foreground whitespace-pre-wrap">{selectedDetail.rootCause}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Workaround</p>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('workaround', 'Workaround')}</p>
                     <p className="text-sm text-foreground whitespace-pre-wrap">{selectedDetail.workaround}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl bg-muted/40 p-3">
-                      <p className="text-[10px] uppercase text-muted-foreground">Priority</p>
+                      <p className="text-[10px] uppercase text-muted-foreground">{t('priority', 'Priority')}</p>
                       <p className="text-sm font-medium text-foreground">{selectedDetail.priority}</p>
                     </div>
                     <div className="rounded-xl bg-muted/40 p-3">
-                      <p className="text-[10px] uppercase text-muted-foreground">Status</p>
+                      <p className="text-[10px] uppercase text-muted-foreground">{t('status', 'Status')}</p>
                       <p className="text-sm font-medium text-foreground">{selectedDetail.status}</p>
                     </div>
                   </div>
                   <div className="pt-3 border-t border-border">
-                    <label className="block text-sm font-medium text-foreground mb-2">Link Ticket ID</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">{t('linkTicketId', 'Link Ticket ID')}</label>
                     <div className="flex gap-2">
                       <input
                         type="number"
@@ -286,16 +290,16 @@ const Problems = () => {
                         value={linkTicketId}
                         onChange={(e) => setLinkTicketId(e?.target?.value)}
                         className="flex-1 rounded-xl border border-border bg-background px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                        placeholder="Ticket ID"
+                        placeholder={t('ticketId', 'Ticket ID')}
                       />
                       <Button type="button" onClick={linkTicket} disabled={saving || !linkTicketId}>
-                        Link
+                        {t('link', 'Link')}
                       </Button>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">Select a problem record to see more detail.</div>
+                <div className="text-sm text-muted-foreground">{t('selectProblemDetail', 'Select a problem record to see more detail.')}</div>
               )}
             </section>
           </aside>
@@ -307,8 +311,8 @@ const Problems = () => {
           <form onSubmit={saveProblem} className="w-full max-w-4xl rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-foreground">{editingId ? 'Edit Problem' : 'New Problem'}</h2>
-                <p className="text-sm text-muted-foreground">Matches `CreateProblemRecordDto` and `UpdateProblemRecordDto`.</p>
+                <h2 className="text-xl font-semibold text-foreground">{editingId ? t('editProblem', 'Edit Problem') : t('newProblem', 'New Problem')}</h2>
+                <p className="text-sm text-muted-foreground">{t('matchesCreateUpdateDto', 'Matches `CreateProblemRecordDto` and `UpdateProblemRecordDto`.')}</p>
               </div>
               <Button variant="ghost" size="sm" type="button" onClick={() => setShowForm(false)}>
                 <Icon name="X" size={18} />
@@ -316,13 +320,13 @@ const Problems = () => {
             </div>
 
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[75vh] overflow-y-auto">
-              <Input label="Title" value={form.title} onChange={(e) => setField('title', e?.target?.value)} required />
-              <Select label="Priority" options={priorityOptions} value={form.priority} onChange={(value) => setField('priority', value)} />
+              <Input label={t('title', 'Title')} value={form.title} onChange={(e) => setField('title', e?.target?.value)} required />
+              <Select label={t('priority', 'Priority')} options={getPriorityOptions(t)} value={form.priority} onChange={(value) => setField('priority', value)} />
               <div className="md:col-span-2">
-                <Input label="Category" value={form.category} onChange={(e) => setField('category', e?.target?.value)} required />
+                <Input label={t('category', 'Category')} value={form.category} onChange={(e) => setField('category', e?.target?.value)} required />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Description</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('description', 'Description')}</label>
                 <textarea
                   rows={4}
                   value={form.description}
@@ -331,7 +335,7 @@ const Problems = () => {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Root Cause</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('rootCause', 'Root Cause')}</label>
                 <textarea
                   rows={4}
                   value={form.rootCause}
@@ -340,7 +344,7 @@ const Problems = () => {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Workaround</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('workaround', 'Workaround')}</label>
                 <textarea
                   rows={4}
                   value={form.workaround}
@@ -349,16 +353,16 @@ const Problems = () => {
                 />
               </div>
               {editingId && (
-                <Select label="Status" options={statusOptions} value={form.status} onChange={(value) => setField('status', value)} />
+                <Select label={t('status', 'Status')} options={getStatusOptions(t)} value={form.status} onChange={(value) => setField('status', value)} />
               )}
             </div>
 
             <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                Cancel
+                {t('cancel', 'Cancel')}
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Problem'}
+                {saving ? t('saving', 'Saving...') : t('saveProblem', 'Save Problem')}
               </Button>
             </div>
           </form>

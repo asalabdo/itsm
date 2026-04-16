@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 import { ticketsAPI } from '../../../services/api';
 
 const PriorityBanner = ({ tickets = [] }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const urgentIncidents = tickets.length > 0 ? tickets.filter(t => t.priority === 'High' || t.priority === 'Critical').map(t => ({
     backendId: t.id,
     id: t.ticketNumber,
@@ -87,15 +91,15 @@ const PriorityBanner = ({ tickets = [] }) => {
                 <Icon name="AlertCircle" size={16} className="text-error animate-pulse" />
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">SLA Breach Warning</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('slaBreach', 'SLA Breach Warning')}</p>
           </div>
 
           <div className="flex space-x-2">
             <button onClick={handleAccept} className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-lg hover:bg-primary/90 transition-colors">
-              Accept
+              {t('accept', 'Accept')}
             </button>
             <button onClick={handleEscalate} className="px-4 py-2 bg-secondary text-secondary-foreground text-sm rounded-lg hover:bg-secondary/90 transition-colors">
-              Escalate
+              {t('escalate', 'Escalate')}
             </button>
           </div>
         </div>

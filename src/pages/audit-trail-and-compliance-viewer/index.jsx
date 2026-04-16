@@ -7,6 +7,8 @@ import DashboardCard from '../../components/ui/DashboardCard';
 import Icon from '../../components/AppIcon';
 import notificationService from '../../services/notificationService';
 import { ticketsAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const seedActions = [
   {
@@ -171,6 +173,8 @@ const buildTicketAction = (ticket) => ({
 });
 
 const AuditTrailAndComplianceViewer = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -250,20 +254,20 @@ const AuditTrailAndComplianceViewer = () => {
   }, [actions]);
 
   const actionTypes = [
-    { value: 'all', label: 'All Actions' },
-    { value: 'approval', label: 'Approvals' },
-    { value: 'ticket', label: 'Tickets' },
-    { value: 'integration', label: 'Integrations' },
-    { value: 'security', label: 'Audit' },
+  { value: 'all', label: t('all', 'All Actions') },
+  { value: 'approval', label: t('approval', 'Approvals') },
+  { value: 'ticket', label: t('ticket', 'Tickets') },
+  { value: 'integration', label: t('integration', 'Integrations') },
+  { value: 'security', label: t('audit', 'Audit') },
   ];
 
   return (
     <>
       <Helmet>
-        <title>Audit Trail & Compliance Viewer</title>
+        <title>عارض سجل التدقيق والامتثال</title>
         <meta
           name="description"
-          content="A control center for reviewing recent actions, approvals, ticket updates, and integration activity."
+          content="مركز تحكم لمراجعة الإجراءات الأخيرة والموافقات وتحديثات التذاكر ونشاط التكامل."
         />
       </Helmet>
       <div className="min-h-screen bg-background">
@@ -275,13 +279,13 @@ const AuditTrailAndComplianceViewer = () => {
               <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-3xl space-y-3">
                   <p className="text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground">
-                    Control Center
+                    مركز التحكم
                   </p>
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                    Last Actions, fully visible.
+                    آخر الإجراءات، مرئية بالكامل.
                   </h1>
                   <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
-                    Review approvals, ticket updates, compliance events, and third-party submissions in one place. Use the header controls to show all actions or narrow the feed to what needs attention now.
+                    راجع الموافقات وتحديثات التذاكر وأحداث الامتثال والعمليات الخارجية في مكان واحد. استخدم عناصر التحكم في الرأس لإظهار كل الإجراءات أو تضييق التدفق لما يحتاج اهتمامًا الآن.
                   </p>
                 </div>
 
@@ -291,7 +295,7 @@ const AuditTrailAndComplianceViewer = () => {
                     iconName={showAll ? 'List' : 'Rows3'}
                     onClick={() => setShowAll((prev) => !prev)}
                   >
-                    {showAll ? 'Showing all actions' : 'Show all actions'}
+                    {showAll ? 'عرض كل الإجراءات' : 'إظهار كل الإجراءات'}
                   </Button>
                   <Button
                     variant="ghost"
@@ -299,23 +303,23 @@ const AuditTrailAndComplianceViewer = () => {
                     onClick={() => window.location.reload()}
                     disabled={loading}
                   >
-                    Refresh
+                    تحديث
                   </Button>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <DashboardCard title="All Actions" value={stats.total} subtitle="Tracked in the current feed">
+              <DashboardCard title="كل الإجراءات" value={stats.total} subtitle="مُتتبعة في التدفق الحالي">
                 <Icon name="Activity" size={20} className="text-primary" />
               </DashboardCard>
-              <DashboardCard title="Last 24 Hours" value={stats.recent} subtitle="Recent activity window">
+              <DashboardCard title="آخر 24 ساعة" value={stats.recent} subtitle="نافذة النشاط الأخير">
                 <Icon name="Clock3" size={20} className="text-primary" />
               </DashboardCard>
-              <DashboardCard title="Critical Items" value={stats.critical} subtitle="Need immediate attention">
+              <DashboardCard title="عناصر حرجة" value={stats.critical} subtitle="تحتاج اهتمامًا فوريًا">
                 <Icon name="AlertTriangle" size={20} className="text-error" />
               </DashboardCard>
-              <DashboardCard title="Pending Review" value={stats.pending} subtitle="Waiting for control actions">
+              <DashboardCard title="قيد المراجعة" value={stats.pending} subtitle="بانتظار إجراءات التحكم">
                 <Icon name="ClipboardCheck" size={20} className="text-warning" />
               </DashboardCard>
             </div>
@@ -325,8 +329,8 @@ const AuditTrailAndComplianceViewer = () => {
                 <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-lg font-semibold text-foreground">Filter the feed</h2>
-                      <p className="text-xs text-muted-foreground">Keep only the action types you want to control.</p>
+                      <h2 className="text-lg font-semibold text-foreground">تصفية التدفق</h2>
+                      <p className="text-xs text-muted-foreground">احتفظ فقط بأنواع الإجراءات التي تريد التحكم بها.</p>
                     </div>
                     <span className="text-xs font-medium text-muted-foreground">
                       {visibleActions.length} shown
@@ -338,7 +342,7 @@ const AuditTrailAndComplianceViewer = () => {
                       type="search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search actions, users, or tickets"
+                        placeholder="ابحث عن الإجراءات أو المستخدمين أو التذاكر"
                     />
                     <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2">
                       <Icon name="Filter" size={16} className="text-muted-foreground" />
@@ -377,9 +381,9 @@ const AuditTrailAndComplianceViewer = () => {
                 <div className="rounded-2xl border border-border bg-card">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                     <div>
-                      <h2 className="font-semibold text-foreground">Recent actions</h2>
+                      <h2 className="font-semibold text-foreground">الإجراءات الأخيرة</h2>
                       <p className="text-xs text-muted-foreground">
-                        {showAll ? 'Showing every available action' : 'Showing the latest 8 actions'}
+                        {showAll ? 'عرض كل إجراء متاح' : 'عرض آخر 8 إجراءات'}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground">
@@ -389,9 +393,9 @@ const AuditTrailAndComplianceViewer = () => {
 
                   <div className="max-h-[760px] overflow-y-auto divide-y divide-border">
                     {loading ? (
-                      <div className="p-6 text-sm text-muted-foreground">Loading last actions...</div>
+                      <div className="p-6 text-sm text-muted-foreground">جارٍ تحميل آخر الإجراءات...</div>
                     ) : visibleActions.length === 0 ? (
-                      <div className="p-6 text-sm text-muted-foreground">No actions match the current filters.</div>
+                      <div className="p-6 text-sm text-muted-foreground">لا توجد إجراءات تطابق الفلاتر الحالية.</div>
                     ) : (
                       visibleActions.map((action) => {
                         const meta = severityMeta[action.severity] || severityMeta.medium;
@@ -414,7 +418,7 @@ const AuditTrailAndComplianceViewer = () => {
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                    {typeLabels[action.type] || 'Action'}
+                                    {typeLabels[action.type] || 'إجراء'}
                                   </span>
                                   <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${meta.className}`}>
                                     {meta.label}
@@ -449,7 +453,7 @@ const AuditTrailAndComplianceViewer = () => {
                         <div>
                           <div className="flex flex-wrap items-center gap-2 mb-2">
                             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                              Selected action
+                              الإجراء المحدد
                             </span>
                             <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${severityMeta[selectedAction.severity]?.className || severityMeta.medium.className}`}>
                               {severityMeta[selectedAction.severity]?.label || 'Medium'}
@@ -462,11 +466,11 @@ const AuditTrailAndComplianceViewer = () => {
                         </div>
                         <div className="flex flex-col gap-2 text-sm">
                           <div className="rounded-xl bg-muted/50 px-3 py-2">
-                            <span className="text-muted-foreground">Target</span>
+                            <span className="text-muted-foreground">الوجهة</span>
                             <div className="font-semibold text-foreground">{selectedAction.target}</div>
                           </div>
                           <div className="rounded-xl bg-muted/50 px-3 py-2">
-                            <span className="text-muted-foreground">Status</span>
+                            <span className="text-muted-foreground">الحالة</span>
                             <div className="font-semibold text-foreground">{selectedAction.status}</div>
                           </div>
                         </div>
@@ -474,7 +478,7 @@ const AuditTrailAndComplianceViewer = () => {
 
                       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="rounded-xl border border-border bg-muted/20 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">When</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">الوقت</p>
                           <p className="mt-2 text-sm font-medium text-foreground">{formatTime(selectedAction.time)}</p>
                         </div>
                         <div className="rounded-xl border border-border bg-muted/20 p-4">
@@ -520,7 +524,7 @@ const AuditTrailAndComplianceViewer = () => {
                     </>
                   ) : (
                     <div className="py-10 text-center text-muted-foreground">
-                      No action selected.
+                      لا يوجد إجراء محدد.
                     </div>
                   )}
                 </div>
@@ -529,18 +533,18 @@ const AuditTrailAndComplianceViewer = () => {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-semibold text-foreground">Control notes</h3>
-                      <p className="text-xs text-muted-foreground">Fast commands for reviewing the last actions feed.</p>
+                      <p className="text-xs text-muted-foreground">أوامر سريعة لمراجعة آخر تدفق للإجراءات.</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="rounded-xl bg-muted/30 border border-border p-4">
-                      <p className="text-sm font-medium text-foreground">Show all actions</p>
+                      <p className="text-sm font-medium text-foreground">عرض كل الإجراءات</p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Expands the feed so nothing recent is hidden behind pagination or quick filters.
                       </p>
                     </div>
                     <div className="rounded-xl bg-muted/30 border border-border p-4">
-                      <p className="text-sm font-medium text-foreground">Review critical items first</p>
+                      <p className="text-sm font-medium text-foreground">راجع العناصر الحرجة أولًا</p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Critical approvals, escalations, and sync failures stay visible at the top of the feed.
                       </p>

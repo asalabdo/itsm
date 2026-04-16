@@ -1,5 +1,7 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const MetricCard = ({ 
   title, 
@@ -12,6 +14,9 @@ const MetricCard = ({
   icon,
   description 
 }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
   const getStatusColor = () => {
     switch (status) {
       case 'excellent': return 'text-success';
@@ -62,7 +67,7 @@ const MetricCard = ({
 
         {benchmark && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Benchmark</span>
+            <span className="text-muted-foreground">{t('benchmark', 'Benchmark')}</span>
             <span className="font-medium text-foreground">{benchmark}</span>
           </div>
         )}

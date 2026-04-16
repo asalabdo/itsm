@@ -3,22 +3,27 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import { approvalsAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ApprovalHistoryPanel = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  
   const [timeFilter, setTimeFilter] = useState('today');
   const [statusFilter, setStatusFilter] = useState('all');
 
   const timeOptions = [
-    { value: 'today', label: 'Today' },
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
-    { value: 'all', label: 'All Time' }
+    { value: 'today', label: t('today', 'Today') },
+    { value: 'week', label: t('thisWeek', 'This Week') },
+    { value: 'month', label: t('thisMonth', 'This Month') },
+    { value: 'all', label: t('allTime', 'All Time') }
   ];
 
   const statusOptions = [
-    { value: 'all', label: 'All Status' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'denied', label: 'Denied' }
+    { value: 'all', label: t('allStatus', 'All Status') },
+    { value: 'approved', label: t('approved', 'Approved') },
+    { value: 'denied', label: t('denied', 'Denied') }
   ];
 
   const [approvalHistory, setApprovalHistory] = useState([]);

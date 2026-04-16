@@ -4,6 +4,8 @@ import Icon from '../../../components/AppIcon';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { knowledgeBaseAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const fallbackArticles = [
   {
@@ -70,6 +72,8 @@ const fallbackArticles = [
 
 const KnowledgeBaseSection = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [popularArticles, setPopularArticles] = useState(fallbackArticles);
@@ -98,31 +102,46 @@ const KnowledgeBaseSection = () => {
   }, []);
 
   const categoryBase = [
-    { id: 'all', label: 'All Topics', icon: 'Grid' },
-    { id: 'getting-started', label: 'Getting Started', icon: 'Rocket' },
-    { id: 'account', label: 'Account & Billing', icon: 'CreditCard' },
-    { id: 'technical', label: 'Technical Issues', icon: 'Wrench' },
-    { id: 'features', label: 'Features & Usage', icon: 'Zap' },
-    { id: 'security', label: 'Security & Privacy', icon: 'Shield' },
+    { id: 'all', label: t('allTopics', 'All Topics'), icon: 'Grid' },
+    { id: 'getting-started', label: t('gettingStarted', 'Getting Started'), icon: 'Rocket' },
+    { id: 'account', label: t('accountBilling', 'Account & Billing'), icon: 'CreditCard' },
+    { id: 'technical', label: t('technicalIssues', 'Technical Issues'), icon: 'Wrench' },
+    { id: 'features', label: t('featuresUsage', 'Features & Usage'), icon: 'Zap' },
+    { id: 'security', label: t('securityPrivacy', 'Security & Privacy'), icon: 'Shield' },
   ];
 
   const troubleshootingGuides = [
     {
       id: 1,
-      title: 'Payment Processing Errors',
-      steps: ['Verify card details', 'Check billing address', 'Contact your bank', 'Try alternative payment method'],
+      title: t('paymentProcessingErrors', 'Payment Processing Errors'),
+      steps: [
+        t('verifyCardDetails', 'Verify card details'),
+        t('checkBillingAddress', 'Check billing address'),
+        t('contactYourBank', 'Contact your bank'),
+        t('tryAlternativePayment', 'Try alternative payment method')
+      ],
       icon: 'CreditCard',
     },
     {
       id: 2,
-      title: 'Email Notification Issues',
-      steps: ['Check spam folder', 'Verify email settings', 'Whitelist our domain', 'Update notification preferences'],
+      title: t('emailNotificationIssues', 'Email Notification Issues'),
+      steps: [
+        t('checkSpamFolder', 'Check spam folder'),
+        t('verifyEmailSettings', 'Verify email settings'),
+        t('whitelistDomain', 'Whitelist our domain'),
+        t('updateNotificationPrefs', 'Update notification preferences')
+      ],
       icon: 'Mail',
     },
     {
       id: 3,
-      title: 'Slow Performance',
-      steps: ['Clear browser cache', 'Disable extensions', 'Check internet connection', 'Try different browser'],
+      title: t('slowPerformance', 'Slow Performance'),
+      steps: [
+        t('clearBrowserCache', 'Clear browser cache'),
+        t('disableExtensions', 'Disable extensions'),
+        t('checkInternetConnection', 'Check internet connection'),
+        t('tryDifferentBrowser', 'Try different browser')
+      ],
       icon: 'Gauge',
     },
   ];
@@ -151,10 +170,10 @@ const KnowledgeBaseSection = () => {
           </div>
           <div>
             <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground">
-              Knowledge Base
+              {t('knowledgeBase', 'Knowledge Base')}
             </h2>
             <p className="text-sm md:text-base text-muted-foreground">
-              Find answers and solutions to common questions
+              {t('knowledgeBaseSubtitle', 'Find answers and solutions to common questions')}
             </p>
           </div>
         </div>
@@ -162,7 +181,7 @@ const KnowledgeBaseSection = () => {
         <div className="mb-6">
           <Input
             type="search"
-            placeholder="Search articles, guides, and FAQs..."
+            placeholder={t('searchArticlesPlaceholder', 'Search articles, guides, and FAQs...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e?.target?.value)}
             className="w-full"
@@ -189,7 +208,7 @@ const KnowledgeBaseSection = () => {
                 {category?.label}
               </div>
               <div className="text-xs text-muted-foreground text-center caption data-text">
-                {category?.count} articles
+                {category?.count} {t('articles', 'articles')}
               </div>
             </button>
           ))}
@@ -197,7 +216,7 @@ const KnowledgeBaseSection = () => {
       </div>
       <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
         <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6">
-          Popular Articles
+          {t('popularArticles', 'Popular Articles')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredArticles?.map((article) => (
@@ -241,16 +260,16 @@ const KnowledgeBaseSection = () => {
         {filteredArticles?.length === 0 && (
           <div className="text-center py-12">
             <Icon name="Search" size={48} className="mx-auto mb-4 opacity-30" color="var(--color-muted-foreground)" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No articles found</h3>
+            <h3 className="text-lg font-medium text-foreground mb-2">{t('noArticlesFound', 'No articles found')}</h3>
             <p className="text-sm text-muted-foreground">
-              Try adjusting your search or browse different categories
+              {t('tryAdjustingSearch', 'Try adjusting your search or browse different categories')}
             </p>
           </div>
         )}
       </div>
       <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
         <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6">
-          Quick Troubleshooting Guides
+          {t('quickTroubleshootingGuides', 'Quick Troubleshooting Guides')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {troubleshootingGuides?.map((guide) => (
@@ -289,17 +308,17 @@ const KnowledgeBaseSection = () => {
           </div>
           <div className="flex-1 text-center md:text-left">
             <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">
-              Can't find what you're looking for?
+              {t('cantFindLookingFor', 'Can\'t find what you\'re looking for?')}
             </h3>
             <p className="text-sm md:text-base text-muted-foreground mb-4">
-              Our support team is here to help. Get personalized assistance from our experts.
+              {t('supportTeamHelp', 'Our support team is here to help. Get personalized assistance from our experts.')}
             </p>
             <div className="flex flex-wrap gap-3 justify-center md:justify-start">
               <Button variant="default" iconName="MessageCircle" iconPosition="left" onClick={() => navigate('/ticket-chatbot')}>
-                Chat with Support
+                {t('chatWithSupport', 'Chat with Support')}
               </Button>
               <Button variant="outline" iconName="Mail" iconPosition="left" onClick={() => navigate('/ticket-creation')}>
-                Email Support
+                {t('emailSupport', 'Email Support')}
               </Button>
             </div>
           </div>

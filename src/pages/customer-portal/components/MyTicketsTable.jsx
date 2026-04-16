@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -7,24 +9,26 @@ import Select from '../../../components/ui/Select';
 
 const MyTicketsTable = ({ tickets = [], loading = false }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
   const statusOptions = [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'open', label: 'Open' },
-    { value: 'in-progress', label: 'In Progress' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'resolved', label: 'Resolved' },
-    { value: 'closed', label: 'Closed' },
+    { value: 'all', label: t('allStatuses', 'All Statuses') },
+    { value: 'open', label: t('open', 'Open') },
+    { value: 'in-progress', label: t('inProgress', 'In Progress') },
+    { value: 'pending', label: t('pending', 'Pending') },
+    { value: 'resolved', label: t('resolved', 'Resolved') },
+    { value: 'closed', label: t('closed', 'Closed') },
   ];
 
   const sortOptions = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'priority', label: 'Priority' },
-    { value: 'status', label: 'Status' },
+    { value: 'newest', label: t('newestFirst', 'Newest First') },
+    { value: 'oldest', label: t('oldestFirst', 'Oldest First') },
+    { value: 'priority', label: t('priority', 'Priority') },
+    { value: 'status', label: t('status', 'Status') },
   ];
 
   const mappedTickets = tickets.map((ticket) => ({
@@ -97,11 +101,11 @@ const MyTicketsTable = ({ tickets = [], loading = false }) => {
     <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-1 md:mb-2">My Tickets</h2>
-          <p className="text-sm md:text-base text-muted-foreground">Track and manage your support requests</p>
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-1 md:mb-2">{t('myTickets', 'My Tickets')}</h2>
+          <p className="text-sm md:text-base text-muted-foreground">{t('trackManageSupportRequests', 'Track and manage your support requests')}</p>
         </div>
         <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium data-text">
-          {sortedTickets.length} Active
+          {sortedTickets.length} {t('active', 'Active')}
         </span>
       </div>
 
@@ -109,7 +113,7 @@ const MyTicketsTable = ({ tickets = [], loading = false }) => {
         <div className="flex-1">
           <Input
             type="search"
-            placeholder="Search by ticket number or subject..."
+            placeholder={t('searchByTicketNumberOrSubject', 'Search by ticket number or subject...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e?.target?.value)}
             className="w-full"
@@ -117,29 +121,29 @@ const MyTicketsTable = ({ tickets = [], loading = false }) => {
         </div>
         <div className="flex gap-3">
           <div className="w-full md:w-48">
-            <Select options={statusOptions} value={statusFilter} onChange={setStatusFilter} placeholder="Filter by status" />
+            <Select options={statusOptions} value={statusFilter} onChange={setStatusFilter} placeholder={t('filterByStatus', 'Filter by status')} />
           </div>
           <div className="w-full md:w-48">
-            <Select options={sortOptions} value={sortBy} onChange={setSortBy} placeholder="Sort by" />
+            <Select options={sortOptions} value={sortBy} onChange={setSortBy} placeholder={t('sortBy', 'Sort by')} />
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-muted-foreground">Loading tickets...</div>
+        <div className="py-12 text-center text-muted-foreground">{t('loadingTickets', 'Loading tickets...')}</div>
       ) : (
         <>
           <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Ticket ID</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Subject</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Category</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Last Update</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Est. Resolution</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('ticketID', 'Ticket ID')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('subject', 'Subject')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('status', 'Status')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('category', 'Category')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('lastUpdate', 'Last Update')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('estResolution', 'Est. Resolution')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -162,7 +166,7 @@ const MyTicketsTable = ({ tickets = [], loading = false }) => {
                     <td className="py-4 px-4"><span className="text-sm text-muted-foreground caption">{ticket?.estimatedResolution ? new Date(ticket.estimatedResolution).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}</span></td>
                     <td className="py-4 px-4">
                       <Button variant="ghost" size="sm" iconName="ExternalLink" iconPosition="right" onClick={() => handleTicketClick(ticket)}>
-                        View
+                        {t('view', 'View')}
                       </Button>
                     </td>
                   </tr>
@@ -203,13 +207,13 @@ const MyTicketsTable = ({ tickets = [], loading = false }) => {
       {!loading && sortedTickets.length === 0 && (
         <div className="text-center py-12">
           <Icon name="Inbox" size={48} className="mx-auto mb-4 opacity-30" color="var(--color-muted-foreground)" />
-          <h3 className="text-lg font-medium text-foreground mb-2">No tickets found</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">{t('noTicketsFound', 'No tickets found')}</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            {searchQuery || statusFilter !== 'all' ? 'Try adjusting your filters or search query' : "You haven't created any tickets yet"}
+            {searchQuery || statusFilter !== 'all' ? t('tryAdjustingFilters', 'Try adjusting your filters or search query') : t('haventCreatedTickets', "You haven't created any tickets yet")}
           </p>
           {!searchQuery && statusFilter === 'all' && (
             <Button variant="default" iconName="Plus" iconPosition="left" onClick={() => navigate('/ticket-creation')}>
-              Create Your First Ticket
+              {t('createFirstTicket', 'Create Your First Ticket')}
             </Button>
           )}
         </div>

@@ -1,9 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TrendAnalysisSection = ({ reportData = {} }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [activeChart, setActiveChart] = useState('csat');
   const [visibleLines, setVisibleLines] = useState({
     primary: true,
@@ -50,34 +54,34 @@ const TrendAnalysisSection = ({ reportData = {} }) => {
 
   const chartConfigs = {
     csat: {
-      title: 'Employee Satisfaction Trends',
-      description: 'CSAT scores across different service dimensions',
+      title: t('employeeSatisfactionTrends', 'Employee Satisfaction Trends'),
+      description: t('csatDescription', 'CSAT scores across different service dimensions'),
       data: csatData,
       lines: [
-        { key: 'overall', name: 'Overall CSAT', color: 'var(--color-primary)', visible: 'primary' },
-        { key: 'technical', name: 'Technical Quality', color: 'var(--color-secondary)', visible: 'secondary' },
-        { key: 'communication', name: 'Communication', color: 'var(--color-success)', visible: 'tertiary' },
-        { key: 'resolution', name: 'Resolution Speed', color: 'var(--color-warning)', visible: 'quaternary' }
+        { key: 'overall', name: t('overallCsat', 'Overall CSAT'), color: 'var(--color-primary)', visible: 'primary' },
+        { key: 'technical', name: t('technicalQuality', 'Technical Quality'), color: 'var(--color-secondary)', visible: 'secondary' },
+        { key: 'communication', name: t('communication', 'Communication'), color: 'var(--color-success)', visible: 'tertiary' },
+        { key: 'resolution', name: t('resolutionSpeed', 'Resolution Speed'), color: 'var(--color-warning)', visible: 'quaternary' }
       ]
     },
     technician: {
-      title: 'Technician Performance Metrics',
-      description: 'Individual and team performance indicators',
+      title: t('technicianPerformanceMetrics', 'Technician Performance Metrics'),
+      description: t('teamPerformanceIndicators', 'Individual and team performance indicators'),
       data: technicianData,
       lines: [
-        { key: 'avgResolution', name: 'Avg Resolution (hrs)', color: 'var(--color-primary)', visible: 'primary' },
-        { key: 'ticketsResolved', name: 'Tickets Resolved', color: 'var(--color-secondary)', visible: 'secondary' },
-        { key: 'firstCallResolution', name: 'First Call Resolution (%)', color: 'var(--color-success)', visible: 'tertiary' }
+        { key: 'avgResolution', name: t('averageResolutionHours', 'Avg Resolution (hrs)'), color: 'var(--color-primary)', visible: 'primary' },
+        { key: 'ticketsResolved', name: t('ticketsResolved', 'Tickets Resolved'), color: 'var(--color-secondary)', visible: 'secondary' },
+        { key: 'firstCallResolution', name: t('firstCallResolution', 'First Call Resolution (%)'), color: 'var(--color-success)', visible: 'tertiary' }
       ]
     },
     fulfillment: {
-      title: 'Service Request Fulfillment',
-      description: 'Request processing times and satisfaction metrics',
+      title: t('serviceRequestFulfillment', 'Service Request Fulfillment'),
+      description: t('requestProcessingDescription', 'Request processing times and satisfaction metrics'),
       data: fulfillmentData,
       lines: [
-        { key: 'avgFulfillment', name: 'Avg Fulfillment (days)', color: 'var(--color-primary)', visible: 'primary' },
-        { key: 'slaCompliance', name: 'SLA Compliance (%)', color: 'var(--color-secondary)', visible: 'secondary' },
-        { key: 'userSatisfaction', name: 'User Satisfaction', color: 'var(--color-success)', visible: 'tertiary' }
+        { key: 'avgFulfillment', name: t('averageFulfillmentDays', 'Avg Fulfillment (days)'), color: 'var(--color-primary)', visible: 'primary' },
+        { key: 'slaCompliance', name: t('slaCompliancePercent', 'SLA Compliance (%)'), color: 'var(--color-secondary)', visible: 'secondary' },
+        { key: 'userSatisfaction', name: t('userSatisfaction', 'User Satisfaction'), color: 'var(--color-success)', visible: 'tertiary' }
       ]
     }
   };
@@ -85,7 +89,7 @@ const TrendAnalysisSection = ({ reportData = {} }) => {
   const currentConfig = chartConfigs?.[activeChart];
 
   const toggleLineVisibility = (lineKey) => {
-    setVisibleLines(prev => ({
+    setVisibleLines((prev) => ({
       ...prev,
       [lineKey]: !prev?.[lineKey]
     }));
@@ -99,17 +103,14 @@ const TrendAnalysisSection = ({ reportData = {} }) => {
           {payload?.map((entry, index) => (
             <div key={index} className="flex items-center justify-between space-x-4">
               <div className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: entry?.color }}
-                />
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry?.color }} />
                 <span className="text-sm text-popover-foreground">{entry?.name}:</span>
               </div>
               <span className="text-sm font-medium text-popover-foreground">
-                {entry?.name?.includes('%') ? `${entry?.value}%` :
-                 entry?.name?.includes('hrs') ? `${entry?.value}h` :
-                 entry?.name?.includes('days') ? `${entry?.value}d` :
-                 entry?.value}
+                {entry?.name?.includes('%') ? `${entry?.value}%`
+                  : entry?.name?.includes('hrs') ? `${entry?.value}h`
+                    : entry?.name?.includes('days') ? `${entry?.value}d`
+                      : entry?.value}
               </span>
             </div>
           ))}
@@ -126,13 +127,13 @@ const TrendAnalysisSection = ({ reportData = {} }) => {
           <h3 className="text-lg font-semibold text-foreground mb-1">{currentConfig?.title}</h3>
           <p className="text-sm text-muted-foreground">{currentConfig?.description}</p>
         </div>
-        
+
         <div className="flex items-center space-x-2 mt-4 lg:mt-0">
           <div className="flex items-center bg-muted rounded-lg p-1">
             <button
               onClick={() => setActiveChart('csat')}
               className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeChart === 'csat' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground'
+                activeChart === 'csat' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               CSAT
@@ -140,48 +141,37 @@ const TrendAnalysisSection = ({ reportData = {} }) => {
             <button
               onClick={() => setActiveChart('technician')}
               className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeChart === 'technician' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground'
+                activeChart === 'technician' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Performance
+              {t('performance', 'Performance')}
             </button>
             <button
               onClick={() => setActiveChart('fulfillment')}
               className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeChart === 'fulfillment' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground'
+                activeChart === 'fulfillment' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Fulfillment
+              {t('fulfillment', 'Fulfillment')}
             </button>
           </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            iconName="Bookmark"
-            iconPosition="left"
-          >
-            Save View
+
+          <Button variant="outline" size="sm" iconName="Bookmark" iconPosition="left">
+            {t('saveView', 'Save View')}
           </Button>
         </div>
       </div>
+
       <div className="h-80 mb-6">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={currentConfig?.data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis 
-              dataKey="date" 
-              stroke="var(--color-muted-foreground)"
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="var(--color-muted-foreground)"
-              fontSize={12}
-            />
+            <XAxis dataKey="date" stroke="var(--color-muted-foreground)" fontSize={12} />
+            <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            
-            {currentConfig?.lines?.map((line, index) => (
+
+            {currentConfig?.lines?.map((line) => (
               <Line
                 key={line?.key}
                 type="monotone"
@@ -196,26 +186,25 @@ const TrendAnalysisSection = ({ reportData = {} }) => {
           </LineChart>
         </ResponsiveContainer>
       </div>
+
       <div className="border-t border-border pt-4">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-sm font-medium text-foreground">Toggle Metrics:</span>
-          {currentConfig?.lines?.map((line, index) => (
+          <span className="text-sm font-medium text-foreground">{t('toggleMetrics', 'Toggle Metrics')}:</span>
+          {currentConfig?.lines?.map((line) => (
             <button
               key={line?.key}
               onClick={() => toggleLineVisibility(line?.visible)}
               className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm transition-colors ${
                 visibleLines?.[line?.visible]
-                  ? 'bg-primary/10 text-primary border border-primary/20' :'bg-muted text-muted-foreground border border-border'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-muted text-muted-foreground border border-border'
               }`}
             >
-              <div 
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: line?.color }}
-              />
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: line?.color }} />
               <span>{line?.name}</span>
-              <Icon 
-                name={visibleLines?.[line?.visible] ? "Eye" : "EyeOff"} 
-                size={14} 
+              <Icon
+                name={visibleLines?.[line?.visible] ? 'Eye' : 'EyeOff'}
+                size={14}
               />
             </button>
           ))}

@@ -8,15 +8,15 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
   const [selectedAction, setSelectedAction] = useState('');
 
   const bulkActions = [
-    { value: '', label: 'Select bulk action...' },
-    { value: 'transfer', label: 'Transfer Assets' },
-    { value: 'status-active', label: 'Set Status: Active' },
-    { value: 'status-inactive', label: 'Set Status: Inactive' },
-    { value: 'status-maintenance', label: 'Set Status: Maintenance' },
-    { value: 'schedule-maintenance', label: 'Schedule Maintenance' },
-    { value: 'update-location', label: 'Update Location' },
-    { value: 'export', label: 'Export Selected' },
-    { value: 'generate-qr', label: 'Generate QR Codes' }
+    { value: '', label: 'اختر إجراءً جماعيًا...' },
+    { value: 'transfer', label: 'نقل الأصول' },
+    { value: 'status-active', label: 'تعيين الحالة: نشط' },
+    { value: 'status-inactive', label: 'تعيين الحالة: غير نشط' },
+    { value: 'status-maintenance', label: 'تعيين الحالة: تحت الصيانة' },
+    { value: 'schedule-maintenance', label: 'جدولة الصيانة' },
+    { value: 'update-location', label: 'تحديث الموقع' },
+    { value: 'export', label: 'تصدير المحدد' },
+    { value: 'generate-qr', label: 'توليد رموز QR' }
   ];
 
   const handleApplyAction = () => {
@@ -40,14 +40,14 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
               {selectedCount}
             </div>
             <span className="text-sm font-medium">
-              {selectedCount} asset{selectedCount !== 1 ? 's' : ''} selected
+              {selectedCount} أصل{selectedCount !== 1 ? 'ات' : ''} محدد
             </span>
           </div>
           <button
             onClick={onClearSelection}
             className="text-sm text-primary hover:underline focus-ring rounded px-2 py-1"
           >
-            Clear selection
+            مسح التحديد
           </button>
         </div>
 
@@ -57,7 +57,7 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
               options={bulkActions}
               value={selectedAction}
               onChange={setSelectedAction}
-              placeholder="Select action..."
+            placeholder="اختر إجراءً..."
             />
           </div>
           <Button
@@ -67,7 +67,7 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
             iconName="Check"
             iconPosition="left"
           >
-            Apply
+            تطبيق
           </Button>
         </div>
       </div>
@@ -80,7 +80,7 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
           iconPosition="left"
           onClick={() => onBulkAction('transfer')}
         >
-          Transfer
+          نقل
         </Button>
         <Button
           variant="outline"
@@ -89,7 +89,7 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
           iconPosition="left"
           onClick={() => onBulkAction('schedule-maintenance')}
         >
-          Schedule Maintenance
+          جدولة الصيانة
         </Button>
         <Button
           variant="outline"
@@ -98,7 +98,7 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
           iconPosition="left"
           onClick={() => onBulkAction('update-location')}
         >
-          Update Location
+          تحديث الموقع
         </Button>
         <Button
           variant="outline"
@@ -107,7 +107,7 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
           iconPosition="left"
           onClick={() => onBulkAction('export')}
         >
-          Export
+          تصدير
         </Button>
         <Button
           variant="outline"
@@ -116,7 +116,7 @@ const BulkOperationsToolbar = ({ selectedCount, onClearSelection, onBulkAction }
           iconPosition="left"
           onClick={() => onBulkAction('generate-qr')}
         >
-          Generate QR
+          توليد QR
         </Button>
       </div>
     </div>

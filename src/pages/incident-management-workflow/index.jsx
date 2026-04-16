@@ -10,10 +10,14 @@ import VolumeTrackingDashboard from './components/VolumeTrackingDashboard';
 import ManageEngineIntegration from './components/ManageEngineIntegration';
 import ExternalSystemBadge from '../../components/ui/ExternalSystemBadge';
 import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 import { ticketsAPI } from '../../services/api';
 
 const IncidentManagementWorkflow = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [activeIncidents, setActiveIncidents] = useState([]);
@@ -47,7 +51,7 @@ const IncidentManagementWorkflow = () => {
       setError(null);
     } catch (err) {
       console.error('Failed to fetch incidents:', err);
-      setError('Failed to load incidents. Please check your connection.');
+      setError(t('failedToLoadIncidents', 'Failed to load incidents. Please check your connection.'));
     } finally {
       setLoading(false);
     }
@@ -179,12 +183,12 @@ const IncidentManagementWorkflow = () => {
   };
 
   const workflowSteps = [
-    'Capture',
-    'Classify',
-    'Route to group',
-    'ERP sync',
-    'Resolve',
-    'Close'
+    t('capture', 'Capture'),
+    t('classify', 'Classify'),
+    t('routeToGroup', 'Route to group'),
+    t('erpSync', 'ERP sync'),
+    t('resolve', 'Resolve'),
+    t('closeIncident', 'Close')
   ];
 
   const activeWorkflowStep = currentView === 'create'
@@ -198,7 +202,7 @@ const IncidentManagementWorkflow = () => {
   return (
     <>
       <Helmet>
-        <title>Incident Management Workflow - ITSM Hub</title>
+        <title>{t('incidentManagementWorkflow', 'Incident Management Workflow')} - ITSM Hub</title>
         <meta name="description" content="Comprehensive incident lifecycle management interface enabling service desk teams to create, track, and resolve incidents through structured step-by-step workflows." />
         <meta name="keywords" content="incident management, workflow, ticket tracking, SLA monitoring, root cause analysis" />
       </Helmet>
@@ -215,7 +219,7 @@ const IncidentManagementWorkflow = () => {
                   currentView === 'dashboard' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
-                Incident Dashboard
+                {t('incidentDashboard', 'Incident Dashboard')}
               </button>
               <button
                 onClick={() => handleViewChange('create')}
@@ -223,7 +227,7 @@ const IncidentManagementWorkflow = () => {
                   currentView === 'create' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
-                Create Incident
+                {t('createIncident', 'Create Incident')}
               </button>
               <button
                 onClick={() => handleViewChange('analytics')}
@@ -231,7 +235,7 @@ const IncidentManagementWorkflow = () => {
                   currentView === 'analytics' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
-                Volume Analytics
+                {t('volumeAnalytics', 'Volume Analytics')}
               </button>
               <button
                 onClick={() => handleViewChange('integration')}
@@ -239,7 +243,7 @@ const IncidentManagementWorkflow = () => {
                   currentView === 'integration' ?'bg-primary text-primary-foreground' :'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
-                ManageEngine
+                {t('manageEngine', 'ManageEngine')}
               </button>
               {selectedIncident && (
                 <button
@@ -256,11 +260,11 @@ const IncidentManagementWorkflow = () => {
 
           <div className="px-6 pt-6">
             <WorkflowStatusStrip
-              title="Incident Workflow"
-              subtitle="Follow how incidents move from capture to classification, routing, ERP sync, and resolution."
-              service={selectedIncident?.ticketNumber || 'Incident lifecycle'}
-              organization={selectedIncident?.assignmentGroup || selectedIncident?.department || 'Operations'}
-              mode={currentView === 'integration' ? 'Integration view' : currentView === 'create' ? 'Create view' : 'Operational view'}
+              title={t('incidentWorkflowTitle', 'Incident Workflow')}
+              subtitle={t('followIncidentFlow', 'Follow how incidents move from capture to classification, routing, ERP sync, and resolution.')}
+              service={selectedIncident?.ticketNumber || t('incidentLifecycle', 'Incident lifecycle')}
+              organization={selectedIncident?.assignmentGroup || selectedIncident?.department || t('operations', 'Operations')}
+              mode={currentView === 'integration' ? t('integrationView', 'Integration view') : currentView === 'create' ? t('createView', 'Create view') : t('operationalView', 'Operational view')}
               lastAction={selectedIncident ? `${selectedIncident?.status || 'Open'} • ${selectedIncident?.title || 'Selected incident'}` : `${filteredIncidents.length} incidents currently visible`}
               activeStep={activeWorkflowStep}
               steps={workflowSteps}
@@ -278,19 +282,19 @@ const IncidentManagementWorkflow = () => {
                     <div className="flex-1 min-w-[200px]">
                       <input
                         type="text"
-                        placeholder="Search by ID, title or description..."
+                        placeholder={t('searchByIdTitleDescription', 'Search by ID, title or description...')}
                         className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         onChange={(e) => handleFilterChange('search', e.target.value)}
                       />
                     </div>
                     <div className="flex items-center space-x-2">
-                      <label className="text-sm font-medium text-foreground">Status:</label>
+                      <label className="text-sm font-medium text-foreground">{t('statusFilter', 'Status:')}</label>
                       <select
                         value={filters?.status}
                         onChange={(e) => handleFilterChange('status', e?.target?.value)}
                         className="px-3 py-1 bg-background border border-border rounded text-sm text-foreground"
                       >
-                        <option value="all">All</option>
+                        <option value="all">{t('all', 'All')}</option>
                         {incidentMetadata?.statusOptions?.map((status) => (
                           <option key={status?.value} value={status?.label}>
                             {status?.label}
@@ -300,13 +304,13 @@ const IncidentManagementWorkflow = () => {
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <label className="text-sm font-medium text-foreground">Priority:</label>
+                      <label className="text-sm font-medium text-foreground">{t('priorityFilter', 'Priority:')}</label>
                       <select
                         value={filters?.priority}
                         onChange={(e) => handleFilterChange('priority', e?.target?.value)}
                         className="px-3 py-1 bg-background border border-border rounded text-sm text-foreground"
                       >
-                        <option value="all">All</option>
+                        <option value="all">{t('all', 'All')}</option>
                         {incidentMetadata?.priorityOptions?.map((priority) => (
                           <option key={priority?.value} value={priority?.label}>
                             {priority?.label}
@@ -316,13 +320,13 @@ const IncidentManagementWorkflow = () => {
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <label className="text-sm font-medium text-foreground">Category:</label>
+                      <label className="text-sm font-medium text-foreground">{t('categoryFilter', 'Category:')}</label>
                       <select
                         value={filters?.category}
                         onChange={(e) => handleFilterChange('category', e?.target?.value)}
                         className="px-3 py-1 bg-background border border-border rounded text-sm text-foreground"
                       >
-                        <option value="all">All</option>
+                        <option value="all">{t('all', 'All')}</option>
                         {incidentMetadata?.categoryOptions?.map((category) => (
                           <option key={category?.value} value={category?.label}>
                             {category?.label}
@@ -346,7 +350,7 @@ const IncidentManagementWorkflow = () => {
                 <div className="bg-card border border-border rounded-lg min-h-[400px]">
                   <div className="p-6 border-b border-border flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-foreground">
-                      Active Incidents ({filteredIncidents?.length})
+                      {t('activeIncidents', 'Active Incidents')} ({filteredIncidents?.length})
                     </h2>
                     {loading && (
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
@@ -361,12 +365,12 @@ const IncidentManagementWorkflow = () => {
                           onClick={() => setRefreshTrigger(t => t + 1)}
                           className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
                         >
-                          Retry
+                          {t('retry', 'Retry')}
                         </button>
                       </div>
                     ) : filteredIncidents?.length === 0 ? (
                       <div className="p-12 text-center text-muted-foreground">
-                        {loading ? 'Loading incidents...' : 'No incidents found matching your filters.'}
+                        {loading ? t('loadingIncidents', 'Loading incidents...') : t('noIncidentsFound', 'No incidents found matching your filters.')}
                       </div>
                     ) : (
                       filteredIncidents?.map((incident) => (
@@ -399,19 +403,19 @@ const IncidentManagementWorkflow = () => {
                               
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
-                                  <span className="text-muted-foreground">Assigned to:</span>
-                                  <p className="font-medium text-foreground">{incident?.assignedTo?.firstName ? `${incident.assignedTo.firstName} ${incident.assignedTo.lastName}` : 'Unassigned'}</p>
+                                  <span className="text-muted-foreground">{t('assignedTo', 'Assigned to:')}</span>
+                                  <p className="font-medium text-foreground">{incident?.assignedTo?.firstName ? `${incident.assignedTo.firstName} ${incident.assignedTo.lastName}` : t('unassigned', 'Unassigned')}</p>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Requested by:</span>
+                                  <span className="text-muted-foreground">{t('requestedBy', 'Requested by:')}</span>
                                   <p className="font-medium text-foreground">{incident?.requestedBy?.firstName} {incident?.requestedBy?.lastName}</p>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Category:</span>
+                                  <span className="text-muted-foreground">{t('categoryLabel', 'Category:')}</span>
                                   <p className="font-medium text-foreground">{incident?.category}</p>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Updated:</span>
+                                  <span className="text-muted-foreground">{t('lastUpdate', 'Updated:')}</span>
                                   <p className="font-medium text-foreground">{new Date(incident?.updatedAt).toLocaleDateString()}</p>
                                 </div>
                               </div>
@@ -419,7 +423,7 @@ const IncidentManagementWorkflow = () => {
                             
                             <div className="text-right ml-6">
                               <div className="text-sm">
-                                <span className="text-muted-foreground">SLA Remaining:</span>
+                                <span className="text-muted-foreground">{t('slaRemaining', 'SLA Remaining:')}</span>
                                 <p className={`font-semibold ${
                                   formatSLATime(incident?.slaDueDate) === 'Overdue' ? 'text-error' : 'text-foreground'
                                 }`}>
@@ -427,7 +431,7 @@ const IncidentManagementWorkflow = () => {
                                 </p>
                               </div>
                               <p className="text-xs text-muted-foreground mt-2">
-                                Created {new Date(incident?.createdAt).toLocaleTimeString()}
+                                {t('created', 'Created')} {new Date(incident?.createdAt).toLocaleTimeString()}
                               </p>
                             </div>
                           </div>

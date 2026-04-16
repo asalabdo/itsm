@@ -1,26 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const SearchBar = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showResults, setShowResults] = useState(false);
   const searchRef = useRef(null);
   const navigate = useNavigate();
+  const { isRtl, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const quickFilters = [
-    { label: 'My Open Tickets', icon: 'Ticket', params: { status: 'Open' } },
-    { label: 'High Priority', icon: 'AlertCircle', params: { priority: 'High' } },
-    { label: 'Resolved Tickets', icon: 'CheckCircle', params: { status: 'Resolved' } },
-    { label: 'Critical Alerts', icon: 'Clock', params: { priority: 'Critical' } },
+    { label: t('myOpenTickets', 'My Open Tickets'), icon: 'Ticket', params: { status: 'Open' } },
+    { label: t('highPriority', 'High Priority'), icon: 'AlertCircle', params: { priority: 'High' } },
+    { label: t('resolvedTickets', 'Resolved Tickets'), icon: 'CheckCircle', params: { status: 'Resolved' } },
+    { label: t('criticalAlerts', 'Critical Alerts'), icon: 'Clock', params: { priority: 'Critical' } },
   ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef?.current && !searchRef?.current?.contains(event?.target)) {
         setIsExpanded(false);
-        setShowResults(false);
       }
     };
 
@@ -41,7 +43,6 @@ const SearchBar = () => {
       }
       if (event?.key === 'Escape') {
         setIsExpanded(false);
-        setShowResults(false);
       }
     };
 
@@ -52,9 +53,7 @@ const SearchBar = () => {
   }, []);
 
   const handleSearchChange = (e) => {
-    const value = e?.target?.value;
-    setSearchQuery(value);
-    setShowResults(value?.length > 0);
+    setSearchQuery(e?.target?.value);
   };
 
   const handleSearchSubmit = (e) => {
@@ -62,7 +61,6 @@ const SearchBar = () => {
     if (searchQuery?.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setIsExpanded(false);
-      setShowResults(false);
     }
   };
 
@@ -75,7 +73,6 @@ const SearchBar = () => {
     });
     navigate(`/search?${searchParams.toString()}`);
     setIsExpanded(false);
-    setShowResults(false);
   };
 
   return (
@@ -84,24 +81,24 @@ const SearchBar = () => {
         <button
           className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted hover:bg-muted/80 transition-smooth text-foreground"
           onClick={() => setIsExpanded(true)}
-          aria-label="Search"
+          aria-label={t('search', 'Search')}
         >
           <Icon name="Search" size={18} />
           <span className="hidden md:inline text-sm text-muted-foreground caption">
-            Search tickets...
+            {t('searchTickets', 'Search tickets...')}
           </span>
           <kbd className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-background border border-border rounded caption">
             <span>⌘</span>K
           </kbd>
         </button>
       ) : (
-        <div className="fixed md:absolute left-0 md:left-auto right-0 top-0 md:top-auto w-full md:w-96 bg-popover border border-border rounded-none md:rounded-md shadow-lg z-dropdown">
+        <div className={`fixed md:absolute top-0 md:top-auto w-full md:w-96 bg-popover border border-border rounded-none md:rounded-md shadow-lg z-dropdown ${isRtl ? 'left-0 md:left-auto md:right-0' : 'left-0 md:left-auto right-0'}`}>
           <form onSubmit={handleSearchSubmit} className="p-3 border-b border-border">
             <div className="flex items-center gap-2">
               <Icon name="Search" size={20} color="var(--color-muted-foreground)" />
               <input
                 type="text"
-                placeholder="Search tickets, customers..."
+                placeholder={t('searchTicketsCustomers', 'Search tickets, customers...')}
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
@@ -111,7 +108,6 @@ const SearchBar = () => {
                 type="button"
                 onClick={() => {
                   setIsExpanded(false);
-                  setShowResults(false);
                   setSearchQuery('');
                 }}
                 className="p-1 hover:bg-muted rounded transition-smooth"
@@ -124,7 +120,7 @@ const SearchBar = () => {
           <div className="max-h-96 overflow-y-auto">
             <div className="py-2 border-t border-border">
               <div className="px-3 py-2 text-xs font-medium text-muted-foreground caption">
-                Quick Filters
+                {t('quickFilters', 'Quick Filters')}
               </div>
               {quickFilters?.map((filter, index) => (
                 <button
@@ -132,12 +128,8 @@ const SearchBar = () => {
                   className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted transition-smooth"
                   onClick={() => handleQuickFilterClick(filter?.params)}
                 >
-                  <Icon
-                    name={filter?.icon}
-                    size={18}
-                    color="var(--color-primary)"
-                  />
-                  <span className="flex-1 text-left text-sm text-foreground">
+                  <Icon name={filter?.icon} size={18} color="var(--color-primary)" />
+                  <span className={`flex-1 text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
                     {filter?.label}
                   </span>
                 </button>
@@ -151,16 +143,16 @@ const SearchBar = () => {
                 <span className="flex items-center gap-1">
                   <kbd className="px-1.5 py-0.5 bg-background border border-border rounded">↑</kbd>
                   <kbd className="px-1.5 py-0.5 bg-background border border-border rounded">↓</kbd>
-                  to navigate
+                  {t('toNavigate', 'to navigate')}
                 </span>
                 <span className="flex items-center gap-1">
                   <kbd className="px-1.5 py-0.5 bg-background border border-border rounded">↵</kbd>
-                  to select
+                  {t('toSelect', 'to select')}
                 </span>
               </div>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-background border border-border rounded">esc</kbd>
-                to close
+                {t('toClose', 'to close')}
               </span>
             </div>
           </div>

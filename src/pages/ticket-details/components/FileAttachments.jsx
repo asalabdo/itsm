@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const FileAttachments = ({ attachments, onUpload }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e) => {
@@ -43,9 +47,9 @@ const FileAttachments = ({ attachments, onUpload }) => {
     <div className="bg-card border border-border rounded-lg shadow-elevation-1">
       <div className="p-4 md:p-6 border-b border-border">
         <div className="flex items-center justify-between">
-          <h3 className="text-base md:text-lg font-semibold text-foreground">Attachments</h3>
+          <h3 className="text-base md:text-lg font-semibold text-foreground">{t('attachments', 'Attachments')}</h3>
           <span className="text-xs md:text-sm text-muted-foreground caption">
-            {attachments?.length} files
+            {attachments?.length} {t('files', 'files')}
           </span>
         </div>
       </div>
@@ -63,10 +67,10 @@ const FileAttachments = ({ attachments, onUpload }) => {
             <Icon name="Upload" size={24} color="var(--color-primary)" />
           </div>
           <p className="text-sm md:text-base font-medium text-foreground mb-2">
-            Drop files here or click to upload
+            {t('dropFilesHereOrClick', 'Drop files here or click to upload')}
           </p>
           <p className="text-xs md:text-sm text-muted-foreground mb-4 caption">
-            Support for images, documents, and videos up to 10MB
+            {t('supportUploadInfo', 'Support for images, documents, and videos up to 10MB')}
           </p>
           <input
             type="file"
@@ -83,7 +87,7 @@ const FileAttachments = ({ attachments, onUpload }) => {
               iconPosition="left"
               asChild
             >
-              <span>Choose Files</span>
+              <span>{t('chooseFiles', 'Choose Files')}</span>
             </Button>
           </label>
         </div>

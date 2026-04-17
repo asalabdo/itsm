@@ -1,14 +1,18 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 import { formatLocalizedValue } from '../../../services/displayValue';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TicketHeader = ({ ticket }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const customer = ticket?.customer || ticket?.requestedBy || {};
   const createdAt = ticket?.createdAt ? new Date(ticket.createdAt) : null;
   const slaDeadline = ticket?.slaDeadline || ticket?.slaDueDate || (createdAt ? createdAt.toLocaleString() : '-');
   const slaRemaining = ticket?.slaRemaining || (
     ticket?.slaRemainingMinutes != null
-      ? `${ticket.slaRemainingMinutes} min remaining`
+      ? `${ticket.slaRemainingMinutes} ${t('minRemaining', 'min remaining')}`
       : ticket?.slaStatus
   );
   const assignedName = formatLocalizedValue(
@@ -17,7 +21,7 @@ const TicketHeader = ({ ticket }) => {
       ticket?.assignedTo?.displayName ||
       ticket?.assignedTo?.username ||
       ticket?.assignedTo?.userName ||
-      'Unassigned',
+      t('unassigned', 'Unassigned'),
     'en'
   );
   const assignedRole = formatLocalizedValue(
@@ -69,6 +73,45 @@ const TicketHeader = ({ ticket }) => {
     }
   };
 
+  const getTranslatedPriority = (priority) => {
+    if (!priority) return priority;
+    const priorityMap = {
+      'critical': 'critical',
+      'urgent': 'urgent',
+      'high': 'high',
+      'medium': 'medium',
+      'low': 'low'
+    };
+    const key = priorityMap[priority.toLowerCase()];
+    return key ? t(key, priority) : priority;
+  };
+
+  const getTranslatedStatus = (status) => {
+    if (!status) return status;
+    const statusMap = {
+      'open': 'statusOpen',
+      'in progress': 'statusInProgress',
+      'assigned': 'assigned',
+      'pending': 'statusPending',
+      'resolved': 'statusResolved',
+      'closed': 'statusClosed',
+      'pending customer': 'statusPendingCustomer'
+    };
+    const key = statusMap[status.toLowerCase()];
+    return key ? t(key, status) : status;
+  };
+
+  const getTranslatedCategory = (category) => {
+    if (!category) return category;
+    const categoryMap = {
+      'incident': 'categoryIncident',
+      'problem': 'categoryProblem',
+      'change': 'categoryChange'
+    };
+    const key = categoryMap[category.toLowerCase()];
+    return key ? t(key, category) : category;
+  };
+
   return (
     <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
@@ -88,14 +131,14 @@ const TicketHeader = ({ ticket }) => {
 
         <div className="flex flex-wrap gap-2">
           <span className={`px-3 py-1.5 text-xs md:text-sm font-medium rounded-md border ${getPriorityColor(ticket?.priority)}`}>
-            {ticket?.priority}
+            {getTranslatedPriority(ticket?.priority)}
           </span>
           <span className={`px-3 py-1.5 text-xs md:text-sm font-medium rounded-md border ${getStatusColor(ticket?.status)}`}>
-            {ticket?.status}
+            {getTranslatedStatus(ticket?.status)}
           </span>
           <span className="px-3 py-1.5 text-xs md:text-sm font-medium rounded-md border bg-muted text-foreground border-border flex items-center gap-2">
             <Icon name={getCategoryIcon(ticket?.category)} size={16} />
-            {ticket?.category}
+            {getTranslatedCategory(ticket?.category)}
           </span>
         </div>
       </div>
@@ -105,9 +148,9 @@ const TicketHeader = ({ ticket }) => {
             <Icon name="User" size={20} color="var(--color-primary)" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs md:text-sm text-muted-foreground mb-1">Customer</p>
+            <p className="text-xs md:text-sm text-muted-foreground mb-1">{t('customer', 'Customer')}</p>
             <p className="text-sm md:text-base font-medium text-foreground truncate">
-              {customer?.name || customer?.username || 'Unassigned'}
+              {customer?.name || customer?.username || t('unassigned', 'Unassigned')}
             </p>
             <p className="text-xs md:text-sm text-muted-foreground truncate">
               {customer?.email || customer?.role || ''}
@@ -120,7 +163,7 @@ const TicketHeader = ({ ticket }) => {
             <Icon name="UserCheck" size={20} color="var(--color-success)" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs md:text-sm text-muted-foreground mb-1">Assigned To</p>
+            <p className="text-xs md:text-sm text-muted-foreground mb-1">{t('assignedTo', 'Assigned To')}</p>
             <p className="text-sm md:text-base font-medium text-foreground truncate">{assignedName}</p>
             <p className="text-xs md:text-sm text-muted-foreground truncate">{assignedRole}</p>
           </div>
@@ -131,7 +174,7 @@ const TicketHeader = ({ ticket }) => {
               <Icon name="Clock" size={20} color="var(--color-warning)" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm text-muted-foreground mb-1">SLA Deadline</p>
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">{t('slaDeadline', 'SLA Deadline')}</p>
             <p className="text-sm md:text-base font-medium text-foreground">{slaDeadline}</p>
             <p className="text-xs md:text-sm text-warning">{slaRemaining}</p>
             </div>
@@ -142,7 +185,7 @@ const TicketHeader = ({ ticket }) => {
             <Icon name="Calendar" size={20} color="var(--color-muted-foreground)" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs md:text-sm text-muted-foreground mb-1">Created</p>
+            <p className="text-xs md:text-sm text-muted-foreground mb-1">{t('created', 'Created')}</p>
             <p className="text-sm md:text-base font-medium text-foreground">
               {createdAt ? createdAt.toLocaleDateString() : ticket?.createdDate}
             </p>

@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ReplyComposer = ({ onSendReply }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [message, setMessage] = useState('');
   const [isInternal, setIsInternal] = useState(false);
 
@@ -18,7 +22,7 @@ const ReplyComposer = ({ onSendReply }) => {
     <div className="bg-card border border-border rounded-lg shadow-elevation-1">
       <div className="p-4 md:p-6 border-b border-border">
         <div className="flex items-center justify-between">
-          <h3 className="text-base md:text-lg font-semibold text-foreground">Reply to Customer</h3>
+          <h3 className="text-base md:text-lg font-semibold text-foreground">{t('replyToCustomer', 'Reply to Customer')}</h3>
           <button
             type="button"
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-smooth ${
@@ -28,7 +32,7 @@ const ReplyComposer = ({ onSendReply }) => {
             onClick={() => setIsInternal(!isInternal)}
           >
             <Icon name="Lock" size={16} />
-            {isInternal ? 'Internal Note' : 'Public Reply'}
+            {isInternal ? t('internalNote', 'Internal Note') : t('publicReply', 'Public Reply')}
           </button>
         </div>
       </div>
@@ -38,8 +42,8 @@ const ReplyComposer = ({ onSendReply }) => {
           onChange={(e) => setMessage(e?.target?.value)}
           placeholder={
             isInternal
-              ? 'Add an internal note (visible only to support team)...'
-              : 'Type your reply to the customer...'
+              ? t('addInternalNote', 'Add an internal note (visible only to support team)...')
+              : t('typeReplyToCustomer', 'Type your reply to the customer...')
           }
           className="w-full min-h-[150px] p-3 md:p-4 bg-background border border-border rounded-lg text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none mb-4"
         />
@@ -76,7 +80,7 @@ const ReplyComposer = ({ onSendReply }) => {
               size="sm"
               onClick={() => setMessage('')}
             >
-              Cancel
+              {t('cancel', 'Cancel')}
             </Button>
             <Button
               type="submit"
@@ -86,7 +90,7 @@ const ReplyComposer = ({ onSendReply }) => {
               iconPosition="left"
               disabled={!message?.trim()}
             >
-              {isInternal ? 'Add Note' : 'Send Reply'}
+              {isInternal ? t('addNote', 'Add Note') : t('sendReply', 'Send Reply')}
             </Button>
           </div>
         </div>

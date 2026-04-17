@@ -3,32 +3,36 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import {
   getStoredWorkflowOverrides,
   removeWorkflowOverride,
   saveWorkflowOverride,
 } from '../../../services/workflowStages';
 
-const serviceOptions = [
-  { value: 'incident', label: 'Incident' },
-  { value: 'service_request', label: 'Service Request' },
-  { value: 'change', label: 'Change' },
-  { value: 'problem', label: 'Problem' },
-  { value: 'asset', label: 'Asset' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'default', label: 'Default' },
-];
-
-const entityKindOptions = [
-  { value: 'ticket', label: 'Ticket' },
-  { value: 'service_request', label: 'Service Request' },
-  { value: 'change_request', label: 'Change Request' },
-  { value: 'problem', label: 'Problem' },
-  { value: 'asset', label: 'Asset' },
-  { value: 'maintenance', label: 'Maintenance' },
-];
-
 const WorkflowAdminPanel = ({ ticket, workflowPresentation, onSaved }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
+  const serviceOptions = [
+    { value: 'incident', label: t('incident', 'Incident') },
+    { value: 'service_request', label: t('serviceRequest', 'Service Request') },
+    { value: 'change', label: t('change', 'Change') },
+    { value: 'problem', label: t('problem', 'Problem') },
+    { value: 'asset', label: t('asset', 'Asset') },
+    { value: 'maintenance', label: t('maintenance', 'Maintenance') },
+    { value: 'default', label: t('default', 'Default') },
+  ];
+
+  const entityKindOptions = [
+    { value: 'ticket', label: t('ticket', 'Ticket') },
+    { value: 'service_request', label: t('serviceRequest', 'Service Request') },
+    { value: 'change_request', label: t('changeRequest', 'Change Request') },
+    { value: 'problem', label: t('problem', 'Problem') },
+    { value: 'asset', label: t('asset', 'Asset') },
+    { value: 'maintenance', label: t('maintenance', 'Maintenance') },
+  ];
   const [serviceKey, setServiceKey] = useState('incident');
   const [organizationKey, setOrganizationKey] = useState('all');
   const [entityKind, setEntityKind] = useState('ticket');
@@ -58,7 +62,7 @@ const WorkflowAdminPanel = ({ ticket, workflowPresentation, onSaved }) => {
       .filter(Boolean);
 
     if (steps.length === 0) {
-      setMessage('Add at least one workflow stage.');
+      setMessage(t('addAtLeastOneWorkflowStage', 'Add at least one workflow stage.'));
       return;
     }
 
@@ -72,13 +76,13 @@ const WorkflowAdminPanel = ({ ticket, workflowPresentation, onSaved }) => {
       name: `${serviceKey} workflow`,
     });
 
-    setMessage('Workflow override saved.');
+    setMessage(t('workflowOverrideSaved', 'Workflow override saved.'));
     onSaved?.();
   };
 
   const handleReset = () => {
     removeWorkflowOverride(serviceKey, organizationKey, entityKind);
-    setMessage('Local override removed.');
+    setMessage(t('localOverrideRemoved', 'Local override removed.'));
     onSaved?.();
   };
 
@@ -88,33 +92,33 @@ const WorkflowAdminPanel = ({ ticket, workflowPresentation, onSaved }) => {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Icon name="Settings2" size={16} className="text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Edit Workflow Stages</h3>
+            <h3 className="text-lg font-semibold text-foreground">{t('editWorkflowStages', 'Edit Workflow Stages')}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Update the service workflow for this ticket context. Changes are saved as a local override and apply immediately in the ticket views.
+            {t('updateServiceWorkflow', 'Update the service workflow for this ticket context. Changes are saved as a local override and apply immediately in the ticket views.')}
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-xs font-semibold">
           <Icon name="ShieldCheck" size={14} />
-          Local override
+          {t('localOverride', 'Local override')}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Select
-          label="Service"
+          label={t('service', 'Service')}
           value={serviceKey}
           onChange={setServiceKey}
           options={serviceOptions}
         />
         <Input
-          label="Organization"
+          label={t('organization', 'Organization')}
           value={organizationKey}
           onChange={(e) => setOrganizationKey(e.target.value)}
           placeholder="all"
         />
         <Select
-          label="Entity Kind"
+          label={t('entityKind', 'Entity Kind')}
           value={entityKind}
           onChange={setEntityKind}
           options={entityKindOptions}
@@ -127,7 +131,7 @@ const WorkflowAdminPanel = ({ ticket, workflowPresentation, onSaved }) => {
               onChange={(e) => setManagerFirst(e.target.checked)}
               className="h-4 w-4 rounded border-border"
             />
-            Manager first
+            {t('managerFirst', 'Manager first')}
           </label>
           <label className="flex items-center gap-2 text-sm text-foreground">
             <input
@@ -136,19 +140,19 @@ const WorkflowAdminPanel = ({ ticket, workflowPresentation, onSaved }) => {
               onChange={(e) => setIntegrationMode(e.target.checked ? 'third-party' : 'local')}
               className="h-4 w-4 rounded border-border"
             />
-            Third-party sync
+            {t('thirdPartySync', 'Third-party sync')}
           </label>
         </div>
       </div>
 
       <div className="mt-4">
         <Input
-          label="Workflow Stages"
+          label={t('workflowStages', 'Workflow Stages')}
           multiline
           rows={7}
           value={stepsText}
           onChange={(e) => setStepsText(e.target.value)}
-          description="One stage per line. Example: Intake, Approval, ERP fan-out, Close."
+          description={t('workflowStagesDescription', 'One stage per line. Example: Intake, Approval, ERP fan-out, Close.')}
         />
       </div>
 
@@ -160,10 +164,10 @@ const WorkflowAdminPanel = ({ ticket, workflowPresentation, onSaved }) => {
 
       <div className="mt-5 flex flex-wrap gap-3">
         <Button variant="default" iconName="Save" iconPosition="left" onClick={handleSave}>
-          Save workflow
+          {t('saveWorkflow', 'Save workflow')}
         </Button>
         <Button variant="outline" iconName="RotateCcw" iconPosition="left" onClick={handleReset}>
-          Reset override
+          {t('resetOverride', 'Reset override')}
         </Button>
       </div>
     </section>

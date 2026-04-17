@@ -319,7 +319,7 @@ const Header = () => {
             <div className="flex items-center gap-3">
               <Icon name="AlertTriangle" size={20} className="animate-pulse" />
               <span className="font-medium">
-                {criticalAlerts} {t('criticalAlert', 'Critical Alert')}{criticalAlerts > 1 ? 's' : ''} - {t('immediateActionRequired', 'Immediate Action Required')}
+                {criticalAlerts} {t('criticalAlert', 'Critical Alert')}{criticalAlerts > 1 && language == 'en' ? 's' : ''} - {t('immediateActionRequired', 'Immediate Action Required')}
               </span>
             </div>
             <Button asChild variant="ghost" size="sm" className="text-error-foreground hover:bg-error/20">

@@ -172,10 +172,10 @@ const FulfillmentCenter = () => {
                     <td className="px-6 py-4">
                       {req.isSlaBreached ? (
                         <span className="flex items-center gap-1.5 text-xs font-bold text-error">
-                          <Icon name="AlertTriangle" size={14} /> BREACHED
+                          <Icon name="AlertTriangle" size={14} /> {t('slaBreached', 'BREACHED')}
                         </span>
                       ) : (
-                        <span className="text-xs font-bold text-success">ON TRACK</span>
+                        <span className="text-xs font-bold text-success">{t('slaOnTrack', 'ON TRACK')}</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -198,7 +198,7 @@ const FulfillmentCenter = () => {
           {selectedRequest ? (
             <div className="bg-card rounded-3xl border border-border p-6 shadow-lg sticky top-8 animate-slide-up">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold">Request Details</h3>
+                <h3 className="text-xl font-bold">{t('requestDetails', 'Request Details')}</h3>
                 <button onClick={() => setSelectedRequest(null)} className="p-2 hover:bg-muted rounded-full">
                   <Icon name="X" size={18} />
                 </button>
@@ -206,7 +206,7 @@ const FulfillmentCenter = () => {
 
               <div className="space-y-6">
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Summary</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('summary', 'Summary')}</label>
                   <p className="mt-1 font-bold text-foreground">{selectedRequest.title}</p>
                   <p className="text-sm text-muted-foreground mt-1">{selectedRequest.description}</p>
                 </div>
@@ -214,7 +214,7 @@ const FulfillmentCenter = () => {
                 {/* Custom Data Display */}
                 {selectedRequest.customDataJson && (
                   <div className="bg-primary/10 p-4 rounded-2xl border border-primary/20">
-                    <label className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">Request Data</label>
+                    <label className="text-xs font-bold text-primary uppercase tracking-wider mb-2 block">{t('requestData', 'Request Data')}</label>
                     <div className="grid grid-cols-1 gap-2">
                        {Object.entries(JSON.parse(selectedRequest.customDataJson)).map(([key, val]) => (
                          <div key={key} className="flex justify-between text-sm">
@@ -228,18 +228,18 @@ const FulfillmentCenter = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted/30 p-4 rounded-2xl border border-border group hover:border-primary/20 transition-colors">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Workflow Stage</label>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">{t('workflowStage', 'Workflow Stage')}</label>
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                       <p className="text-sm font-bold text-foreground">{selectedRequest.workflowStage}</p>
                     </div>
                   </div>
                   <div className="bg-muted/30 p-4 rounded-2xl border border-border">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">SLA Due Date</label>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">{t('slaDueDate', 'SLA Due Date')}</label>
                     <p className="text-sm font-bold text-foreground">
                       {selectedRequest.slaDueDate && new Date(selectedRequest.slaDueDate).getFullYear() > 1970
                         ? new Date(selectedRequest.slaDueDate).toLocaleDateString()
-                        : <span className="text-muted-foreground italic">Not set</span>}
+                        : <span className="text-muted-foreground italic">{t('notSet', 'Not set')}</span>}
                     </p>
                   </div>
                 </div>
@@ -249,11 +249,11 @@ const FulfillmentCenter = () => {
                   <div className="p-5 bg-warning/10 border border-warning/20 rounded-3xl space-y-4 shadow-sm">
                     <h4 className="font-bold text-warning flex items-center gap-2 text-sm uppercase tracking-wider">
                       <Icon name="ShieldAlert" size={16} />
-                      Pending Approval
+                      {t('pendingApproval', 'Pending Approval')}
                     </h4>
                     <textarea 
                       className="w-full p-4 rounded-2xl border border-border focus:ring-4 focus:ring-warning/10 focus:border-warning text-sm bg-background transition-all outline-none"
-                      placeholder="Add decision justification..."
+                      placeholder={t('addDecisionJustification', 'Add decision justification...')}
                       value={decisionNotes}
                       onChange={(e) => setDecisionNotes(e.target.value)}
                     ></textarea>
@@ -263,14 +263,14 @@ const FulfillmentCenter = () => {
                         disabled={activeAction === 'approve' || !selectedRequest.approvals?.[0]?.id}
                         className="flex-1 py-3 bg-success text-success-foreground font-bold rounded-2xl hover:opacity-90 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
                       >
-                        {activeAction === 'approve' ? 'Processing...' : 'Approve'}
+                        {activeAction === 'approve' ? t('processing', 'Processing...') : t('approve', 'Approve')}
                       </button>
                       <button 
                         onClick={() => handleApproveAction(selectedRequest.approvals?.[0]?.id, false)}
                         disabled={activeAction === 'reject' || !selectedRequest.approvals?.[0]?.id}
                         className="flex-1 py-3 bg-error text-error-foreground font-bold rounded-2xl hover:opacity-90 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
                       >
-                        {activeAction === 'reject' ? 'Rejecting...' : 'Reject'}
+                        {activeAction === 'reject' ? t('rejecting', 'Rejecting...') : t('reject', 'Reject')}
                       </button>
                     </div>
                   </div>
@@ -279,7 +279,7 @@ const FulfillmentCenter = () => {
                 {/* Fulfillment Tasks */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Fulfillment Plan</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('fulfillmentPlan', 'Fulfillment Plan')}</label>
                     <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
                       {selectedRequest.tasks?.filter(t => t.status === 'Completed').length || 0} / {selectedRequest.tasks?.length || 0}
                     </span>
@@ -301,7 +301,7 @@ const FulfillmentCenter = () => {
                             disabled={activeAction === `task-${task.id}`}
                             className="px-4 py-1.5 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:opacity-90 shadow-md transition-all disabled:opacity-50 transform active:scale-95"
                           >
-                            {activeAction === `task-${task.id}` ? '...' : 'Complete'}
+                            {activeAction === `task-${task.id}` ? '...' : t('complete', 'Complete')}
                           </button>
                         )}
                       </div>
@@ -310,7 +310,7 @@ const FulfillmentCenter = () => {
 
                   {(selectedRequest.tasks || []).length === 0 && (
                     <div className="p-4 border-2 border-dashed border-border rounded-2xl text-center">
-                       <p className="text-xs text-muted-foreground italic">No fulfillment tasks generated.</p>
+                       <p className="text-xs text-muted-foreground italic">{t('noFulfillmentTasks', 'No fulfillment tasks generated.')}</p>
                     </div>
                   )}
 
@@ -325,17 +325,17 @@ const FulfillmentCenter = () => {
                         {activeAction === 'request' ? (
                            <>
                              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                             Completing...
+                             {t('completing', 'Completing...')}
                            </>
                         ) : (
                           <>
                             <Icon name="CheckCircle2" size={18} />
-                            Complete Request
+                            {t('completeRequest', 'Complete Request')}
                           </>
                         )}
                       </button>
                       <p className="mt-3 text-[11px] text-muted-foreground text-center leading-relaxed">
-                        This will finalize the request and notify the user.
+                        {t('finalizeRequestNotice', 'This will finalize the request and notify the user.')}
                       </p>
                     </div>
                   ) : (
@@ -375,16 +375,16 @@ const FulfillmentCenter = () => {
                                 className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-2xl hover:opacity-90 shadow-md transition-all disabled:opacity-50 transform active:scale-95 flex items-center justify-center gap-2"
                               >
                                 {activeAction === 'advance' ? (
-                                  <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Advancing...</>
+                                  <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> {t('advancing', 'Advancing...')}</>
                                 ) : (
-                                  <><Icon name="ArrowRight" size={16} /> Advance to {nextStage}</>
+                                  <><Icon name="ArrowRight" size={16} /> {t('advanceTo', 'Advance to')} {nextStage}</>
                                 )}
                               </button>
                             ) : (
                               <div className="p-4 bg-muted/30 rounded-2xl border border-border">
                                 <p className="text-[11px] text-muted-foreground flex items-center gap-2">
                                   <Icon name="Lock" size={12} />
-                                  No further stages available.
+                                  {t('noFurtherStages', 'No further stages available.')}
                                 </p>
                               </div>
                             )}
@@ -399,7 +399,7 @@ const FulfillmentCenter = () => {
           ) : (
             <div className="h-96 border-2 border-dashed border-border rounded-3xl flex flex-col items-center justify-center text-muted-foreground gap-4">
               <Icon name="MousePointer2" size={32} />
-              <p className="text-sm font-medium italic">Select a request to view details</p>
+              <p className="text-sm font-medium italic">{t('selectRequestDetails', 'Select a request to view details')}</p>
             </div>
           )}
         </div>

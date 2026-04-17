@@ -129,18 +129,18 @@ const TicketActions = ({ ticket, onStatusChange, onPriorityChange, onAssign, onE
   const ticketId = ticket?.backendId ?? ticket?.id;
 
   const statusOptions = [
-    { value: 'Open', label: 'Open' },
-    { value: 'In Progress', label: 'In Progress' },
-    { value: 'Pending', label: 'Pending Customer' },
-    { value: 'Resolved', label: 'Resolved' },
-    { value: 'Closed', label: 'Closed' },
+    { value: 'Open', label: t('statusOpen', 'Open') },
+    { value: 'In Progress', label: t('statusInProgress', 'In Progress') },
+    { value: 'Pending', label: t('statusPendingCustomer', 'Pending Customer') },
+    { value: 'Resolved', label: t('statusResolved', 'Resolved') },
+    { value: 'Closed', label: t('statusClosed', 'Closed') },
   ];
 
   const priorityOptions = [
-    { value: 'Low', label: 'Low Priority' },
-    { value: 'Medium', label: 'Medium Priority' },
-    { value: 'High', label: 'High Priority' },
-    { value: 'Urgent', label: 'Urgent' },
+    { value: 'Low', label: t('priorityLow', 'Low Priority') },
+    { value: 'Medium', label: t('priorityMedium', 'Medium Priority') },
+    { value: 'High', label: t('priorityHigh', 'High Priority') },
+    { value: 'Urgent', label: t('priorityUrgent', 'Urgent') },
   ];
 
   useEffect(() => {
@@ -285,7 +285,7 @@ const TicketActions = ({ ticket, onStatusChange, onPriorityChange, onAssign, onE
       </div>
 
       <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
-        <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Additional Actions</h3>
+        <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">{t('additionalActions', 'Additional Actions')}</h3>
         <div className="space-y-2">
           <Button variant="outline" fullWidth iconName="Link" iconPosition="left" size="sm" onClick={handleLinkRelatedTicket}>
             {t('linkRelatedTicket', 'Link Related Ticket')}

@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const CustomerSatisfaction = ({ isResolved, onSubmitSurvey }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [feedback, setFeedback] = useState('');
@@ -28,10 +32,10 @@ const CustomerSatisfaction = ({ isResolved, onSubmitSurvey }) => {
             <Icon name="CheckCircle" size={32} color="var(--color-success)" />
           </div>
           <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">
-            Thank You for Your Feedback!
+            {t('thankYouForFeedback', 'Thank You for Your Feedback!')}
           </h3>
           <p className="text-sm md:text-base text-muted-foreground">
-            Your response helps us improve our support service.
+            {t('responseHelpUs', 'Your response helps us improve our support service.')}
           </p>
         </div>
       </div>
@@ -47,10 +51,10 @@ const CustomerSatisfaction = ({ isResolved, onSubmitSurvey }) => {
           </div>
           <div>
             <h3 className="text-base md:text-lg font-semibold text-foreground">
-              Employee Satisfaction Survey
+              {t('employeeSatisfactionSurvey', 'Employee Satisfaction Survey')}
             </h3>
             <p className="text-xs md:text-sm text-muted-foreground caption">
-              Help us improve by rating your experience
+              {t('helpUsImproveRating', 'Help us improve by rating your experience')}
             </p>
           </div>
         </div>
@@ -58,7 +62,7 @@ const CustomerSatisfaction = ({ isResolved, onSubmitSurvey }) => {
       <form onSubmit={handleSubmit} className="p-4 md:p-6">
         <div className="mb-4 md:mb-6">
           <p className="text-sm md:text-base font-medium text-foreground mb-3 md:mb-4">
-            How satisfied are you with the resolution?
+            {t('howSatisfiedResolution', 'How satisfied are you with the resolution?')}
           </p>
           <div className="flex justify-center gap-2 md:gap-3">
             {[1, 2, 3, 4, 5]?.map((star) => (

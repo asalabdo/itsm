@@ -74,16 +74,16 @@ const filterGroupedOptions = (items = [], searchTerm = "") => {
         .filter(Boolean);
 };
 
-const renderOptions = (items, { onSelect, isSelected, multiple }) => (
+const renderOptions = (items, { onSelect, isSelected, multiple, isRtl }) => (
     (Array.isArray(items) ? items : []).map((option) => {
         if (isGroupOption(option)) {
             return (
                 <div key={`group-${String(option?.label || option?.value)}`} className="py-1">
-                    <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground bg-muted/30">
+                    <div className={cn("px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground bg-muted/30", isRtl ? 'text-right' : 'text-left')}>
                         {option?.label}
                     </div>
                     <div>
-                        {renderOptions(option.options, { onSelect, isSelected, multiple })}
+                        {renderOptions(option.options, { onSelect, isSelected, multiple, isRtl })}
                     </div>
                 </div>
             );
@@ -100,11 +100,12 @@ const renderOptions = (items, { onSelect, isSelected, multiple }) => (
                 onClick={() => !option?.disabled && onSelect(option)}
             >
                 <div className="min-w-0 flex-1">
-                    <div className="truncate">{option?.label}</div>
+                    <div className={cn('truncate', isRtl ? 'text-right' : 'text-left')}>{option?.label}</div>
                     {option?.description && (
                         <div className={cn(
                             "mt-0.5 text-xs truncate",
-                            isSelected(option?.value) ? "text-primary-foreground/80" : "text-muted-foreground"
+                            isSelected(option?.value) ? "text-primary-foreground/80" : "text-muted-foreground",
+                            isRtl ? 'text-right' : 'text-left'
                         )}>
                             {option.description}
                         </div>
@@ -139,9 +140,9 @@ const Select = React.forwardRef(({
     onOpenChange,
     ...props
 }, ref) => {
-    const { language } = useLanguage();
+    const { language, isRtl } = useLanguage();
     const t = (key, fallback) => getTranslation(language, key, fallback);
-    
+
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -215,17 +216,18 @@ const Select = React.forwardRef(({
     const hasValue = multiple ? value?.length > 0 : value !== undefined && value !== '';
 
     return (
-        <div className={cn("relative", className)}>
+        <div className={cn("relative", className)} dir={isRtl ? 'rtl' : 'ltr'}>
             {label && (
                 <label
                     htmlFor={selectId}
+                    dir={isRtl ? 'rtl' : 'ltr'}
                     className={cn(
-                        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block",
+                        `text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block ${isRtl ? 'text-right' : 'text-left'}`,
                         error ? "text-destructive" : "text-foreground"
                     )}
                 >
                     {label}
-                    {required && <span className="text-destructive ml-1">*</span>}
+                    {required && <span className={cn('text-destructive', isRtl ? 'mr-1' : 'ml-1')}>*</span>}
                 </label>
             )}
             <div className="relative">
@@ -234,7 +236,7 @@ const Select = React.forwardRef(({
                     id={selectId}
                     type="button"
                     className={cn(
-                        "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                        `flex h-10 w-full items-center justify-between rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isRtl ? 'flex-row-reverse' : ''}`,
                         error && "border-destructive focus:ring-destructive",
                         !hasValue && "text-muted-foreground"
                     )}
@@ -244,7 +246,7 @@ const Select = React.forwardRef(({
                     aria-haspopup="listbox"
                     {...props}
                 >
-                    <span className="truncate">{getSelectedDisplay()}</span>
+                    <span className={cn('truncate', isRtl ? 'text-right' : 'text-left')}>{getSelectedDisplay()}</span>
 
                     <div className="flex items-center gap-1">
                         {loading && (
@@ -262,7 +264,7 @@ const Select = React.forwardRef(({
                             </Button>
                         )}
 
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180", isRtl && "-scale-x-100")} />
                     </div>
                 </button>
 
@@ -278,7 +280,7 @@ const Select = React.forwardRef(({
                 >
                     <option value="">{t('selectDots', 'Select...')}</option>
                     {flatOptions?.map(option => (
-                        <option key={option?.value} value={option?.value}>
+                        <option key={option?.value} className={isRtl ? 'text-right' : 'text-left'} value={option?.value}>
                             {option?.label}
                         </option>
                     ))}
@@ -286,16 +288,17 @@ const Select = React.forwardRef(({
 
                 {/* Dropdown */}
                 {isOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-popover text-popover-foreground border border-border rounded-md shadow-lg overflow-hidden">
+                    <div dir={isRtl ? 'rtl' : 'ltr'} className="absolute z-50 w-full mt-1 bg-popover text-popover-foreground border border-border rounded-md shadow-lg overflow-hidden">
                         {searchable && (
                             <div className="p-2 border-b border-border">
                                 <div className="relative">
-                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Search className={cn("absolute top-2.5 h-4 w-4 text-muted-foreground", isRtl ? 'right-2' : 'left-2')} />
                                     <Input
                                         placeholder={t('searchOptions', 'Search options...')}
                                         value={searchTerm}
                                         onChange={handleSearchChange}
-                                        className="pl-8"
+                                        dir={isRtl ? 'rtl' : 'ltr'}
+                                        className={isRtl ? 'pr-8 text-right' : 'pl-8 text-left'}
                                     />
                                 </div>
                             </div>
@@ -308,22 +311,23 @@ const Select = React.forwardRef(({
                                 </div>
                             ) : (
                                 renderOptions(filteredOptions, {
-                                    onSelect: handleOptionSelect,
-                                    isSelected,
-                                    multiple,
-                                })
+                                        onSelect: handleOptionSelect,
+                                        isSelected,
+                                        multiple,
+                                        isRtl,
+                                    })
                             )}
                         </div>
                     </div>
                 )}
             </div>
             {description && !error && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className={cn('text-sm text-muted-foreground mt-1', isRtl ? 'text-right' : 'text-left')}>
                     {description}
                 </p>
             )}
             {error && (
-                <p className="text-sm text-destructive mt-1">
+                <p className={cn('text-sm text-destructive mt-1', isRtl ? 'text-right' : 'text-left')}>
                     {error}
                 </p>
             )}

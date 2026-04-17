@@ -5,23 +5,18 @@ import ServiceSelector from './ServiceSelector';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
-const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService, onServiceSelect, selectedModule, onModuleChange }) => {
+const CategorySelector = ({
+  selectedCategory,
+  onCategoryChange,
+  selectedService,
+  onServiceSelect,
+  selectedModule,
+  onModuleChange,
+}) => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const modules = [
-    // {
-    //   id: 'dg-assistant',
-    //   name: 'DG Assistant for IT Office',
-    //   nameAr: 'مكتب مساعد المحافظ للشئون التقنية',
-    //   icon: 'Landmark',
-    //   description: 'Central intake for cybersecurity, infrastructure, QA/QC, development, and PM requests',
-    //   descriptionAr: 'طلبات الأمن السيبراني والبنية التحتية وضمان الجودة والتطوير والمشاريع',
-    //   color: 'var(--color-primary)',
-    //   bgColor: 'bg-blue-50',
-    //   borderColor: 'border-blue-200',
-    //   badge: null,
-    // },
     {
       id: 'it-support',
       name: 'IT Support',
@@ -615,82 +610,118 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
   const categories = categoriesByModule[selectedModule] || [];
   const selectedModuleConfig = modules.find((module) => module.id === selectedModule);
   const selectedCategoryConfig = categories.find((category) => category.id === selectedCategory);
-  const visibleModules = selectedModule ? modules.filter((module) => module.id === selectedModule) : modules;
-  const visibleCategories = selectedCategory ? categories.filter((category) => category.id === selectedCategory) : categories;
+  const visibleModules = selectedModule
+    ? modules.filter((module) => module.id === selectedModule)
+    : modules;
+  const visibleCategories = selectedCategory
+    ? categories.filter((category) => category.id === selectedCategory)
+    : categories;
 
   const handleCategoryClick = (categoryId) => {
     onCategoryChange(categoryId);
   };
 
+  const getModuleLabel = (module) =>
+    language === 'ar' ? module?.nameAr || module?.name : module?.name || module?.nameAr;
+
+  const getCategoryLabel = (category) =>
+    language === 'ar' ? category?.nameAr || category?.name : category?.name || category?.nameAr;
+
+  const getServiceLabel = (service) => {
+    if (!service) return t('service', 'Service');
+    return language === 'ar'
+      ? service?.nameAr || service?.name || service?.nameEn || t('service', 'Service')
+      : service?.nameEn || service?.name || service?.nameAr || t('service', 'Service');
+  };
+
+  const breadcrumbIcon = isRtl ? 'ChevronLeft' : 'ChevronRight';
+
   return (
-    <>
-      <div className="space-y-8">
-          <motion.div 
-            className="space-y-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className={isRtl ? 'text-right' : 'text-left'}>
-              <label className="block text-sm font-semibold text-foreground mb-1">
-                {t('departmentCategoryService', 'Department / Category / Service')} <span className="text-error">*</span>
-              </label>
-              <p className="text-xs text-muted-foreground">{t('pickRouteFlow', 'Pick the route in one flow, from department to category to service.')}</p>
-            </div>
-            {selectedModule && (
-              <button
-                type="button"
-                onClick={() => onModuleChange('')}
-                className="inline-flex items-center gap-2 text-xs font-medium text-primary {isRtl ? 'flex-row-reverse' : ''} hover:underline"
-              >
-                {t('showAllDepartments', 'Show all departments')}
-              </button>
-            )}
-            <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
-              variants={{
-                visible: {
-            transition: {
-              staggerChildren: 0.05,
-            },
-                },
-              }}
-              initial="hidden"
-              animate="visible"
+    <div
+      className={`space-y-8 ${isRtl ? 'rtl' : 'ltr'}`}
+      dir={isRtl ? 'rtl' : 'ltr'}
+    >
+      <motion.div
+        className="space-y-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className={'text-left'}>
+          <label className="block text-sm font-semibold text-foreground mb-1">
+            {t('departmentCategoryService', 'Department / Category / Service')}{' '}
+            <span className="text-error">*</span>
+          </label>
+          <p className="text-xs text-muted-foreground">
+            {t('pickRouteFlow', 'Pick the route in one flow, from department to category to service.')}
+          </p>
+        </div>
+
+        {selectedModule && (
+          <div className={isRtl ? 'text-left' : 'text-right'}>
+            <button
+              type="button"
+              onClick={() => onModuleChange('')}
+              className={`inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline ${
+                ''
+              }`}
             >
-              {visibleModules.map((module) => (
-                <motion.button
-            key={module.id}
-            type="button"
-            onClick={() => onModuleChange(module.id)}
-            className={`relative overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 group ${isRtl ? 'text-right' : 'text-left'} w-full ${
-              selectedModule === module.id
-                ? 'bg-primary/10 border border-primary shadow-elevation-2'
-                : 'bg-card border border-border hover:border-primary/40 hover:bg-primary/5'
-            }`}
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
+              {t('showAllDepartments', 'Show all departments')}
+            </button>
+          </div>
+        )}
+
+        <div className={`flex ${isRtl ? 'justify-end' : 'justify-start'}`}>
+          <motion.div
+            className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
             variants={{
-              hidden: { opacity: 0, scale: 0.8 },
-              visible: { 
-                opacity: 1, 
-                scale: 1,
-                transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }
+              visible: {
+                transition: {
+                  staggerChildren: 0.05,
+                },
               },
             }}
+            initial="hidden"
+            animate="visible"
+          >
+            {visibleModules.map((module) => (
+              <motion.button
+                key={module.id}
+                type="button"
+                onClick={() => onModuleChange(module.id)}
+                className={`relative overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 group w-full ${
+                  selectedModule === module.id
+                    ? 'bg-primary/10 border border-primary shadow-elevation-2'
+                    : 'bg-card border border-border hover:border-primary/40 hover:bg-primary/5'
+                } ${'text-left'}`}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                variants={{
+                  hidden: { opacity: 0, scale: 0.8 },
+                  visible: {
+                    opacity: 1,
+                    scale: 1,
+                    transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] },
+                  },
+                }}
+              >
+                <div
+                  className={`absolute inset-0 transition-opacity ${
+                    selectedModule === module.id ? 'opacity-20' : 'opacity-0 group-hover:opacity-10'
+                  }`}
                 >
-            {/* Background accent */}
-                <div className={`absolute inset-0 opacity-10 transition-opacity ${
-                  selectedModule === module.id ? 'opacity-20' : 'opacity-0 group-hover:opacity-10'
-                }`}>
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-transparent" />
                 </div>
 
-                <div className={`relative flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div
+                  className={`relative flex items-start gap-3 ${
+                    isRtl ? 'flex-row-reverse text-right' : 'text-left'
+                  }`}
+                >
                   <motion.div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-all ${
-                      selectedModule === module.id 
-                        ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+                      selectedModule === module.id
+                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
                         : 'bg-muted text-muted-foreground group-hover:bg-primary/20'
                     }`}
                     animate={selectedModule === module.id ? { rotate: 360 } : { rotate: 0 }}
@@ -702,17 +733,21 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                       color={selectedModule === module.id ? '#FFFFFF' : undefined}
                     />
                   </motion.div>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-semibold text-foreground leading-tight ${isRtl ? 'text-right' : 'text-left'}`}>{language === 'ar' ? module.nameAr : module.name}</p>
-                     
-                    <p className={`text-xs text-muted-foreground mt-1 leading-relaxed ${isRtl ? 'text-right' : 'text-left'}`}>
+
+                  <div className={`min-w-0 flex-1 ${'text-left'}`}>
+                    <p className="text-sm font-semibold text-foreground leading-tight">
+                      {getModuleLabel(module)}
+                    </p>
+
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {(categoriesByModule[module.id] || []).length} {t('categoriesAvailable', 'categories available')}
                     </p>
+
                     {selectedModule === module.id && (
                       <motion.div
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`text-xs text-primary font-medium mt-1 ${isRtl ? 'text-right' : 'text-left'}`}
+                        className="text-xs text-primary font-medium mt-1"
                       >
                         ✓ {t('selected', 'Selected')}
                       </motion.div>
@@ -722,28 +757,32 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
               </motion.button>
             ))}
           </motion.div>
-        </motion.div>
+        </div>
+      </motion.div>
 
-        {/* Category Selection */}
-        <AnimatePresence>
-          {selectedModule && (
-            <motion.div 
-              className="space-y-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-            >
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">
-                  {t('category', 'Category')} <span className="text-error">*</span>
-                </label>
-                <p className="text-xs text-muted-foreground">
-                  {selectedModuleConfig ? `${t('categoriesFor', 'Categories for')} ${language === 'ar' ? selectedModuleConfig.nameAr : selectedModuleConfig.name}` : t('chooseDepartmentFirst', 'Choose a department first to see categories')}
-                </p>
-              </div>
-              <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+      <AnimatePresence>
+        {selectedModule && (
+          <motion.div
+            className="space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+          >
+            <div className={'text-left'}>
+              <label className="block text-sm font-semibold text-foreground mb-1">
+                {t('category', 'Category')} <span className="text-error">*</span>
+              </label>
+              <p className="text-xs text-muted-foreground">
+                {selectedModuleConfig
+                  ? `${t('categoriesFor', 'Categories for')} ${getModuleLabel(selectedModuleConfig)}`
+                  : t('chooseDepartmentFirst', 'Choose a department first to see categories')}
+              </p>
+            </div>
+
+            <div className={`flex ${isRtl ? 'justify-end' : 'justify-start'}`}>
+              <motion.div
+                className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
                 variants={{
                   visible: {
                     transition: {
@@ -759,43 +798,51 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                     key={category?.id}
                     type="button"
                     onClick={() => handleCategoryClick(category?.id)}
-                    className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 group ${isRtl ? 'text-right' : 'text-left'} w-full h-full ${
+                    className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 group w-full h-full ${
                       selectedCategory === category?.id
                         ? `${category?.bgColor} ${category?.borderColor} border shadow-elevation-2`
                         : 'bg-card border border-border hover:border-primary/30 hover:bg-primary/5'
-                    }`}}
+                    } ${'text-left'}`}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     variants={{
                       hidden: { opacity: 0, y: 20, scale: 0.9 },
-                      visible: { 
-                        opacity: 1, 
+                      visible: {
+                        opacity: 1,
                         y: 0,
                         scale: 1,
-                        transition: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1], delay: idx * 0.05 }
+                        transition: {
+                          duration: 0.4,
+                          ease: [0.34, 1.56, 0.64, 1],
+                          delay: idx * 0.05,
+                        },
                       },
                     }}
                   >
-                    {/* Gradient accent line */}
-                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
-                      selectedCategory === category?.id 
-                        ? 'opacity-100' 
-                        : 'opacity-0 group-hover:opacity-100'
-                    }` }
+                    <div
+                      className={`absolute top-0 left-0 right-0 h-1 ${
+                        selectedCategory === category?.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                      }`}
                       style={{
-                        background: `linear-gradient(to right, ${category?.color}, ${category?.color}00)`
+                        background: `linear-gradient(to right, ${category?.color}, ${category?.color}00)`,
                       }}
-                    ></div>
+                    />
 
-                    <div className={`relative flex items-start gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                      
-                      <div className="flex-1 min-w-0 pt-1">
-                      
-                        <div className={`flex items-start justify-between gap-2 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                            <motion.div
+                    <div
+                      className={`relative flex items-start gap-4 ${
+                        isRtl ? 'flex-row-reverse text-right' : 'text-left'
+                      }`}
+                    >
+                      <div className={`flex-1 min-w-0 pt-1 ${'text-left'}`}>
+                        <div
+                          className={`flex items-start gap-2 mb-2 ${
+                            isRtl ? 'flex-row-reverse text-right' : 'justify-between text-left'
+                          }`}
+                        >
+                          <motion.div
                             className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
-                              selectedCategory === category?.id 
-                                ? category?.bgColor 
+                              selectedCategory === category?.id
+                                ? category?.bgColor
                                 : 'bg-muted group-hover:bg-muted/80'
                             }`}
                             whileHover={{ scale: 1.15, rotate: 5 }}
@@ -803,17 +850,26 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                             <Icon
                               name={category?.icon}
                               size={22}
-                              color={selectedCategory === category?.id ? category?.color : 'var(--color-muted-foreground)'}
+                              color={
+                                selectedCategory === category?.id
+                                  ? category?.color
+                                  : 'var(--color-muted-foreground)'
+                              }
                             />
                           </motion.div>
-                          <div className="flex-1">
-                            <h3 className={`font-bold text-base text-foreground leading-snug ${isRtl ? 'text-right' : 'text-left'}`}>
-                              {language === 'ar' ? category?.nameAr : category?.name}
+
+                          <div className={`flex-1 ${'text-left'}`}>
+                            <h3 className="font-bold text-base text-foreground leading-snug">
+                              {getCategoryLabel(category)}
                             </h3>
-                            <p className={`text-xs font-medium text-primary/80 mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>
-                              {language === 'ar' ? category?.name : category?.nameAr}
-                            </p>
+
+                            {language !== 'ar' && (
+                              <p className="text-xs font-medium text-primary/80 mt-1">
+                                {category?.nameAr}
+                              </p>
+                            )}
                           </div>
+
                           <AnimatePresence>
                             {selectedCategory === category?.id && (
                               <motion.div
@@ -821,7 +877,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                                 animate={{ scale: 1, rotate: 0 }}
                                 exit={{ scale: 0, rotate: 180 }}
                                 transition={{ duration: 0.3 }}
-                                className="flex-shrink-0 mt-1"
+                                className={`flex-shrink-0 mt-1 ${isRtl ? 'mr-2' : 'ml-2'}`}
                               >
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
                                   <Icon name="Check" size={16} color="#FFFFFF" />
@@ -830,7 +886,8 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                             )}
                           </AnimatePresence>
                         </div>
-                        <p className={`text-xs text-muted-foreground leading-relaxed ${isRtl ? 'text-right' : 'text-left'}`}>
+
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           {language === 'ar' ? category?.descriptionAr : category?.description}
                         </p>
                       </div>
@@ -838,57 +895,84 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                   </motion.button>
                 ))}
               </motion.div>
-              {selectedCategory && (
+            </div>
+
+            {selectedCategory && (
+              <div className={isRtl ? 'text-left' : 'text-right'}>
                 <button
                   type="button"
                   onClick={() => onCategoryChange('')}
-                  className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline {isRtl ? 'flex-row-reverse' : ''}"
+                  className={`inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline ${
+                    ''
+                  }`}
                 >
                   {t('showAllCategories', 'Show all categories')}
                 </button>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <AnimatePresence>
-          {selectedCategory && (
-            <motion.div
-              className="space-y-3"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25 }}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedCategory && (
+          <motion.div
+            className="space-y-3"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div
+              className="rounded-2xl border border-border bg-muted/20 px-4 py-3"
+              dir={isRtl ? 'rtl' : 'ltr'}
             >
-              <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3" dir={isRtl ? 'rtl' : 'ltr'}>
-                <div className={`flex flex-wrap items-center gap-2 text-xs font-medium ${isRtl ? 'flex-row-reverse' : ''}`}>
-                  <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                    {language === 'ar' ? selectedModuleConfig?.nameAr || t('department', 'Department') : selectedModuleConfig?.name || t('department', 'Department')}
-                  </span>
-                  <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={14} className="text-muted-foreground" />
-                  <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                    {language === 'ar' ? selectedCategoryConfig?.nameAr || t('category', 'Category') : selectedCategoryConfig?.name || t('category', 'Category')}
-                  </span>
-                  <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={14} className="text-muted-foreground" />
-                  <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
-                    {language === 'ar' ? selectedService?.nameAr || selectedService?.nameEn || t('service', 'Service') : selectedService?.nameEn || t('service', 'Service')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <ServiceSelector
-                  category={selectedCategory}
-                  categoryLabel={selectedCategoryConfig?.name || selectedCategory}
-                  selectedService={selectedService}
-                  onServiceSelect={onServiceSelect}
-                  onClose={undefined}
+              <div
+                className={`flex flex-wrap items-center gap-2 text-xs font-medium     }`}
+              >
+                <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
+                  {getModuleLabel(selectedModuleConfig) || t('department', 'Department')}
+                </span>
+
+                <Icon
+                  name={breadcrumbIcon}
+                  size={14}
+                  className="text-muted-foreground shrink-0"
                 />
+
+                <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
+                  {getCategoryLabel(selectedCategoryConfig) || t('category', 'Category')}
+                </span>
+
+                <Icon
+                  name={breadcrumbIcon}
+                  size={14}
+                  className="text-muted-foreground shrink-0"
+                />
+
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
+                  {getServiceLabel(selectedService)}
+                </span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
+            </div>
+
+            <div className="space-y-2">
+              <ServiceSelector
+                category={selectedCategory}
+                categoryLabel={
+                  language === 'ar'
+                    ? selectedCategoryConfig?.nameAr || selectedCategoryConfig?.name || selectedCategory
+                    : selectedCategoryConfig?.name || selectedCategoryConfig?.nameAr || selectedCategory
+                }
+                selectedService={selectedService}
+                onServiceSelect={onServiceSelect}
+                onClose={undefined}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

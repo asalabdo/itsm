@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Image from '../../../components/AppImage';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const InternalNotes = ({ notes, onAddNote }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [isExpanded, setIsExpanded] = useState(false);
   const [newNote, setNewNote] = useState('');
 
@@ -27,9 +31,9 @@ const InternalNotes = ({ notes, onAddNote }) => {
               <Icon name="Lock" size={18} color="var(--color-warning)" />
             </div>
             <div>
-              <h3 className="text-base md:text-lg font-semibold text-foreground">Internal Notes</h3>
+              <h3 className="text-base md:text-lg font-semibold text-foreground">{t('internalNotes', 'Internal Notes')}</h3>
               <p className="text-xs md:text-sm text-muted-foreground caption">
-                Private team collaboration • {notes?.length} notes
+                {t('privateTeamCollaboration', 'Private team collaboration')} • {notes?.length} {t('notes', 'notes')}
               </p>
             </div>
           </div>
@@ -46,7 +50,7 @@ const InternalNotes = ({ notes, onAddNote }) => {
             <textarea
               value={newNote}
               onChange={(e) => setNewNote(e?.target?.value)}
-              placeholder="Add an internal note (visible only to support team)..."
+              placeholder={t('addInternalNote', 'Add an internal note (visible only to support team)...')}
               className="w-full min-h-[100px] p-3 md:p-4 bg-background border border-border rounded-lg text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
             <div className="flex justify-end mt-3">

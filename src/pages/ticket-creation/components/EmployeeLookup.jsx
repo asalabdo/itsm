@@ -205,7 +205,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
 
   return (
     <div className="space-y-3" ref={dropdownRef}>
-      <div className="relative">
+      <div className="relative" dir={isRtl ? 'rtl' : 'ltr'}>
         <Input
           label={t('employee', 'Employee')}
           type="text"
@@ -228,7 +228,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
               {isLoading || loadingEmployees ? (
                 <div className="p-8 text-center">
                   <Icon name="Loader2" size={32} className="mx-auto mb-2 text-primary animate-spin" />
-                  <p className="text-sm text-muted-foreground">Searching employees...</p>
+                  <p className="text-sm text-muted-foreground">{t('searchingEmployees', 'Searching employees...')}</p>
                 </div>
               ) : filteredEmployees.length > 0 ? (
                 <motion.div
@@ -273,14 +273,14 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                                 className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded caption whitespace-nowrap"
                                 whileHover={{ scale: 1.05 }}
                               >
-                                {employee?.ticketCount || 0} tickets
+                                {employee?.ticketCount || 0} {t('tickets', 'tickets')}
                               </motion.span>
                             </div>
                             <p className="text-xs text-muted-foreground truncate caption">
                               {formatLocalizedValue(employee?.email) || 'N/A'}
                             </p>
                             <p className="text-xs text-muted-foreground truncate caption">
-                              {[formatLocalizedValue(employee?.department), formatLocalizedValue(employee?.jobTitle)].filter(Boolean).join(' • ') || 'No department'}
+                              {[formatLocalizedValue(employee?.department), formatLocalizedValue(employee?.jobTitle)].filter(Boolean).join(' • ') || t('noDepartment', 'No department')}
                             </p>
                           </div>
 
@@ -299,8 +299,8 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
               ) : (
                 <div className="p-8 text-center">
                   <Icon name="UserX" size={32} className="mx-auto mb-2 text-muted-foreground opacity-30" />
-                  <p className="text-sm text-muted-foreground mb-2">No employees found</p>
-                  <p className="text-xs text-muted-foreground caption">Try a different search term</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t('noEmployeesFound', 'No employees found')}</p>
+                  <p className="text-xs text-muted-foreground caption">{t('tryDifferentSearchTerm', 'Try a different search term')}</p>
                 </div>
               )}
             </motion.div>
@@ -351,14 +351,14 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Building2" size={14} />
-                    {[formatLocalizedValue(selectedEmployee?.department), formatLocalizedValue(selectedEmployee?.jobTitle)].filter(Boolean).join(' • ') || 'No department'}
+                    {[formatLocalizedValue(selectedEmployee?.department), formatLocalizedValue(selectedEmployee?.jobTitle)].filter(Boolean).join(' • ') || t('noDepartment', 'No department')}
                   </motion.p>
                   <motion.p
                     className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Phone" size={14} />
-                    {formatLocalizedValue(selectedEmployee?.phoneNumber || selectedEmployee?.phone) || 'No phone'}
+                    {formatLocalizedValue(selectedEmployee?.phoneNumber || selectedEmployee?.phone) || t('noPhone', 'No phone')}
                   </motion.p>
                 </motion.div>
               </div>

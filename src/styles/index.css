@@ -49,10 +49,6 @@ body {
     direction: rtl;
   }
 
-  html[dir="rtl"] .grid > * {
-    direction: ltr;
-  }
-
   /* RTL breadcrumb improvements */
   html[dir="rtl"] nav[dir="rtl"] {
     direction: rtl;

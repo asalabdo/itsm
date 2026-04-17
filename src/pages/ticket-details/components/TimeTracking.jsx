@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TimeTracking = ({ totalTime, sessions, onStartTimer, onStopTimer, isTracking = false, currentSessionTime = 0 }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [localIsTracking, setLocalIsTracking] = useState(Boolean(isTracking));
   const [localSessionTime, setLocalSessionTime] = useState(Number(currentSessionTime) || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,7 +54,7 @@ const TimeTracking = ({ totalTime, sessions, onStartTimer, onStopTimer, isTracki
   return (
     <div className="bg-card border border-border rounded-lg shadow-elevation-1">
       <div className="p-4 md:p-6 border-b border-border">
-        <h3 className="text-base md:text-lg font-semibold text-foreground">Time Tracking</h3>
+        <h3 className="text-base md:text-lg font-semibold text-foreground">{t('timeTracking', 'Time Tracking')}</h3>
       </div>
       <div className="p-4 md:p-6">
         <div className="text-center mb-4 md:mb-6">
@@ -65,7 +69,7 @@ const TimeTracking = ({ totalTime, sessions, onStartTimer, onStopTimer, isTracki
             {formatTime(localIsTracking ? localSessionTime : 0)}
           </div>
           <p className="text-xs md:text-sm text-muted-foreground caption">
-            {localIsTracking ? 'Current Session' : 'Ready to track'}
+            {localIsTracking ? t('currentSession', 'Current Session') : t('readyToTrack', 'Ready to track')}
           </p>
         </div>
 
@@ -79,19 +83,19 @@ const TimeTracking = ({ totalTime, sessions, onStartTimer, onStopTimer, isTracki
           type="button"
           onClick={handleStartStop}
         >
-          {localIsTracking ? 'Stop Tracking' : 'Start Tracking'}
+          {localIsTracking ? t('stopTracking', 'Stop Tracking') : t('startTracking', 'Start Tracking')}
         </Button>
 
         <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-border">
           <div className="flex items-center justify-between mb-3 md:mb-4">
-            <span className="text-sm md:text-base font-medium text-foreground">Total Time</span>
+            <span className="text-sm md:text-base font-medium text-foreground">{t('totalTime', 'Total Time')}</span>
             <span className="text-base md:text-lg font-semibold text-primary data-text">
               {formatTime(totalTime)}
             </span>
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs md:text-sm font-medium text-muted-foreground mb-2">Recent Sessions</p>
+            <p className="text-xs md:text-sm font-medium text-muted-foreground mb-2">{t('recentSessions', 'Recent Sessions')}</p>
             {sessions?.slice(0, 3)?.map((session) => (
               <div
                 key={session?.id}

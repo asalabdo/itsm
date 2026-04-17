@@ -1,8 +1,12 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ConversationThread = ({ messages }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const getMessageTypeIcon = (type) => {
     switch (type) {
       case 'customer':
@@ -20,9 +24,9 @@ const ConversationThread = ({ messages }) => {
     <div className="bg-card border border-border rounded-lg shadow-elevation-1">
       <div className="p-4 md:p-6 border-b border-border">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg md:text-xl font-semibold text-foreground">Conversation History</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('conversationHistory', 'Conversation History')}</h2>
           <span className="text-xs md:text-sm text-muted-foreground caption">
-            {messages?.length} messages
+            {messages?.length} {t('messages', 'messages')}
           </span>
         </div>
       </div>

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const AuditTrail = ({ activities }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getActivityIcon = (type) => {
@@ -35,9 +39,9 @@ const AuditTrail = ({ activities }) => {
               <Icon name="History" size={18} color="var(--color-muted-foreground)" />
             </div>
             <div>
-              <h3 className="text-base md:text-lg font-semibold text-foreground">Audit Trail</h3>
+              <h3 className="text-base md:text-lg font-semibold text-foreground">{t('auditTrail', 'Audit Trail')}</h3>
               <p className="text-xs md:text-sm text-muted-foreground caption">
-                {activities?.length} activities recorded
+                {activities?.length} {t('activitiesRecorded', 'activities recorded')}
               </p>
             </div>
           </div>

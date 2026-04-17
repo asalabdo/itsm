@@ -169,7 +169,7 @@ const FileUploader = ({ attachments, onAttachmentsChange }) => {
               {attachments?.map((attachment) => (
                 <motion.div
                   key={attachment?.id}
-                  className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''} p-3 bg-muted/50 rounded-xl border border-border hover:border-primary/30 hover:bg-muted/70 transition-all duration-300 ${isRtl ? 'flex-row-reverse' : ''}`}
+                  className={`flex items-center gap-3 ${''} p-3 bg-muted/50 rounded-xl border border-border hover:border-primary/30 hover:bg-muted/70 transition-all duration-300 ${''}`}
                   variants={{
                     hidden: { opacity: 0, x: isRtl ? 20 : -20 },
                     visible: { 

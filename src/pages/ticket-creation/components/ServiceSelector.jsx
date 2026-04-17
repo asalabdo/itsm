@@ -230,11 +230,12 @@ const ServiceSelector = ({ category, categoryLabel, selectedService, onServiceSe
     { "id": "sl-other", "nameEn": "Other", "nameAr": "Ø£Ø®Ø±Ù‰" }
   ],
   "other": [
-    { "id": "general-issue", "nameEn": "Issue", "nameAr": "Ø§Ø°ÙƒØ± Ø§Ù„Ø³Ø¨Ø¨" }
+    { "id": "general-issue", "nameEn": "Issue", "nameAr": "اذكر السبب" }
   ]
 };
 
 const serviceArabicOverrides = {
+  // Access Management
   'am-new-account': 'إنشاء حساب مستخدم جديد',
   'am-disable-account': 'تعطيل أو إنهاء حساب مستخدم',
   'am-reset-password': 'إعادة تعيين كلمة المرور',
@@ -246,12 +247,16 @@ const serviceArabicOverrides = {
   'am-vpn': 'طلب الوصول عبر VPN',
   'am-mfa': 'إعداد أو إعادة تعيين المصادقة الثنائية',
   'am-other': 'أخرى',
+
+  // Asset Management
   'ast-register': 'تسجيل أصل جديد',
   'ast-transfer': 'نقل أصل بين الموظفين',
   'ast-disposal': 'طلب إتلاف أصل',
   'ast-audit': 'جرد أو تدقيق الأصول',
   'ast-lost-stolen': 'الإبلاغ عن أصل مفقود أو مسروق',
   'ast-other': 'أخرى',
+
+  // Device Replacement
   'dr-computer': 'استبدال جهاز حاسوب',
   'dr-printer': 'استبدال طابعة',
   'dr-keyboard': 'استبدال لوحة مفاتيح',
@@ -259,6 +264,8 @@ const serviceArabicOverrides = {
   'dr-monitor': 'استبدال شاشة',
   'dr-headset': 'استبدال سماعة',
   'dr-other': 'أخرى',
+
+  // Service Requests
   'sr-new-equipment': 'طلب جهاز جديد',
   'sr-software-install': 'تثبيت برنامج',
   'sr-peripheral': 'طلب جهاز طرفي',
@@ -267,6 +274,8 @@ const serviceArabicOverrides = {
   'sr-offboarding': 'إنهاء خدمات موظف',
   'sr-business-card': 'طلب بطاقة عمل',
   'sr-other': 'أخرى',
+
+  // Software & Licensing
   'sl-new-license': 'طلب ترخيص جديد',
   'sl-renew-license': 'تجديد ترخيص',
   'sl-transfer-license': 'نقل ترخيص لمستخدم آخر',
@@ -274,6 +283,8 @@ const serviceArabicOverrides = {
   'sl-upgrade': 'طلب ترقية برنامج',
   'sl-audit': 'تدقيق التراخيص والامتثال',
   'sl-other': 'أخرى',
+
+  // Technical Support (high-level requests)
   'ts-create-account': 'إنشاء حساب مستخدم',
   'ts-device-fix': 'إصلاح مشاكل الجهاز',
   'ts-office-install': 'تثبيت Microsoft Office',
@@ -287,8 +298,157 @@ const serviceArabicOverrides = {
   'ts-monitor': 'طلب شاشة',
   'ts-keyboard-mouse': 'طلب لوحة مفاتيح أو فأرة أو ملحقات',
   'ts-other-support': 'أخرى',
+
+  // Generic
   'general-issue': 'اذكر السبب',
+
+  // Cybersecurity requests
+  'cs-password-manager': 'طلبات مدير كلمات المرور',
+  'cs-pass-through-email': 'تمرير البريد الإلكتروني',
+  'cs-remote-access': 'الوصول عن بعد',
+  'cs-firewall-services': 'خدمات جدار الحماية',
+  'cs-website-availability': 'خدمة توافر الموقع الإلكتروني',
+  'cs-usb-port': 'خدمة منفذ USB',
+  'cs-other-security': 'طلب خدمة أمن سيبراني أخرى',
+
+  // NOC
+  'noc-service': 'طلب خدمة NOC',
+  'noc-ports': 'فتح أو إغلاق منافذ الاتصال الشبكي',
+
+  // Infrastructure
+  'infra-active-directory': 'خدمات Active Directory',
+  'infra-backup': 'خدمات النسخ الاحتياطي',
+  'infra-dns': 'خدمات DNS',
+  'infra-domain-controller': 'متحكم النطاق',
+  'infra-email': 'خدمات البريد الإلكتروني',
+  'infra-permission': 'خدمات الصلاحيات',
+  'infra-server': 'خدمات الخوادم',
+  'infra-pam': 'إدارة وصول المميز',
+  'infra-other': 'طلب آخر',
+
+  // Network
+  'net-firewall': 'خدمات جدار الحماية',
+  'net-load-balancing': 'خدمات موزن التحميل',
+  'net-services': 'خدمات الشبكة',
+  'net-remote-access': 'الوصول عن بعد',
+  'net-other': 'طلبات شبكة أخرى',
+
+  // Development
+  'dev-data-migration': 'ترحيل البيانات',
+  'dev-major-enhancement': 'تحسين خدمة كبير',
+  'dev-minor-modification': 'تعديل بسيط',
+  'dev-minor-enhancement': 'تحسين بسيط للخدمة',
+  'dev-modify-ip': 'تعديل عنوان IP',
+  'dev-network-failure': 'فشل الشبكة',
+  'dev-new-feature': 'طلب ميزة جديدة',
+  'dev-new-tool': 'طلب أداة جديدة',
+  'dev-password-reset': 'إعادة تعيين كلمة المرور',
+  'dev-performance-improvement': 'تحسين الأداء',
+  'dev-other': 'طلب تطوير آخر',
+  'dev-request-domain': 'طلب نطاق جديد',
+  'dev-server-outage': 'انقطاع الخادم',
+  'dev-service-testing': 'اختبار الخدمة',
+  'dev-system-down': 'انخفاض النظام',
+  'dev-system-testing': 'اختبار النظام',
+  'dev-system-upgrade': 'ترقية النظام',
+
+  // QA/QC
+  'qa-cloud-testing': 'اختبار السحابة',
+  'qa-code-review': 'مراجعة الكود',
+  'qa-database-testing': 'اختبار قاعدة البيانات',
+  'qa-faction-testing': 'اختبار Faction',
+  'qa-other': 'طلبات QA/QC أخرى',
+  'qa-quality-control': 'مراقبة الجودة',
+  'qa-security-control': 'مراقبة الأمان',
+  'qa-services-testing': 'اختبار الخدمات',
+
+  // Digital transformation
+  'dt-services': 'طلب خدمات التحول الرقمي',
+
+  // Project management
+  'pm-request': 'إدارة المشروع',
+
+  // Device technical issues (technical-support)
+  'ts-device-not-working': 'الجهاز لا يعمل',
+  'ts-slow-performance': 'أداء بطيء',
+  'ts-blue-screen': 'الشاشة الزرقاء / تعطل النظام',
+  'ts-monitor-issue': 'مشكلة في الشاشة',
+  'ts-printer-issue': 'مشكلة في الطابعة',
+  'ts-keyboard-mouse': 'مشكلة في لوحة المفاتيح أو الفأرة',
+  'ts-network-connection': 'مشكلة في الاتصال بالشبكة',
+  'ts-internet-access': 'مشكلة في الوصول للإنترنت',
+  'ts-email-issue': 'مشكلة في البريد الإلكتروني',
+  'ts-transfer-device': 'نقل جهاز',
+  'ts-other': 'أخرى',
+
+  // Project/ERP/HR related
+  'ehr-new-user': 'إنشاء مستخدم جديد في وحدة الموارد البشرية',
+  'ehr-role-change': 'تغيير دور أو صلاحيات الموارد البشرية',
+  'ehr-employee-data': 'تصحيح بيانات الموظف',
+  'ehr-payroll': 'مشكلة في معالجة الرواتب',
+  'ehr-leave': 'مشكلة في سياسة أو إعداد الإجازات',
+  'ehr-workflow': 'مشكلة في سير موافقات الموارد البشرية',
+  'ehr-report': 'طلب تقرير HR',
+  'ehr-other': 'أخرى',
+
+  // ERP other
+  'erp-finance': 'مشكلة وحدة المالية',
+  'erp-procurement': 'مشكلة وحدة المشتريات',
+  'erp-inventory': 'مشكلة وحدة المخزون',
+  'erp-sales': 'مشكلة وحدة المبيعات',
+  'erp-projects': 'مشكلة وحدة المشاريع',
+  'erp-new-user': 'إنشاء مستخدم جديد في النظام',
+  'erp-role-change': 'تغيير دور أو صلاحيات في النظام',
+  'erp-data-correction': 'تصحيح إدخال البيانات',
+  'erp-report': 'طلب تقرير مخصص',
+  'erp-workflow': 'مشكلة في سير العمل',
+
+  // HR system
+  'hrs-cancel-vacation': 'إلغاء راحة أو إجازة',
+  'hrs-vacation-edit': 'تعديل طلب إجازة',
+  'hrs-travel-edit': 'تعديل طلب سفر',
+  'hrs-overtime-edit': 'تعديل طلب عمل إضافي',
+  'hrs-system-issue': 'مشكلة في النظام',
+  'hrs-other': 'أخرى',
+
+  // Incident management
+  'im-p1': 'حادثة حرجة (P1) — انقطاع كامل',
+  'im-p2': 'حادثة كبيرة (P2) — انقطاع جزئي',
+  'im-p3': 'حادثة طفيفة (P3) — خدمة متدهورة',
+  'im-hardware-failure': 'فشل في الأجهزة',
+  'im-software-crash': 'تحطم أو خطأ في البرنامج',
+  'im-network-outage': 'انقطاع الشبكة',
+  'im-data-loss': 'فقدان أو تلف البيانات',
+  'im-security-incident': 'حادثة أمنية',
+  'im-other': 'أخرى',
+
+  // Knowledge base
+  'kb-new-article': 'طلب مقالة معرفة جديدة',
+  'kb-update-article': 'تحديث مقالة موجودة',
+  'kb-broken-link': 'الإبلاغ عن رابط مكسور أو محتوى قديم',
+  'kb-access': 'مشكلة في الوصول لقاعدة المعرفة',
+  'kb-other': 'أخرى',
+
+  // Maintenance
+  'ms-new-request': 'طلب صيانة جديد',
+  'ms-ip-telephone': 'خدمات الهاتف IP',
+  'ms-car-services': 'خدمات السيارات',
+  'ms-meeting-room': 'طلب غرفة اجتماع',
+  'ms-other': 'أخرى',
+
+  // Service catalog small misc
+  'sl-other': 'أخرى',
+  'other': 'أخرى'
 };
+
+// Normalize Arabic labels at load time to avoid mojibake showing in the UI.
+// Uses serviceArabicOverrides where available, otherwise keeps existing nameAr.
+Object.keys(servicesByCategory).forEach((cat) => {
+  servicesByCategory[cat] = servicesByCategory[cat].map((s) => ({
+    ...s,
+    nameAr: serviceArabicOverrides[s.id] || s.nameAr || ''
+  }));
+});
 
   const services = servicesByCategory[category] || [];
   
@@ -315,10 +475,10 @@ const serviceArabicOverrides = {
   return (
     <div className="space-y-3">
       <div className="space-y-3">
-        <div className={`flex items-start justify-between gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
-          <div className={isRtl ? 'text-right' : 'text-left'}>
+        <div className={`flex items-start justify-between gap-4`}>
+          <div className={'text-left'}>
             <h3 className="text-base font-semibold text-foreground">{t('selectService', 'Select Service')}</h3>
-            <p className="text-xs text-muted-foreground">{t('chooseServiceFrom', 'Choose a service from')} {language === 'ar' ? categoryLabel || category : categoryLabel || category}.</p>
+            <p className="text-xs text-muted-foreground">{t('chooseServiceFrom', 'Choose a service from')} {categoryLabel || category}.</p>
           </div>
           {onClose && (
             <button onClick={onClose} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" type="button">
@@ -345,19 +505,19 @@ const serviceArabicOverrides = {
             <button
               key={service.id}
               onClick={() => handleServiceSelect(service)}
-              className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 ${isRtl ? 'text-right flex-row-reverse' : 'text-left'} transition-all hover:border-primary/40 hover:bg-primary/5 ${
+              className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 ${'text-left'} transition-all hover:border-primary/40 hover:bg-primary/5 ${
                 selectedService?.id === service.id ? 'border-primary bg-primary/10' : 'border-border bg-background'
               }`}
               type="button"
             >
               <div className="min-w-0 flex-1">
-                <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-2 ${''}`}>
                   <span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
                     selectedService?.id === service.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}>
                     {index + 1}
                   </span>
-                    <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <div className={`min-w-0 ${ 'text-left'}`}>
                       <div className="text-sm font-medium text-foreground truncate">{language === 'ar' ? (serviceArabicOverrides[service.id] || service.nameEn) : service.nameEn}</div>
                       {getArabicLabel(service) && language !== 'ar' && (
                         <div className="text-xs text-muted-foreground truncate" dir="rtl">{getArabicLabel(service)}</div>
@@ -378,7 +538,7 @@ const serviceArabicOverrides = {
 
         {selectedService?.id === 'general-issue' && (
           <div className="rounded-xl border border-border bg-muted/20 p-4" dir={isRtl ? 'rtl' : 'ltr'}>
-            <label className={`block text-sm font-medium text-foreground mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>
+            <label className={`block text-sm font-medium text-foreground mb-2 ${ 'text-left'}`}>
               {t('pleaseSpecifyReason', 'Please specify the reason:')}
             </label>
             <textarea
@@ -387,7 +547,7 @@ const serviceArabicOverrides = {
               placeholder={t('describeIssuePlaceholder', 'Please describe your issue in detail...') }
             />
             {onClose && (
-              <div className={`mt-4 flex justify-end gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div className={`mt-4 flex justify-end gap-2 ${''}`}>
                 <button
                   onClick={onClose}
                   className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground"

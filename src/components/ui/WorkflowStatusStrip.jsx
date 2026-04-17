@@ -12,6 +12,23 @@ const defaultSteps = [
   'Close'
 ];
 
+const getStepTranslation = (step, t) => {
+  const stepMap = {
+    'Intake': 'intake',
+    'Classify': 'classify',
+    'Assign': 'assign',
+    'ERP fan-out': 'erpFanOut',
+    'Resolve': 'resolve',
+    'Close': 'closeStep',
+    'Manager review': 'managerReview',
+    'Match service/org': 'matchServiceOrg',
+    'Third-party submit': 'thirdPartySubmit',
+  };
+  
+  const key = stepMap[step];
+  return key ? t(key, step) : step;
+};
+
 const WorkflowStatusStrip = ({
   title = 'Workflow Route',
   subtitle = 'Showing the current execution path and the last control action.',
@@ -26,6 +43,7 @@ const WorkflowStatusStrip = ({
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const resolvedSteps = Array.isArray(steps) && steps.length > 0 ? steps : defaultSteps;
+  const translatedSteps = resolvedSteps.map(step => getStepTranslation(step, t));
 
   return (
     <section className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
@@ -69,7 +87,7 @@ const WorkflowStatusStrip = ({
               <span className="text-sm font-semibold text-foreground">{t('workflowStages', 'Workflow stages')}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
-              {resolvedSteps.map((step, index) => {
+              {translatedSteps.map((step, index) => {
                 const isActive = index === activeStep;
                 const isComplete = index < activeStep;
 
@@ -99,7 +117,7 @@ const WorkflowStatusStrip = ({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Step {index + 1}</p>
+                        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t('step', 'Step')} {index + 1}</p>
                         <p className="text-sm font-medium text-foreground truncate">{step}</p>
                       </div>
                     </div>

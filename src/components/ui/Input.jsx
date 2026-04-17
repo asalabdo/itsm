@@ -27,12 +27,12 @@ const Input = React.forwardRef(({
     // Handle textarea rendering
     if (multiline) {
         return (
-            <div className="space-y-2">
+            <div className="space-y-2" dir={isRtl ? 'rtl' : 'ltr'}>
                 {label && (
                     <label
                         htmlFor={inputId}
                         className={cn(
-                            "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+                            "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-left",
                             error ? "text-destructive" : "text-foreground"
                         )}
                     >
@@ -95,12 +95,13 @@ const Input = React.forwardRef(({
 
     // For regular inputs with wrapper structure
     return (
-        <div className="space-y-2">
+        <div className="space-y-2 text-left">
             {label && (
                 <label
                     htmlFor={inputId}
+                    
                     className={cn(
-                        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+                        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-left",
                         error ? "text-destructive" : "text-foreground"
                     )}
                 >
@@ -111,9 +112,10 @@ const Input = React.forwardRef(({
 
             <input
                 type={type}
+                dir={isRtl ? 'rtl' : 'ltr'}
                 className={cn(
                     baseInputClasses,
-                    error && "border-destructive focus-visible:ring-destructive",
+                    error && "border-destructive focus-visible:ring-destructive text-left",
                     className
                 )}
                 ref={ref}

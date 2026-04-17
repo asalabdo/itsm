@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import { assetsAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const emptyForm = {
   assetTag: '',
@@ -58,7 +59,8 @@ const AssetField = ({ label, children, hint }) => (
 
 const ManageAssets = () => {
   const navigate = useNavigate();
-  const { isRtl } = useLanguage();
+  const { isRtl, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -241,39 +243,39 @@ const ManageAssets = () => {
         <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8 max-w-[1920px] mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className={`text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>Manage Assets</h1>
+              <h1 className={`text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>{t('manageAssets', 'Manage Assets')}</h1>
               <p className={`text-sm md:text-base text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
-                Live asset inventory, ownership, and lifecycle operations
+                {t('assetInventoryDescription', 'Live asset inventory, ownership, and lifecycle operations')}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" iconName="RefreshCw" onClick={loadAssets} disabled={loading}>
-                Refresh
+                {t('refresh', 'Refresh')}
               </Button>
               <Button variant="outline" iconName="Package" onClick={() => navigate('/asset-registry-and-tracking')}>
-                Registry
+                {t('registry', 'Registry')}
               </Button>
               <Button variant="default" iconName="Plus" iconPosition="left" onClick={openCreate}>
-                New Asset
+                {t('newAsset', 'New Asset')}
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
             <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Total Assets</p>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('totalAssets', 'Total Assets')}</p>
               <p className={`text-2xl font-semibold text-foreground mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{stats.total}</p>
             </div>
             <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Active</p>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('active', 'Active')}</p>
               <p className={`text-2xl font-semibold text-success mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{stats.active}</p>
             </div>
             <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Maintenance</p>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('maintenance', 'Maintenance')}</p>
               <p className={`text-2xl font-semibold text-warning mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{stats.maintenance}</p>
             </div>
             <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Total Value</p>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('totalValue', 'Total Value')}</p>
               <p className={`text-2xl font-semibold text-foreground mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{formatCurrency(stats.value)}</p>
             </div>
           </div>
@@ -323,31 +325,31 @@ const ManageAssets = () => {
             <div className="xl:col-span-2 bg-card border border-border rounded-lg shadow-elevation-1 overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
               <div className="p-4 md:p-5 border-b border-border flex items-center justify-between gap-3">
                 <div>
-                  <h2 className={`text-lg font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Asset Inventory</h2>
-                  <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{filteredAssets.length} matching assets</p>
+                  <h2 className={`text-lg font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('assetInventory', 'Asset Inventory')}</h2>
+                  <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{filteredAssets.length} {t('matchingAssets', 'matching assets')}</p>
                 </div>
               </div>
 
               {loading ? (
-                <div className="p-10 text-center text-muted-foreground">Loading assets...</div>
+                <div className="p-10 text-center text-muted-foreground">{t('loadingAssets', 'Loading assets...')}</div>
               ) : filteredAssets.length === 0 ? (
                 <div className="p-10 text-center">
                   <Icon name="Package" size={40} className="mx-auto mb-3 text-muted-foreground" />
-                  <p className="font-medium text-foreground">No assets found</p>
-                  <p className="text-sm text-muted-foreground mt-1">Try a different filter or create a new asset.</p>
+                  <p className="font-medium text-foreground">{t('noAssetsFound', 'No assets found')}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('assetFilterTip', 'Try a different filter or create a new asset.')}</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[1100px]">
                     <thead className="bg-muted/50 border-b border-border">
                       <tr>
-                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Asset</th>
-                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Type</th>
-                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Owner</th>
-                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Location</th>
-                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Status</th>
-                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Value</th>
-                        <th className={`px-4 py-3 ${isRtl ? 'text-left' : 'text-right'} text-xs font-medium text-muted-foreground uppercase`}>Actions</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>{t('asset', 'Asset')}</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>{t('type', 'Type')}</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>{t('owner', 'Owner')}</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>{t('location', 'Location')}</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>{t('status', 'Status')}</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>{t('value', 'Value')}</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-left' : 'text-right'} text-xs font-medium text-muted-foreground uppercase`}>{t('actions', 'Actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -418,43 +420,43 @@ const ManageAssets = () => {
             </div>
 
             <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
-              <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>Asset Details</h2>
+              <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('assetDetails', 'Asset Details')}</h2>
               {selectedAsset ? (
                 <div className="space-y-4">
                   <div>
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Asset Tag</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('assetTag', 'Asset Tag')}</p>
                     <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.assetTag}</p>
                   </div>
                   <div>
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Name</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('name', 'Name')}</p>
                     <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.name}</p>
                   </div>
                   <div>
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Owner</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('owner', 'Owner')}</p>
                     <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.ownerName}</p>
                   </div>
                   <div>
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Serial Number</p>
-                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.serialNumber || 'N/A'}</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('serialNumber', 'Serial Number')}</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.serialNumber || t('notAvailable', 'N/A')}</p>
                   </div>
                   <div>
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>History Entries</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('historyEntries', 'History Entries')}</p>
                     <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.history.length}</p>
                   </div>
                   <div>
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Relationships</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('relationships', 'Relationships')}</p>
                     <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.relationships.length}</p>
                   </div>
                   <div className="pt-3 border-t border-border flex flex-col gap-2">
                     <Button variant="outline" onClick={() => navigate('/asset-registry-and-tracking')}>
-                      Open Registry
+                      {t('openRegistry', 'Open Registry')}
                     </Button>
-                    <Button onClick={() => openEdit(selectedAsset)}>Edit Asset</Button>
+                    <Button onClick={() => openEdit(selectedAsset)}>{t('editAsset', 'Edit Asset')}</Button>
                   </div>
                 </div>
               ) : (
                 <div className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
-                  Select an asset from the table to see ownership, history, and relationships.
+                  {t('selectAssetTip', 'Select an asset from the table to see ownership, history, and relationships.')}
                 </div>
               )}
             </div>

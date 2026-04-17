@@ -33,11 +33,11 @@ const Layout = ({ children }) => {
   }, [toast]);
 
   if (isLoginPage) {
-    return <main className="min-h-screen bg-background text-foreground">{children}</main>;
+    return <main className="min-h-screen bg-background text-foreground" dir={isRtl ? 'rtl' : 'ltr'}>{children}</main>;
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <div className="pt-16 flex min-h-screen items-start" dir={isRtl ? 'rtl' : 'ltr'}>
         <Sidebar collapsed={!sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />

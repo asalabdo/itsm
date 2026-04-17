@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import MetricCard from './components/MetricCard';
@@ -14,7 +15,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const ExecutiveITServiceSummary = () => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -240,8 +241,9 @@ const ExecutiveITServiceSummary = () => {
         <title>{t('executiveITServiceSummary', 'Executive IT Service Summary')} - ITSM Hub</title>
         <meta name="description" content="High-level strategic dashboard for IT directors and business stakeholders with executive-level KPI monitoring and business impact visibility" />
       </Helmet>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
         <Header />
+        <BreadcrumbTrail />
         
         <main className="pt-20 pb-8">
           <div className="max-w-7xl mx-auto px-6">

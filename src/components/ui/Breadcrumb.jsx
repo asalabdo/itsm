@@ -1,24 +1,28 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const Breadcrumb = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isRtl, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const pathMap = {
-    '/agent-dashboard': 'Dashboard',
-    '/agent-ticket-view': 'All Tickets',
-    '/create-ticket': 'Create Ticket',
-    '/ticket-details': 'Ticket Details',
-    '/dashboard': 'Dashboard',
-    '/profile': 'Profile',
-    '/settings': 'Settings'
+    '/agent-dashboard': t('agentDashboard', 'Dashboard'),
+    '/agent-ticket-view': t('allTickets', 'All Tickets'),
+    '/create-ticket': t('createTicket', 'Create Ticket'),
+    '/ticket-details': t('ticketDetails', 'Ticket Details'),
+    '/dashboard': t('dashboard', 'Dashboard'),
+    '/profile': t('profile', 'Profile'),
+    '/settings': t('settings', 'Settings')
   };
 
   const generateBreadcrumbs = () => {
     const paths = location?.pathname?.split('/')?.filter(Boolean);
-    const breadcrumbs = [{ label: 'Home', path: '/' }];
+    const breadcrumbs = [{ label: t('home', 'Home'), path: '/' }];
 
     let currentPath = '';
     paths?.forEach((path) => {
@@ -41,7 +45,7 @@ const Breadcrumb = () => {
   }
 
   return (
-    <nav className="breadcrumb-container">
+    <nav className="breadcrumb-container" dir={isRtl ? 'rtl' : 'ltr'}>
       {breadcrumbs?.map((crumb, index) => (
         <React.Fragment key={crumb?.path}>
           <span
@@ -51,7 +55,11 @@ const Breadcrumb = () => {
             {crumb?.label}
           </span>
           {index < breadcrumbs?.length - 1 && (
-            <Icon name="ChevronRight" size={14} className="breadcrumb-separator" />
+            <Icon 
+              name={isRtl ? 'ChevronLeft' : 'ChevronRight'} 
+              size={14} 
+              className="breadcrumb-separator" 
+            />
           )}
         </React.Fragment>
       ))}

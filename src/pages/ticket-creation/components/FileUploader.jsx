@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
 
 const FileUploader = ({ attachments, onAttachmentsChange }) => {
+  const { isRtl } = useLanguage();
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -167,16 +169,16 @@ const FileUploader = ({ attachments, onAttachmentsChange }) => {
               {attachments?.map((attachment) => (
                 <motion.div
                   key={attachment?.id}
-                  className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border hover:border-primary/30 hover:bg-muted/70 transition-all duration-300"
+                  className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''} p-3 bg-muted/50 rounded-xl border border-border hover:border-primary/30 hover:bg-muted/70 transition-all duration-300 ${isRtl ? 'flex-row-reverse' : ''}`}
                   variants={{
-                    hidden: { opacity: 0, x: -20 },
+                    hidden: { opacity: 0, x: isRtl ? 20 : -20 },
                     visible: { 
                       opacity: 1, 
                       x: 0,
                       transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }
                     },
                   }}
-                  whileHover={{ x: 4 }}
+                  whileHover={{ x: isRtl ? -4 : 4 }}
                   layout
                 >
                   <motion.div
@@ -200,7 +202,7 @@ const FileUploader = ({ attachments, onAttachmentsChange }) => {
                     )}
                   </motion.div>
 
-                  <div className="flex-1 min-w-0">
+                  <div className={`flex-1 min-w-0 ${'text-left'}`}>
                     <h5 className="font-medium text-sm text-foreground truncate">
                       {attachment?.name}
                     </h5>

@@ -7,7 +7,7 @@ import Button from '../../../components/ui/Button';
 
 const TicketCreationCard = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const ticketCategories = [
@@ -71,7 +71,7 @@ const TicketCreationCard = () => {
           <button
             key={category?.id}
             onClick={() => handleCategoryClick(category?.id)}
-            className="group relative bg-background border-2 border-border rounded-lg p-4 md:p-6 text-left hover:border-primary hover:shadow-elevation-3 transition-smooth hover-lift"
+            className={`group relative bg-background border-2 border-border rounded-lg p-4 md:p-6 ${isRtl ? 'text-right' : 'text-left'} hover:border-primary hover:shadow-elevation-3 transition-smooth hover-lift`}
           >
             <div className={`w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ${category?.bgColor} rounded-lg flex items-center justify-center mb-3 md:mb-4 transition-smooth group-hover:scale-110`}>
               <Icon name={category?.icon} size={28} color={category?.color} />
@@ -82,7 +82,7 @@ const TicketCreationCard = () => {
             <p className="text-sm md:text-base text-muted-foreground line-clamp-3">
               {category?.description}
             </p>
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-smooth">
+            <div className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} opacity-0 group-hover:opacity-100 transition-smooth`}>
               <Icon name="ArrowRight" size={20} color="var(--color-primary)" />
             </div>
           </button>

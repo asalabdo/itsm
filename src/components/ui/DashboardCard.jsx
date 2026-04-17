@@ -5,7 +5,8 @@ const DashboardCard = ({ title, value, subtitle, children, className }) => {
   const { isRtl } = useLanguage();
   return (
     <div
-      className={cn('rounded-lg p-4 shadow-sm bg-card border border-border border-l-4 border-l-primary text-card-foreground', className)}
+      className={cn(`rounded-lg p-4 shadow-sm bg-card border border-border ${isRtl ? 'border-r-4 border-r-primary' : 'border-l-4 border-l-primary'} text-card-foreground`, className)}
+      dir={isRtl ? 'rtl' : 'ltr'}
     >
       <div className="flex items-start justify-between">
         <div>

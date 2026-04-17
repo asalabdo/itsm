@@ -11,7 +11,7 @@ import { slaAPI } from '../../services/api';
 
 const TicketSlaPage = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ const TicketSlaPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Helmet><title>{t('ticketSLA', 'Ticket SLA')}</title></Helmet>
       <Header />
       <BreadcrumbTrail />

@@ -12,7 +12,7 @@ import { ticketsAPI } from '../../services/api';
 
 const SearchResults = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
@@ -78,7 +78,7 @@ const SearchResults = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
 

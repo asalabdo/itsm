@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import ReportLibrarySidebar from './components/ReportLibrarySidebar';
 import FilterPanel from './components/FilterPanel';
 import KPIWidget from './components/KPIWidget';
@@ -12,7 +13,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const ReportingAndAnalyticsHub = () => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [selectedReport, setSelectedReport] = useState(null);
   const [isSidebarOpen] = useState(true);
@@ -108,7 +109,9 @@ const ReportingAndAnalyticsHub = () => {
   const handleRefresh = () => fetchData();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
+      <Header />
+      <BreadcrumbTrail />
       <div className="flex h-screen overflow-hidden">
         {isSidebarOpen && (
           <div className="hidden lg:block w-64 xl:w-80 flex-shrink-0 border-r border-border bg-card">
@@ -120,8 +123,8 @@ const ReportingAndAnalyticsHub = () => {
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
             <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Reporting & Analytics Hub</h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Real-time visibility into service pipeline and performance</p>
+                <h1 className={`text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white ${isRtl ? 'text-right' : 'text-left'}`}>Reporting & Analytics Hub</h1>
+                <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>Real-time visibility into service pipeline and performance</p>
               </div>
               <QuickActionsBar onRefresh={handleRefresh} lastUpdated={lastUpdated} />
             </div>
@@ -140,54 +143,54 @@ const ReportingAndAnalyticsHub = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="bg-card border border-border rounded-lg p-4 sm:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                     <Icon name="Ticket" size={20} color="var(--color-primary)" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Ticket Summary</h3>
-                    <p className="text-xs text-muted-foreground">Last 30 days</p>
+                    <h3 className={`font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>Ticket Summary</h3>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Last 30 days</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('totalTickets', 'Total Tickets')}</span><span className="font-semibold">{analytics?.slaCompliance?.totalTickets ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved within SLA')}</span><span className="font-semibold text-success">{analytics?.slaCompliance?.resolvedWithinSla ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('slaPercent', 'SLA Breaches')}</span><span className="font-semibold text-error">{analytics?.slaCompliance?.breachedSla ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('totalTickets', 'Total Tickets')}</span><span className="font-semibold">{analytics?.slaCompliance?.totalTickets ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved within SLA')}</span><span className="font-semibold text-success">{analytics?.slaCompliance?.resolvedWithinSla ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('slaPercent', 'SLA Breaches')}</span><span className="font-semibold text-error">{analytics?.slaCompliance?.breachedSla ?? '--'}</span></div>
                 </div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="bg-card border border-border rounded-lg p-4 sm:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
                     <Icon name="TrendingUp" size={20} color="var(--color-success)" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">SLA Performance</h3>
-                    <p className="text-xs text-muted-foreground">Compliance rate</p>
+                    <h3 className={`font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>SLA Performance</h3>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Compliance rate</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('slaPercent', 'Compliance %')}</span><span className="font-semibold">{analytics?.slaCompliance?.compliancePercentage != null ? `${Number(analytics.slaCompliance.compliancePercentage).toFixed(1)}%` : '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('activeTechnicians', 'Top Technicians')}</span><span className="font-semibold">{analytics?.topPerformers?.length ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('category', 'Categories')}</span><span className="font-semibold">{analytics?.categoryBreakdown?.length ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('slaPercent', 'Compliance %')}</span><span className="font-semibold">{analytics?.slaCompliance?.compliancePercentage != null ? `${Number(analytics.slaCompliance.compliancePercentage).toFixed(1)}%` : '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('activeTechnicians', 'Top Technicians')}</span><span className="font-semibold">{analytics?.topPerformers?.length ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('category', 'Categories')}</span><span className="font-semibold">{analytics?.categoryBreakdown?.length ?? '--'}</span></div>
                 </div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="bg-card border border-border rounded-lg p-4 sm:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
                     <Icon name="Users" size={20} color="var(--color-warning)" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Top Performer</h3>
-                    <p className="text-xs text-muted-foreground">Best resolution time</p>
+                    <h3 className={`font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>Top Performer</h3>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Best resolution time</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('technician', 'Name')}</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.technicianName ?? '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('avgResolution', 'Avg Resolution')}</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.avgResolutionTimeHours != null ? `${Number(analytics.topPerformers[0].avgResolutionTimeHours).toFixed(1)}h` : '--'}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved')}</span><span className="font-semibold text-success">{analytics?.topPerformers?.[0]?.resolvedCount ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('technician', 'Name')}</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.technicianName ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('avgResolution', 'Avg Resolution')}</span><span className="font-semibold">{analytics?.topPerformers?.[0]?.avgResolutionTimeHours != null ? `${Number(analytics.topPerformers[0].avgResolutionTimeHours).toFixed(1)}h` : '--'}</span></div>
+                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved')}</span><span className="font-semibold text-success">{analytics?.topPerformers?.[0]?.resolvedCount ?? '--'}</span></div>
                 </div>
               </div>
             </div>

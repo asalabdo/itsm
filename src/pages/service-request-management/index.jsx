@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 import ServiceCatalog from './components/ServiceCatalog';
@@ -15,7 +16,7 @@ import { serviceRequestsAPI } from '../../services/api';
 
 const ServiceRequestManagement = () => {
   const location = useLocation();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -161,8 +162,9 @@ const ServiceRequestManagement = () => {
   }, [serviceRequests]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
+      <BreadcrumbTrail />
       
       {/* Request Creation Wizard Modal */}
       {showWizard && (

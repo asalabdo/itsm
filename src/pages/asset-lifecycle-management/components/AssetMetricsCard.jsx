@@ -1,7 +1,10 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
 
 const AssetMetricsCard = ({ title, value, change, changeType, icon, color = 'primary' }) => {
+  const { isRtl } = useLanguage();
+  
   const getColorClasses = () => {
     switch (color) {
       case 'success': return 'bg-success text-success-foreground';
@@ -18,13 +21,13 @@ const AssetMetricsCard = ({ title, value, change, changeType, icon, color = 'pri
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
+      <div className={`flex items-center justify-between mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
         <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getColorClasses()}`}>
           <Icon name={icon} size={24} />
         </div>
         {change && (
-          <div className={`flex items-center space-x-1 ${getChangeColor()}`}>
+          <div className={`flex items-center gap-1 ${getChangeColor()} ${isRtl ? 'flex-row-reverse' : ''}`}>
             <Icon 
               name={changeType === 'positive' ? 'TrendingUp' : changeType === 'negative' ? 'TrendingDown' : 'Minus'} 
               size={16} 
@@ -34,8 +37,8 @@ const AssetMetricsCard = ({ title, value, change, changeType, icon, color = 'pri
         )}
       </div>
       <div>
-        <h3 className="text-2xl font-bold text-foreground mb-1">{value}</h3>
-        <p className="text-sm text-muted-foreground">{title}</p>
+        <h3 className={`text-2xl font-bold text-foreground mb-1 ${isRtl ? 'text-right' : 'text-left'}`}>{value}</h3>
+        <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{title}</p>
       </div>
     </div>
   );

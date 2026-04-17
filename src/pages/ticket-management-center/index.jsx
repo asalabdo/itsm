@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -56,7 +57,7 @@ const TicketManagementCenter = () => {
     total: '--', open: '--', inProgress: '--', resolved: '--', overdue: '--', avgResponse: '--'
   });
   const currentUser = userService.getCurrentUser() || { name: 'Admin User', initials: 'AU', role: 'Admin' };
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const mapTicket = (t) => ({
@@ -461,8 +462,9 @@ const TicketManagementCenter = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
+      <BreadcrumbTrail />
       <div className="flex pt-16">
         <FilterSidebar
           isOpen={filterSidebarOpen}

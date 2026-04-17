@@ -87,7 +87,7 @@ const Sidebar = ({ collapsed = false, onToggle }) => {
   const isSectionActive = (items) => items.some((item) => isActive(item.path));
 
   return (
-    <aside className={`${collapsed ? 'w-20' : 'w-72'} h-[calc(100vh-4rem)] sticky top-16 bg-card text-foreground flex flex-col ${isRtl ? 'border-l border-border' : 'border-r border-border'}`}>
+    <aside className={`${collapsed ? 'w-20' : 'w-72'} h-[calc(100vh-4rem)] sticky top-16 bg-card text-foreground flex flex-col transition-all duration-300 ${isRtl ? 'border-l border-border' : 'border-r border-border'}`} dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 custom-scrollbar">
         {collapsed && (
           <button

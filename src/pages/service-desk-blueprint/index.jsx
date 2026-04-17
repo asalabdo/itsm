@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 
 const coreFields = [
@@ -129,6 +130,7 @@ const ServiceDeskBlueprint = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <BreadcrumbTrail />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <section className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white shadow-2xl">

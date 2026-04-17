@@ -6,6 +6,8 @@ import Image from '../../../components/AppImage';
 import { organizationUnitAPI } from '../../../services/api';
 import { formatLocalizedValue, getLocalizedDisplayName } from '../../../services/displayValue';
 import { ORG_UNIT_SOURCES, groupByOrganizationUnit, getOrganizationUnitLabel } from '../../../services/organizationUnits';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const AVATAR_BACKGROUNDS = [
   'bg-sky-500/15 text-sky-600',
@@ -41,6 +43,8 @@ const getAvatarTone = (name) => {
 };
 
 const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
+  const { isRtl, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -203,19 +207,19 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
     <div className="space-y-3" ref={dropdownRef}>
       <div className="relative">
         <Input
-          label="Employee"
+          label={t('employee', 'Employee')}
           type="text"
-          placeholder="Search by name, email, or company..."
+          placeholder={t('searchEmployeePlaceholder', 'Start typing to search for existing employees')}
           value={searchQuery}
           onChange={handleSearchChange}
           required
-          description="Start typing to search for existing employees"
+          description={t('searchEmployeeDesc', 'Start typing to search for existing employees')}
         />
 
         <AnimatePresence>
           {showResults && (
             <motion.div
-              className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-elevation-3 z-50 max-h-80 overflow-y-auto"
+              className={`absolute top-full ${isRtl ? 'right-0 left-0' : 'left-0 right-0'} mt-2 bg-popover border border-border rounded-xl shadow-elevation-3 z-50 max-h-80 overflow-y-auto`}
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -243,18 +247,18 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                     <div key={group.key} className="py-1">
                       <div className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                         {group.label}
-                        <span className="ml-2 text-primary">({group.items.length})</span>
+                        <span className={`${isRtl ? 'mr-2' : 'ml-2'} text-primary`}>({group.items.length})</span>
                       </div>
                       {group.items.map((employee) => (
                         <motion.button
                           key={employee?.id}
                           type="button"
                           onClick={() => handleEmployeeSelect(employee)}
-                          className="w-full flex items-center gap-3 p-3 hover:bg-muted transition-all duration-300 text-left rounded-lg mx-1"
-                          whileHover={{ x: 4 }}
+                          className={`w-full flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''} p-3 hover:bg-muted transition-all duration-300 ${isRtl ? 'text-right flex-row-reverse' : 'text-left'} rounded-lg mx-1`}
+                          whileHover={{ x: isRtl ? -4 : 4 }}
                           whileTap={{ scale: 0.98 }}
                           variants={{
-                            hidden: { opacity: 0, x: -10 },
+                            hidden: { opacity: 0, x: isRtl ? 10 : -10 },
                             visible: { opacity: 1, x: 0, transition: { duration: 0.2 } },
                           }}
                         >
@@ -282,10 +286,10 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
 
                           <motion.div
                             initial={{ x: 0 }}
-                            whileHover={{ x: 4 }}
+                            whileHover={{ x: isRtl ? -4 : 4 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <Icon name="ChevronRight" size={18} color="var(--color-muted-foreground)" />
+                            <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={18} color="var(--color-muted-foreground)" />
                           </motion.div>
                         </motion.button>
                       ))}
@@ -313,7 +317,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="flex items-start gap-3">
+            <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.2 }}
@@ -321,7 +325,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                 {renderAvatar(selectedEmployee)}
               </motion.div>
 
-              <div className="flex-1 min-w-0">
+              <div className={`flex-1 min-w-0 ${'text-left'}`}>
                 <h4 className="font-semibold text-foreground mb-1">{getEmployeeLabel(selectedEmployee)}</h4>
                 <motion.div
                   className="space-y-1"
@@ -336,21 +340,21 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                   animate="visible"
                 >
                   <motion.p
-                    className="text-sm text-muted-foreground caption flex items-center gap-2"
+                    className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Mail" size={14} />
                     {formatLocalizedValue(selectedEmployee?.email) || 'N/A'}
                   </motion.p>
                   <motion.p
-                    className="text-sm text-muted-foreground caption flex items-center gap-2"
+                    className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Building2" size={14} />
                     {[formatLocalizedValue(selectedEmployee?.department), formatLocalizedValue(selectedEmployee?.jobTitle)].filter(Boolean).join(' • ') || 'No department'}
                   </motion.p>
                   <motion.p
-                    className="text-sm text-muted-foreground caption flex items-center gap-2"
+                    className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Phone" size={14} />

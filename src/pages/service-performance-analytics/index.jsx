@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import MetricCard from './components/MetricCard';
 import FilterPanel from './components/FilterPanel';
 import PerformanceChart from './components/PerformanceChart';
@@ -12,7 +13,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const ServicePerformanceAnalytics = () => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [filters, setFilters] = useState({
     timeRange: '30d',
@@ -124,8 +125,9 @@ const ServicePerformanceAnalytics = () => {
         <title>{t('servicePerformance', 'Service Performance Analytics')} - ITSM Hub</title>
         <meta name="description" content={t('servicePerformanceSubtitle', 'Comprehensive analytical dashboard for tracking IT service KPI trends, performance patterns, and data-driven optimization decisions.')} />
       </Helmet>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
         <Header />
+        <BreadcrumbTrail />
         
         <main className="pt-16">
           <div className="max-w-7xl mx-auto px-6 py-8">
@@ -133,14 +135,14 @@ const ServicePerformanceAnalytics = () => {
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-foreground mb-2">
+                  <h1 className={`text-3xl font-bold text-foreground mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>
                     {t('servicePerformance', 'Service Performance Analytics')}
                   </h1>
-                  <p className="text-muted-foreground">
+                  <p className={`text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
                     {t('servicePerformanceSubtitle', 'Track KPI trends, identify performance patterns, and make data-driven optimization decisions')}
                   </p>
                 </div>
-                <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
+                <div className={`hidden md:flex items-center space-x-2 text-sm text-muted-foreground ${isRtl ? 'flex-row-reverse space-x-reverse' : ''}`}>
                   <span>{t('dashboardRefreshed', 'Dashboard refreshed')}:</span>
                   <span className="font-medium">Sep 21, 2024 8:48 AM</span>
                 </div>
@@ -189,65 +191,65 @@ const ServicePerformanceAnalytics = () => {
 
             {/* Additional Insights */}
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-                <h4 className="text-lg font-semibold text-foreground mb-4">{t('keyInsightsShort', 'Key Insights')}</h4>
+              <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
+                <h4 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('keyInsightsShort', 'Key Insights')}</h4>
                 <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
+                  <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm text-foreground font-medium">{t('slaPerformanceImprovingShort', 'SLA Performance Improving')}</p>
-                      <p className="text-xs text-muted-foreground">زيادة بنسبة 2.3% في معدل الالتزام خلال هذه الفترة</p>
+                      <p className={`text-sm text-foreground font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('slaPerformanceImprovingShort', 'SLA Performance Improving')}</p>
+                      <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>زيادة بنسبة 2.3% في معدل الالتزام خلال هذه الفترة</p>
                     </div>
                   </div>
-                  <div className="flex items-start space-x-3">
+                  <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <div className="w-2 h-2 bg-warning rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm text-foreground font-medium">{t('emailIssuesTrendingUpShort', 'Email Issues Trending Up')}</p>
-                      <p className="text-xs text-muted-foreground">تم تسجيل 45 حادثًا، ويحتاج الأمر إلى متابعة</p>
+                      <p className={`text-sm text-foreground font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('emailIssuesTrendingUpShort', 'Email Issues Trending Up')}</p>
+                      <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>تم تسجيل 45 حادثًا، ويحتاج الأمر إلى متابعة</p>
                   </div>
                 </div>
-                  <div className="flex items-start space-x-3">
+                  <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                     <div>
-                      <p className="text-sm text-foreground font-medium">{t('employeeSatisfactionHighShort', 'Employee Satisfaction High')}</p>
-                      <p className="text-xs text-muted-foreground">متوسط التقييم 4.4/5 عبر جميع الخدمات</p>
+                      <p className={`text-sm text-foreground font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('employeeSatisfactionHighShort', 'Employee Satisfaction High')}</p>
+                      <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>متوسط التقييم 4.4/5 عبر جميع الخدمات</p>
                 </div>
               </div>
                 </div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-                <h4 className="text-lg font-semibold text-foreground mb-4">{t('recommendations', 'Recommendations')}</h4>
+              <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
+                <h4 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('recommendations', 'Recommendations')}</h4>
                 <div className="space-y-3">
                   <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                    <p className="text-sm text-foreground font-medium mb-1">{t('focusOnEmailInfrastructure', 'Focus on Email Infrastructure')}</p>
-                    <p className="text-xs text-muted-foreground">{t('addressRecurringIssues', 'Address recurring connectivity issues to reduce ticket volume')}</p>
+                    <p className={`text-sm text-foreground font-medium mb-1 ${isRtl ? 'text-right' : 'text-left'}`}>{t('focusOnEmailInfrastructure', 'Focus on Email Infrastructure')}</p>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('addressRecurringIssues', 'Address recurring connectivity issues to reduce ticket volume')}</p>
                   </div>
                   <div className="p-3 bg-success/5 border border-success/20 rounded-lg">
-                    <p className="text-sm text-foreground font-medium mb-1">{t('expandUserTraining', 'Expand User Training')}</p>
-                    <p className="text-xs text-muted-foreground">{t('reducePasswordResets', 'Reduce password reset requests through better education')}</p>
+                    <p className={`text-sm text-foreground font-medium mb-1 ${isRtl ? 'text-right' : 'text-left'}`}>{t('expandUserTraining', 'Expand User Training')}</p>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('reducePasswordResets', 'Reduce password reset requests through better education')}</p>
                   </div>
                   <div className="p-3 bg-secondary/5 border border-secondary/20 rounded-lg">
-                    <p className="text-sm text-foreground font-medium mb-1">{t('optimizeWorkflows', 'Optimize Workflows')}</p>
-                    <p className="text-xs text-muted-foreground">{t('streamlineApprovals', 'Streamline approval processes for faster resolution')}</p>
+                    <p className={`text-sm text-foreground font-medium mb-1 ${isRtl ? 'text-right' : 'text-left'}`}>{t('optimizeWorkflows', 'Optimize Workflows')}</p>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('streamlineApprovals', 'Streamline approval processes for faster resolution')}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
-                <h4 className="text-lg font-semibold text-foreground mb-4">{t('quickActions', 'Quick Actions')}</h4>
+              <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
+                <h4 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('quickActions', 'Quick Actions')}</h4>
                 <div className="space-y-3">
-                  <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                    <p className="text-sm text-foreground font-medium">{t('generateMonthlyReport', 'Generate Monthly Report')}</p>
-                    <p className="text-xs text-muted-foreground">{t('createPerformanceSummary', 'Create comprehensive performance summary')}</p>
+                  <button className={`w-full p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <p className={`text-sm text-foreground font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('generateMonthlyReport', 'Generate Monthly Report')}</p>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('createPerformanceSummary', 'Create comprehensive performance summary')}</p>
                   </button>
-                  <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                    <p className="text-sm text-foreground font-medium">{t('scheduleReviewMeeting', 'Schedule Review Meeting')}</p>
-                    <p className="text-xs text-muted-foreground">{t('discussFindings', 'Discuss findings with stakeholders')}</p>
+                  <button className={`w-full p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <p className={`text-sm text-foreground font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('scheduleReviewMeeting', 'Schedule Review Meeting')}</p>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('discussFindings', 'Discuss findings with stakeholders')}</p>
                   </button>
-                  <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                    <p className="text-sm text-foreground font-medium">{t('configureAlerts', 'Configure Alerts')}</p>
-                    <p className="text-xs text-muted-foreground">{t('setMonitoringThresholds', 'Set up proactive monitoring thresholds')}</p>
+                  <button className={`w-full p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <p className={`text-sm text-foreground font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('configureAlerts', 'Configure Alerts')}</p>
+                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('setMonitoringThresholds', 'Set up proactive monitoring thresholds')}</p>
                   </button>
                 </div>
               </div>

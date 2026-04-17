@@ -90,7 +90,7 @@ const steps = [
 
 const TicketCreation = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   
   // Dynamic option arrays using translations
@@ -340,11 +340,11 @@ const TicketCreation = () => {
 
   const renderCard = (title, description, icon, children) => (
     <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-      <div className="flex items-start gap-3 mb-4">
+      <div className={`flex items-start gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
           <Icon name={icon} size={20} className="text-primary" />
         </div>
-        <div>
+        <div className={'text-left'}>
           <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           <p className="text-xs text-muted-foreground">{description}</p>
         </div>
@@ -379,7 +379,7 @@ const TicketCreation = () => {
         <meta name="description" content="Create tickets quickly with presets, autosave, and guided review." />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5" dir={isRtl ? 'rtl' : 'ltr'}>
         <Header />
         <BreadcrumbTrail />
 
@@ -387,8 +387,8 @@ const TicketCreation = () => {
           <div className="space-y-6 md:space-y-8">
             <section className="rounded-xl border border-border bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 py-4 md:px-5 md:py-5 shadow-elevation-1">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <div className={`space-y-3`}>
+                  <div className={`inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <Icon name="Sparkles" size={14} />
                     {t('fastTicketFlow', 'Fast ticket flow')}
                   </div>
@@ -408,8 +408,8 @@ const TicketCreation = () => {
             <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] items-start">
               <aside className="space-y-6">
                 <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <div>
+                  <div className={`flex items-center justify-between gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <div className={'text-left'}>
                       <h2 className="text-base font-semibold text-foreground">{t('steps', 'Steps')}</h2>
                       <p className="text-xs text-muted-foreground">{t('followFlow', 'Follow the flow from top to bottom.')}</p>
                     </div>
@@ -424,7 +424,7 @@ const TicketCreation = () => {
                           key={step.label}
                           type="button"
                           onClick={() => setCurrentStep(index)}
-                          className={`w-full rounded-xl border p-3 text-left transition-all ${
+                          className={`w-full rounded-xl border p-3 ${'text-left'} transition-all ${
                             active
                               ? 'border-primary bg-primary/10 shadow-elevation-2'
                               : complete
@@ -432,7 +432,7 @@ const TicketCreation = () => {
                                 : 'border-border bg-background hover:border-primary/30'
                           }`}
                         >
-                          <div className="flex items-start gap-3">
+                          <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                             <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                               active
                                 ? 'bg-primary text-primary-foreground'
@@ -442,7 +442,7 @@ const TicketCreation = () => {
                             }`}>
                               {index + 1}
                             </div>
-                            <div className="min-w-0">
+                            <div className={`min-w-0 ${'text-left'}`}>
                               <div className="text-sm font-semibold text-foreground">{t(step.label, step.label)}</div>
                               <div className="text-xs text-muted-foreground">{t(step.description, step.description)}</div>
                             </div>
@@ -454,7 +454,7 @@ const TicketCreation = () => {
                 </section>
 
                 <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-                  <h3 className="text-base md:text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <h3 className={`text-base md:text-lg font-semibold text-foreground mb-4 flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <Icon name="Zap" size={18} className="text-primary" />
                     {t('quickSummary', 'Quick Summary')}
                   </h3>
@@ -469,30 +469,30 @@ const TicketCreation = () => {
                       [t('department', 'Department'), selectedDepartmentLabel],
                       [t('files', 'Files'), `${formData.attachments.length}`],
                     ].map(([label, value]) => (
-                      <div key={label} className="flex items-start justify-between gap-4 py-2 px-2 rounded-lg hover:bg-background/50 transition-colors">
+                      <div key={label} className={`flex items-start justify-between gap-4 py-2 px-2 rounded-lg hover:bg-background/50 transition-colors ${isRtl ? 'flex-row-reverse' : ''}`}>
                         <span className="text-xs font-medium text-muted-foreground">{label}</span>
-                        <span className="text-xs font-semibold text-foreground text-right break-words max-w-[140px]">{value}</span>
+                        <span className={`text-xs font-semibold text-foreground break-words max-w-[140px] ${'text-left'}`}>{value}</span>
                       </div>
                     ))}
                   </div>
                 </section>
 
                 <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Icon name="Sparkles" size={20} className="text-primary" />
                     </div>
-                    <div>
+                    <div className={'text-left'}>
                       <h3 className="text-base font-semibold text-foreground">{t('fastFeatures', 'Fast features')}</h3>
                       <p className="text-xs text-muted-foreground">{t('builtIntoNewFlow', 'Built into the new flow')}</p>
                     </div>
                   </div>
                   <ul className="space-y-3 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('quickPresetsCommon', 'Quick presets for common tickets')}</li>
-                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('draftAutosaveDisplay', 'Draft autosave in the browser')}</li>
-                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('routingSlaPreview', 'Routing and SLA preview')}</li>
-                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('reviewStepBefore', 'Review step before submit')}</li>
-                    <li className="flex items-start gap-2"><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('recentTicketReuse', 'Recent-ticket reuse and duplicate warnings')}</li>
+                    <li className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse text-left' : ''}`}><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('quickPresetsCommon', 'Quick presets for common tickets')}</li>
+                    <li className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse text-left' : ''}`}><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('draftAutosaveDisplay', 'Draft autosave in the browser')}</li>
+                    <li className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse text-left' : ''}`}><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('routingSlaPreview', 'Routing and SLA preview')}</li>
+                    <li className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse text-left' : ''}`}><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('reviewStepBefore', 'Review step before submit')}</li>
+                    <li className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse text-left' : ''}`}><Icon name="Check" size={16} className="mt-0.5 text-success" /> {t('recentTicketReuse', 'Recent-ticket reuse and duplicate warnings')}</li>
                   </ul>
                 </section>
               </aside>
@@ -502,7 +502,7 @@ const TicketCreation = () => {
                   <button
                     type="button"
                     onClick={() => setShowQuickStart((prev) => !prev)}
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                    className={`inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors ${isRtl ? 'flex-row-reverse' : ''}`}
                   >
                     <Icon name="Zap" size={16} className="text-primary" />
                     {showQuickStart ? t('hideQuickStart', 'Hide Quick Start') : t('showQuickStart', 'Show Quick Start')}
@@ -510,7 +510,7 @@ const TicketCreation = () => {
                   <button
                     type="button"
                     onClick={() => setShowRecentTickets((prev) => !prev)}
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                    className={`inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors ${isRtl ? 'flex-row-reverse' : ''}`}
                   >
                     <Icon name="RotateCcw" size={16} className="text-primary" />
                     {showRecentTickets ? t('hideRecentTickets', 'Hide Recent Tickets') : t('showRecentTickets', 'Show Recent Tickets')}
@@ -519,8 +519,8 @@ const TicketCreation = () => {
 
                 {showQuickStart && (
                   <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-                    <div className="flex items-center justify-between gap-4 mb-4">
-                      <div>
+                    <div className={`flex items-center justify-between gap-4 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                      <div className={'text-left'}>
                         <h2 className="text-base font-semibold text-foreground">{t('quickStart', 'Quick Start')}</h2>
                         <p className="text-xs text-muted-foreground">{t('quickStartDesc', 'Pick a common ticket type and skip most of the setup.')}</p>
                       </div>
@@ -529,9 +529,9 @@ const TicketCreation = () => {
                     <div className="h-2 w-full rounded-full bg-muted overflow-hidden mb-4"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} /></div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {quickPresets.map((preset) => (
-                        <button key={preset.title} type="button" onClick={() => applyPreset(preset)} className="rounded-xl border border-border bg-background p-4 text-left hover:border-primary/40 hover:shadow-elevation-2 transition-all">
-                          <div className="flex items-center justify-between gap-2 mb-2"><div className="font-semibold text-foreground">{preset.title}</div><Icon name="Zap" size={16} className="text-primary shrink-0" /></div>
-                          <div className="text-xs text-muted-foreground line-clamp-2">{preset.subject}</div>
+                        <button key={preset.title} type="button" onClick={() => applyPreset(preset)} className={`rounded-xl border border-border bg-background p-4 ${'text-left'} hover:border-primary/40 hover:shadow-elevation-2 transition-all`}>
+                          <div className={`flex items-center justify-between gap-2 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}><div className={`font-semibold text-foreground ${'text-left'}`}>{preset.title}</div><Icon name="Zap" size={16} className="text-primary shrink-0" /></div>
+                          <div className={`text-xs text-muted-foreground line-clamp-2 ${'text-left'}`}>{preset.subject}</div>
                         </button>
                       ))}
                     </div>
@@ -540,8 +540,8 @@ const TicketCreation = () => {
 
                 {showRecentTickets && (
                   <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-                    <div className="flex items-center justify-between gap-3 mb-4">
-                      <div>
+                    <div className={`flex items-center justify-between gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                      <div className={'text-left'}>
                         <h2 className="text-base font-semibold text-foreground">{t('recentTickets', 'Recent Tickets')}</h2>
                         <p className="text-xs text-muted-foreground">{t('recentTicketsDesc', 'Reuse a recent request as a starting point.')}</p>
                       </div>
@@ -564,12 +564,12 @@ const TicketCreation = () => {
                             urgency: formData.urgency || 'medium',
                             department: formData.department || 'it',
                           })}
-                          className="w-full text-left rounded-xl border border-border bg-background p-3 hover:border-primary/40 hover:shadow-elevation-2 transition-all"
+                          className={`w-full ${'text-left'} rounded-xl border border-border bg-background p-3 hover:border-primary/40 hover:shadow-elevation-2 transition-all`}
                         >
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="min-w-0">
-                              <div className="text-sm font-semibold text-foreground truncate">{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
-                              <div className="text-xs text-muted-foreground truncate">{ticket?.title || t('untiledTicket', 'Untitled ticket')}</div>
+                          <div className={`flex items-center justify-between gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                            <div className={`min-w-0 ${'text-left'}`}>
+                              <div className={`text-sm font-semibold text-foreground truncate ${'text-left'}`}>{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
+                              <div className={`text-xs text-muted-foreground truncate ${'text-left'}`}>{ticket?.title || t('untiledTicket', 'Untitled ticket')}</div>
                             </div>
                             <Icon name="RotateCcw" size={16} className="text-primary shrink-0" />
                           </div>
@@ -610,17 +610,17 @@ const TicketCreation = () => {
                       <Input label={t('subject', 'Title')} type="text" placeholder={t('titlePlaceholder', 'Short, action-oriented title')} value={formData.subject} onChange={(e) => setField('subject', e.target.value)} required error={errors.subject} />
                       {duplicateTickets.length > 0 && (
                         <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
-                          <div className="flex items-start gap-3">
+                          <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                             <Icon name="AlertTriangle" size={18} className="text-warning mt-0.5" />
-                            <div className="min-w-0">
+                            <div className={`min-w-0 ${'text-left'}`}>
                               <div className="text-sm font-semibold text-foreground">{t('possibleDuplicate', 'Possible duplicate detected')}</div>
                               <p className="text-xs text-muted-foreground">{t('duplicateWarning', 'We found similar recent tickets. Reusing one can save a few steps.')}</p>
                               <div className="mt-3 space-y-2">
                                 {duplicateTickets.slice(0, 3).map((ticket) => (
-                                  <div key={ticket?.id} className="flex items-center justify-between gap-3 rounded-lg bg-background/70 border border-border px-3 py-2">
-                                    <div className="min-w-0">
-                                      <div className="text-xs font-semibold text-foreground truncate">{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
-                                      <div className="text-xs text-muted-foreground truncate">{ticket?.title || t('untiledTicket', 'Untitled ticket')}</div>
+                                  <div key={ticket?.id} className={`flex items-center justify-between gap-3 rounded-lg bg-background/70 border border-border px-3 py-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                                    <div className={`min-w-0 ${'text-left'}`}>
+                                      <div className={`text-xs font-semibold text-foreground truncate ${'text-left'}`}>{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
+                                      <div className={`text-xs text-muted-foreground truncate ${'text-left'}`}>{ticket?.title || t('untiledTicket', 'Untitled ticket')}</div>
                                     </div>
                                     <Button
                                       type="button"
@@ -638,7 +638,7 @@ const TicketCreation = () => {
                         </div>
                       )}
                       <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">Description <span className="text-error">*</span></label>
+                        <label className="block text-sm font-medium text-foreground mb-2">{t('description', 'Description')} <span className="text-error">*</span></label>
                         <textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} placeholder={t('descriptionPlaceholder', 'What happened, who is affected, and what should happen next?')} rows={6} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background resize-none" />
                         {errors.description && <p className="text-sm text-error mt-2">{errors.description}</p>}
                         {templateHint && <p className="text-xs text-muted-foreground mt-2">{t('hint', 'Hint')}: {templateHint}</p>}
@@ -649,8 +649,8 @@ const TicketCreation = () => {
 
                   {currentStep === 2 && renderCard(t('step3Priority', 'Step 3 - Priority'), t('setUrgencyImpactRouting', 'Set urgency, impact, and the routing details.'), 'AlertCircle', (
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div><h3 className="text-sm font-semibold text-foreground">{t('advancedControls', 'Advanced controls')}</h3><p className="text-xs text-muted-foreground">{t('advancedControlsDesc', 'Keep these open for full control or hide them for a simpler flow.')}</p></div>
+                      <div className={`flex items-center justify-between gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                        <div className={'text-left'}><h3 className="text-sm font-semibold text-foreground">{t('advancedControls', 'Advanced controls')}</h3><p className="text-xs text-muted-foreground">{t('advancedControlsDesc', 'Keep these open for full control or hide them for a simpler flow.')}</p></div>
                         <Button type="button" variant="ghost" size="sm" onClick={() => setAdvancedOpen((prev) => !prev)}>{advancedOpen ? t('hide', 'Hide') : t('show', 'Show')}</Button>
                       </div>
                       {advancedOpen && (
@@ -672,7 +672,8 @@ const TicketCreation = () => {
                       {formData.category && formData.priority && <RoutingPreview category={formData.category} priority={formData.priority} subject={formData.subject} />}
                       {(formData.category || formData.service) && (
                         <div className="bg-card border border-border rounded-xl p-4">
-                          <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"><Icon name="Clock3" size={20} className="text-indigo-500" /></div><div><h3 className="text-base font-semibold text-foreground">{t('serviceSla', 'Service SLA')}</h3><p className="text-xs text-muted-foreground">{t('liveSlaGuidance', 'Live SLA guidance for the selected service')}</p></div></div>
+                          <div className={`flex items-center gap-3 mb-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"><Icon name="Clock3" size={20} className="text-indigo-500" /></div><div><h3 className="text-base font-semibold text-foreground">{t('serviceSla', 'Service SLA')}</h3><p className="text-xs text-muted-foreground">{t('liveSlaGuidance', 'Live SLA guidance for the selected service')}</p></div></div>
                           {serviceSlaLoading ? <p className="text-sm text-muted-foreground">{t('loadingSlaGuidance', 'Loading SLA guidance...')}</p> : serviceSla ? (
                             <div className="space-y-3">
                               <div className="rounded-lg bg-muted p-3"><div className="text-xs uppercase tracking-wider text-muted-foreground">{t('policy', 'Policy')}</div><div className="font-semibold text-foreground">{serviceSla.policyName}</div></div>
@@ -719,7 +720,7 @@ const TicketCreation = () => {
 
                   <div className="flex flex-col sm:flex-row gap-3">
                     {currentStep > 0 ? <Button type="button" variant="outline" size="lg" onClick={previousStep} iconName="ArrowLeft" iconPosition="left">{t('back', 'Back')}</Button> : <Button type="button" variant="outline" size="lg" onClick={handleReset} iconName="RotateCcw" iconPosition="left">{t('reset', 'Reset')}</Button>}
-                  {currentStep < 3 ? <Button type="button" variant="default" size="lg" onClick={nextStep} iconName="ArrowRight" iconPosition="right" className="sm:ml-auto">{t('next', 'Next')}</Button> : <Button type="submit" variant="default" size="lg" loading={isSubmitting} iconName="Send" iconPosition="right" className="sm:ml-auto">{isSubmitting ? t('creating', 'Creating...') : t('createTicket', 'Create Ticket')}</Button>}
+                  {currentStep < 3 ? <Button type="button" variant="default" size="lg" onClick={nextStep} iconName="ArrowRight" iconPosition="right" className={isRtl ? 'sm:mr-auto' : 'sm:ml-auto'}>{t('next', 'Next')}</Button> : <Button type="submit" variant="default" size="lg" loading={isSubmitting} iconName="Send" iconPosition="right" className={isRtl ? 'sm:mr-auto' : 'sm:ml-auto'}>{isSubmitting ? t('creating', 'Creating...') : t('createTicket', 'Create Ticket')}</Button>}
                 </div>
                 </form>
               </div>
@@ -735,7 +736,7 @@ const TicketCreation = () => {
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4"><Icon name="CheckCircle2" size={40} color="var(--color-success)" /></div>
               <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-2">{t('ticketCreatedSuccessfully', 'Ticket Created Successfully!')}</h2>
               <p className="text-sm md:text-base text-muted-foreground mb-4">{t('ticketSubmittedRouted', 'Your ticket has been submitted and routed to the right team.')}</p>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg"><Icon name="Ticket" size={20} color="var(--color-primary)" /><span className="text-lg font-semibold text-primary">{generatedTicketId}</span></div>
+              <div className={`inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg ${isRtl ? 'flex-row-reverse' : ''}`}><Icon name="Ticket" size={20} color="var(--color-primary)" /><span className="text-lg font-semibold text-primary">{generatedTicketId}</span></div>
             </div>
             <div className="space-y-3">
               <Button variant="default" size="lg" fullWidth onClick={handleModalClose} iconName="Eye" iconPosition="right">{t('viewTicketDetails', 'View Ticket Details')}</Button>

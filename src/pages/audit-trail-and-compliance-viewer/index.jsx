@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import DashboardCard from '../../components/ui/DashboardCard';
@@ -173,7 +174,7 @@ const buildTicketAction = (ticket) => ({
 });
 
 const AuditTrailAndComplianceViewer = () => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -270,8 +271,9 @@ const AuditTrailAndComplianceViewer = () => {
           content="مركز تحكم لمراجعة الإجراءات الأخيرة والموافقات وتحديثات التذاكر ونشاط التكامل."
         />
       </Helmet>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
         <Header />
+        <BreadcrumbTrail />
 
         <main className="pt-16">
           <div className="px-4 md:px-6 lg:px-8 py-6 space-y-6">

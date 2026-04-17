@@ -27,7 +27,7 @@ const AutomationManagement = () => {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const targetOptions = [
@@ -130,7 +130,7 @@ const AutomationManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
       <main className="px-4 md:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto space-y-6">

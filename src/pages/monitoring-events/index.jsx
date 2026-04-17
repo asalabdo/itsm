@@ -12,7 +12,7 @@ import { getTranslation } from '../../services/i18n';
 
 const MonitoringEvents = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   
   const severityOptions = [
@@ -133,7 +133,7 @@ const MonitoringEvents = () => {
   ]), [pingStatus, form.severity, form.category, form.createProblem]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
 
@@ -239,11 +239,11 @@ const MonitoringEvents = () => {
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5">
-              <h2 className="text-lg font-semibold text-foreground mb-4">{t('liveSummary', 'Live Summary')}</h2>
+            <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
+              <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('liveSummary', 'Live Summary')}</h2>
               <div className="space-y-3">
                 {summaryCards.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between rounded-xl bg-muted/40 px-4 py-3">
+                  <div key={item.label} className={`flex items-center justify-between rounded-xl bg-muted/40 px-4 py-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                     <span className="text-sm text-muted-foreground">{item.label}</span>
                     <span className="text-sm font-medium text-foreground">{item.value}</span>
                   </div>
@@ -251,13 +251,13 @@ const MonitoringEvents = () => {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5">
-              <h2 className="text-lg font-semibold text-foreground mb-4">{t('backendResponse', 'Backend Response')}</h2>
+            <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
+              <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('backendResponse', 'Backend Response')}</h2>
               {responseTicket ? (
                 <div className="space-y-4">
                   <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('createdTicket', 'Created Ticket')}</p>
-                    <p className="font-medium text-foreground">{responseTicket.ticketNumber || `TKT-${responseTicket.id}`}</p>
+                    <p className={`text-xs uppercase tracking-wider text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('createdTicket', 'Created Ticket')}</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{responseTicket.ticketNumber || `TKT-${responseTicket.id}`}</p>
                     <p className="text-sm text-muted-foreground">{responseTicket.title}</p>
                     <Button
                       className="mt-3"

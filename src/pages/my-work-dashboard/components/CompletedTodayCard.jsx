@@ -4,7 +4,7 @@ import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 
 const CompletedTodayCard = ({ tickets = [], loading }) => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const completedTickets = tickets
     .filter((ticket) => String(ticket?.status).toLowerCase() === 'resolved')
@@ -67,12 +67,17 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
   const { avgResolution, avgSatisfaction } = calculateMetrics();
 
   return (
-    <div className="bg-card border border-border rounded-lg">
-      <div className="p-6 border-b border-border">
+    <div className="bg-card border border-border rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+      <div className="p-6 border-b border-border bg-gradient-to-r from-success/5 to-transparent">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
-            <Icon name="CheckCircle2" size={20} />
-            <span>Completed Today ({completedTickets?.length})</span>
+          <h3 className="text-lg font-bold text-foreground flex items-center space-x-3">
+            <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
+              <Icon name="CheckCircle2" size={20} className="text-success" />
+            </div>
+            <div>
+              <span className="block">{t('completedToday', 'Completed Today')}</span>
+              <span className="text-sm font-normal text-muted-foreground">{completedTickets?.length} {t('resolved', 'resolved')}</span>
+            </div>
           </h3>
           <button className="p-2 hover:bg-muted rounded-lg transition-colors">
             <Icon name="BarChart3" size={16} className="text-muted-foreground" />
@@ -80,22 +85,22 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
         </div>
 
         {/* Quick Metrics */}
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="bg-success/10 rounded-lg p-3">
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="bg-success/10 rounded-lg p-3 border border-success/20">
             <div className="flex items-center space-x-2">
-              <Icon name="Clock" size={16} className="text-success" />
+              <Icon name="Clock" size={18} className="text-success" />
               <div>
-                <p className="text-xs text-muted-foreground">Avg Resolution</p>
-                <p className="font-semibold text-success">{avgResolution}m</p>
+                <p className="text-xs font-medium text-muted-foreground">{t('avgResolution', 'Avg Resolution')}</p>
+                <p className="text-lg font-bold text-success">{avgResolution}m</p>
               </div>
             </div>
           </div>
-          <div className="bg-warning/10 rounded-lg p-3">
+          <div className="bg-warning/10 rounded-lg p-3 border border-warning/20">
             <div className="flex items-center space-x-2">
-              <Icon name="Star" size={16} className="text-warning" />
+              <Icon name="Star" size={18} className="text-warning" />
               <div>
-                <p className="text-xs text-muted-foreground">Satisfaction</p>
-                <p className="font-semibold text-warning">{avgSatisfaction}/5</p>
+                <p className="text-xs font-medium text-muted-foreground">{t('satisfaction', 'Satisfaction')}</p>
+                <p className="text-lg font-bold text-warning">{avgSatisfaction}/5</p>
               </div>
             </div>
           </div>
@@ -121,7 +126,7 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
                     {ticket?.priority}
                   </span>
                   <span className="px-2 py-1 text-xs bg-success/10 text-success rounded font-medium">
-                    Resolved
+                    {t('resolved', 'Resolved')}
                   </span>
                 </div>
                 
@@ -152,9 +157,9 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
               </div>
               
               <div className="text-right text-xs text-muted-foreground ml-4">
-                <p>Completed</p>
+                <p>{t('completed', 'Completed')}</p>
                 <p className="font-medium text-foreground">{formatTime(ticket?.completedAt)}</p>
-                <p className="mt-1">Resolved in {ticket?.resolutionTime}m</p>
+                <p className="mt-1">{t('resolvedIn', 'Resolved in')} {ticket?.resolutionTime}m</p>
               </div>
             </div>
 
@@ -164,13 +169,13 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
                 <div className="flex items-center space-x-1">
                   <Icon name="Zap" size={14} className="text-success" />
                   <span className="text-xs text-success font-medium">
-                    {ticket?.resolutionTime < 30 ? 'Quick Resolution' : 'Standard Time'}
+                    {ticket?.resolutionTime < 30 ? t('quickResolution', 'Quick Resolution') : t('standardTime', 'Standard Time')}
                   </span>
                 </div>
                 {ticket?.satisfactionScore >= 5 && (
                   <div className="flex items-center space-x-1">
                     <Icon name="Heart" size={14} className="text-error" />
-                    <span className="text-xs text-error font-medium">Perfect Score</span>
+                    <span className="text-xs text-error font-medium">{t('perfectScore', 'Perfect Score')}</span>
                   </div>
                 )}
               </div>
@@ -197,7 +202,7 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
                   <Icon name="CheckCircle2" size={24} className="text-success" />
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">{selectedTicket?.id}</h3>
-                    <p className="text-sm text-muted-foreground">Completed {formatTime(selectedTicket?.completedAt)}</p>
+                    <p className="text-sm text-muted-foreground">{t('completedAt', 'Completed')} {formatTime(selectedTicket?.completedAt)}</p>
                   </div>
                 </div>
                 <button
@@ -209,58 +214,56 @@ const CompletedTodayCard = ({ tickets = [], loading }) => {
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-6">
-                <div>
-                  <h4 className="font-semibold text-foreground mb-2">{selectedTicket?.title}</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Customer:</span>
-                      <p className="text-foreground font-medium">{selectedTicket?.customer}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Department:</span>
-                      <p className="text-foreground font-medium">{selectedTicket?.department}</p>
-                    </div>
+            <div className="p-8 space-y-6">
+              <div>
+                <h4 className="font-semibold text-foreground mb-2">{selectedTicket?.title}</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">{t('customer', 'Customer')}:</span>
+                    <p className="text-foreground font-medium">{selectedTicket?.customer}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">{t('department', 'Department')}:</span>
+                    <p className="text-foreground font-medium">{selectedTicket?.department}</p>
                   </div>
                 </div>
+              </div>
 
-                <div className="bg-success/10 border border-success/20 rounded-lg p-4">
-                  <h5 className="font-semibold text-foreground mb-3">Performance Summary</h5>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-muted-foreground text-sm">Resolution Time:</span>
-                      <p className="text-foreground font-semibold">{selectedTicket?.resolutionTime} minutes</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground text-sm">Employee Rating:</span>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <div className="flex space-x-1">
-                          {renderStars(selectedTicket?.satisfactionScore)}
-                        </div>
-                        <span className="font-semibold text-foreground">
-                          {selectedTicket?.satisfactionScore}/5
-                        </span>
+              <div className="bg-success/10 border border-success/20 rounded-lg p-6">
+                <h5 className="font-semibold text-foreground mb-4">{t('performanceSummary', 'Performance Summary')}</h5>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <span className="text-muted-foreground text-sm">{t('resolutionTime', 'Resolution Time')}:</span>
+                    <p className="text-foreground font-semibold mt-1">{selectedTicket?.resolutionTime} {t('minutes', 'minutes')}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-sm">{t('employeeRating', 'Employee Rating')}:</span>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <div className="flex space-x-1">
+                        {renderStars(selectedTicket?.satisfactionScore)}
                       </div>
+                      <span className="font-semibold text-foreground">
+                        {selectedTicket?.satisfactionScore}/5
+                      </span>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div>
-                  <h5 className="font-semibold text-foreground mb-2">Employee Feedback</h5>
-                  <div className="bg-muted/30 rounded-lg p-4">
-                    <p className="text-foreground italic">"{selectedTicket?.feedback}"</p>
-                  </div>
+              <div>
+                <h5 className="font-semibold text-foreground mb-3">{t('employeeFeedback', 'Employee Feedback')}</h5>
+                <div className="bg-muted/30 rounded-lg p-6">
+                  <p className="text-foreground italic">"{selectedTicket?.feedback}"</p>
                 </div>
+              </div>
 
-                <div className="flex justify-between">
-                  <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
-                    View Full History
-                  </button>
-                  <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-                    Create Similar Solution
-                  </button>
-                </div>
+              <div className="flex justify-between pt-4 border-t border-border">
+                <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+                  {t('viewFullHistory', 'View Full History')}
+                </button>
+                <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                  {t('createSimilarSolution', 'Create Similar Solution')}
+                </button>
               </div>
             </div>
           </div>

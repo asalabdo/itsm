@@ -14,7 +14,7 @@ import { ticketsAPI, settingsAPI } from '../../services/api';
 
 const CustomerPortal = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [activeTab, setActiveTab] = useState('overview');
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
@@ -159,7 +159,7 @@ const CustomerPortal = () => {
         <title>{t('customerPortal', 'Customer Portal')} - SupportFlow Pro</title>
         <meta name="description" content={t('portalMetaDescription', 'Manage your support tickets, access the knowledge base, and track issue resolution in SupportFlow Pro portal')} />
       </Helmet>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
         <Header />
         <BreadcrumbTrail />
 
@@ -196,8 +196,8 @@ const CustomerPortal = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
             {stats?.map((stat) => (
-              <div key={stat?.label} className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 hover:shadow-elevation-3 transition-smooth">
-                <div className="flex items-start justify-between mb-3">
+              <div key={stat?.label} className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 hover:shadow-elevation-3 transition-smooth" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className={`flex items-start justify-between mb-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <div className={`w-10 h-10 md:w-12 md:h-12 ${stat?.bgColor} rounded-lg flex items-center justify-center`}>
                     <Icon name={stat?.icon} size={24} color={stat?.color} />
                   </div>
@@ -205,8 +205,8 @@ const CustomerPortal = () => {
                     {stat?.change}
                   </span>
                 </div>
-                <div className="text-2xl md:text-3xl font-semibold text-foreground mb-1 data-text">{stat?.value}</div>
-                <div className="text-sm text-muted-foreground">{stat?.label}</div>
+                <div className={`text-2xl md:text-3xl font-semibold text-foreground mb-1 data-text ${isRtl ? 'text-right' : 'text-left'}`}>{stat?.value}</div>
+                <div className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{stat?.label}</div>
               </div>
             ))}
           </div>

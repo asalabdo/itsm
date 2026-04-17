@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import ApprovalRequestCard from './components/ApprovalRequestCard';
 import RequestDetailsPanel from './components/RequestDetailsPanel';
 import ApprovalHistoryPanel from './components/ApprovalHistoryPanel';
@@ -322,6 +323,7 @@ const ApprovalQueueManager = () => {
       </Helmet>
     <div className="min-h-screen bg-background">
         <Header />
+        <BreadcrumbTrail />
 
         <main className="pt-16">
           <div className="max-w-[1920px] mx-auto p-4 md:p-6 lg:p-8">

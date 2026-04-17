@@ -72,7 +72,7 @@ const fallbackArticles = [
 
 const KnowledgeBaseSection = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -306,7 +306,7 @@ const KnowledgeBaseSection = () => {
               <Icon name="MessageCircle" size={32} color="#FFFFFF" />
             </div>
           </div>
-          <div className="flex-1 text-center md:text-left">
+          <div className={`flex-1 text-center ${isRtl ? 'md:text-right' : 'md:text-left'}`}>
             <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">
               {t('cantFindLookingFor', 'Can\'t find what you\'re looking for?')}
             </h3>

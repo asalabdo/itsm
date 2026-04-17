@@ -68,7 +68,7 @@ const categoryPalette = {
 
 const KnowledgeBase = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [articles, setArticles] = useState([]);
   const [query, setQuery] = useState('');
@@ -116,7 +116,7 @@ const KnowledgeBase = () => {
   const featuredArticles = filteredArticles.filter((article) => article.isFeatured);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
       <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8">
@@ -189,8 +189,8 @@ const KnowledgeBase = () => {
               </div>
 
               {/* Categories Overview */}
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1">
-                <h2 className="text-xl font-semibold text-foreground mb-4">{t('allTopics', 'All Topics')}</h2>
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+                <h2 className={`text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('allTopics', 'All Topics')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
                     { name: t('gettingStarted', 'Getting Started'), count: 1, icon: 'Play' },
@@ -203,9 +203,9 @@ const KnowledgeBase = () => {
                       key={category.name}
                       type="button"
                       onClick={() => setSelectedCategory(category.name)}
-                      className="text-left p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                      className={`p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors ${isRtl ? 'text-right' : 'text-left'}`}
                     >
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className={`flex items-center gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                           <Icon name={category.icon} size={16} className="text-primary" />
                         </div>
@@ -220,8 +220,8 @@ const KnowledgeBase = () => {
               </div>
 
               {/* Popular Articles */}
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1">
-                <h2 className="text-xl font-semibold text-foreground mb-4">{t('popularArticles', 'Popular Articles')}</h2>
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+                <h2 className={`text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('popularArticles', 'Popular Articles')}</h2>
                 <div className="space-y-4">
                   {[
                     {
@@ -294,12 +294,12 @@ const KnowledgeBase = () => {
               </div>
 
               {/* Quick Troubleshooting Guides */}
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1">
-                <h2 className="text-xl font-semibold text-foreground mb-4">{t('quickTroubleshootingGuides', 'Quick Troubleshooting Guides')}</h2>
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+                <h2 className={`text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('quickTroubleshootingGuides', 'Quick Troubleshooting Guides')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <h3 className="font-semibold text-foreground mb-3">{t('paymentProcessingErrors', 'Payment Processing Errors')}</h3>
-                    <ol className="space-y-2 text-sm text-muted-foreground">
+                    <h3 className={`font-semibold text-foreground mb-3 ${isRtl ? 'text-right' : 'text-left'}`}>{t('paymentProcessingErrors', 'Payment Processing Errors')}</h3>
+                    <ol className={`space-y-2 text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
                       <li>1. {t('verifyCardDetails', 'Verify card details')}</li>
                       <li>2. {t('checkBillingAddress', 'Check billing address')}</li>
                       <li>3. {t('contactYourBank', 'Contact your bank')}</li>
@@ -307,7 +307,7 @@ const KnowledgeBase = () => {
                     </ol>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-3">{t('emailNotificationIssues', 'Email Notification Issues')}</h3>
+                    <h3 className={`font-semibold text-foreground mb-3 ${isRtl ? 'text-right' : 'text-left'}`}>{t('emailNotificationIssues', 'Email Notification Issues')}</h3>
                     <ol className="space-y-2 text-sm text-muted-foreground">
                       <li>1. {t('checkSpamFolder', 'Check spam folder')}</li>
                       <li>2. {t('verifyEmailSettings', 'Verify email settings')}</li>
@@ -338,11 +338,11 @@ const KnowledgeBase = () => {
             </div>
 
             <aside className="space-y-4">
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-                <div className="flex items-center justify-between mb-4">
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className={`flex items-center justify-between mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">{t('articleDetail', 'Article Detail')}</h2>
-                    <p className="text-sm text-muted-foreground">{t('openTopicToSeeArticle', 'Open a topic to see the full article.')}</p>
+                    <h2 className={`text-lg font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('articleDetail', 'Article Detail')}</h2>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('openTopicToSeeArticle', 'Open a topic to see the full article.')}</p>
                   </div>
                   <Icon name="FileText" size={20} className="text-primary" />
                 </div>

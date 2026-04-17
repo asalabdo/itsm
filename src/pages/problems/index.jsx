@@ -34,7 +34,7 @@ const getStatusOptions = (t) => [
 ];
 
 const Problems = () => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -159,7 +159,7 @@ const Problems = () => {
   const selectedDetail = useMemo(() => selectedProblem || problems[0] || null, [selectedProblem, problems]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
 
@@ -248,11 +248,11 @@ const Problems = () => {
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5">
-              <div className="flex items-center justify-between gap-3 mb-4">
+            <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
+              <div className={`flex items-center justify-between gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">{t('problemDetail', 'Problem Detail')}</h2>
-                  <p className="text-sm text-muted-foreground">{t('selectedBackendRecord', 'Selected backend record')}</p>
+                  <h2 className={`text-lg font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('problemDetail', 'Problem Detail')}</h2>
+                  <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('selectedBackendRecord', 'Selected backend record')}</p>
                 </div>
                 <Icon name="ClipboardList" size={18} className="text-primary" />
               </div>

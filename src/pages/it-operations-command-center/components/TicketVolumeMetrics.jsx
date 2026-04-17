@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import { ticketsAPI, dashboardAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TicketVolumeMetrics = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [volumeData, setVolumeData] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState('24h');
   const [totalTickets, setTotalTickets] = useState(0);
@@ -62,14 +66,14 @@ const TicketVolumeMetrics = () => {
       const data = payload?.[0]?.payload;
       return (
         <div className="bg-popover border border-border rounded-lg p-3 operations-shadow">
-          <p className="font-medium text-popover-foreground mb-2">{`Time: ${label}`}</p>
+          <p className="font-medium text-popover-foreground mb-2">{`${t('time', 'Time')}: ${label}`}</p>
           <div className="space-y-1">
-            <p className="text-sm text-error">Open: {data?.open}</p>
-            <p className="text-sm text-warning">In Progress: {data?.inProgress}</p>
-            <p className="text-sm text-success">Resolved: {data?.resolved}</p>
+            <p className="text-sm text-error">{t('open', 'Open')}: {data?.open}</p>
+            <p className="text-sm text-warning">{t('inProgress', 'In Progress')}: {data?.inProgress}</p>
+            <p className="text-sm text-success">{t('resolved', 'Resolved')}: {data?.resolved}</p>
           </div>
           <div className="mt-2 pt-2 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-1">Priority Breakdown:</p>
+            <p className="text-xs text-muted-foreground mb-1">{t('priorityBreakdown', 'Priority Breakdown')}:</p>
             <div className="grid grid-cols-2 gap-1 text-xs">
               <span>P1: {data?.priority?.P1}</span>
               <span>P2: {data?.priority?.P2}</span>
@@ -94,7 +98,7 @@ const TicketVolumeMetrics = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <Icon name="BarChart3" size={24} className="text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">Ticket Volume Metrics</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('ticketVolumeMetrics', 'Ticket Volume Metrics')}</h3>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -103,9 +107,9 @@ const TicketVolumeMetrics = () => {
             onChange={(e) => setSelectedPeriod(e?.target?.value)}
             className="text-sm border border-border rounded px-2 py-1 bg-background text-foreground"
           >
-            <option value="24h">Last 24 Hours</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
+            <option value="24h">{t('last24Hours', 'Last 24 Hours')}</option>
+            <option value="7d">{t('last7Days', 'Last 7 Days')}</option>
+            <option value="30d">{t('last30Days', 'Last 30 Days')}</option>
           </select>
           
           <Icon name="RefreshCw" size={16} className="text-muted-foreground cursor-pointer hover:text-foreground" />
@@ -115,7 +119,7 @@ const TicketVolumeMetrics = () => {
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center p-3 bg-muted rounded-lg">
           <div className="text-2xl font-bold text-error">{currentStats?.open}</div>
-          <div className="text-sm text-muted-foreground">Open</div>
+          <div className="text-sm text-muted-foreground">{t('open', 'Open')}</div>
           <div className="flex items-center justify-center mt-1">
             <Icon name="TrendingUp" size={14} className="text-error mr-1" />
             <span className="text-xs text-error">+12%</span>
@@ -124,7 +128,7 @@ const TicketVolumeMetrics = () => {
         
         <div className="text-center p-3 bg-muted rounded-lg">
           <div className="text-2xl font-bold text-warning">{currentStats?.inProgress}</div>
-          <div className="text-sm text-muted-foreground">In Progress</div>
+          <div className="text-sm text-muted-foreground">{t('inProgress', 'In Progress')}</div>
           <div className="flex items-center justify-center mt-1">
             <Icon name="TrendingDown" size={14} className="text-success mr-1" />
             <span className="text-xs text-success">-5%</span>
@@ -133,7 +137,7 @@ const TicketVolumeMetrics = () => {
         
         <div className="text-center p-3 bg-muted rounded-lg">
           <div className="text-2xl font-bold text-success">{currentStats?.resolved}</div>
-          <div className="text-sm text-muted-foreground">Resolved</div>
+          <div className="text-sm text-muted-foreground">{t('resolved', 'Resolved')}</div>
           <div className="flex items-center justify-center mt-1">
             <Icon name="TrendingUp" size={14} className="text-success mr-1" />
             <span className="text-xs text-success">+8%</span>
@@ -163,7 +167,7 @@ const TicketVolumeMetrics = () => {
       </div>
       {/* Priority Distribution */}
       <div className="mt-6 pt-4 border-t border-border">
-        <h4 className="text-sm font-medium text-foreground mb-3">Priority Distribution (Current)</h4>
+        <h4 className="text-sm font-medium text-foreground mb-3">{t('priorityDistributionCurrent', 'Priority Distribution (Current)')}</h4>
         <div className="grid grid-cols-4 gap-3">
           {Object.entries(priorityColors)?.map(([priority, color]) => {
             const count = volumeData?.reduce((sum, item) => sum + (item?.priority?.[priority] || 0), 0);

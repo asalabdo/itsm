@@ -21,7 +21,7 @@ import { getTranslation } from '../../services/i18n';
 
 const ReportsAnalytics = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [chartType, setChartType] = useState('line');
   const [showFilters, setShowFilters] = useState(false);
@@ -86,7 +86,7 @@ const ReportsAnalytics = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
       <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8">

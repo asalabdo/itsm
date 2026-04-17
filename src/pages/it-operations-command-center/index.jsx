@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import GlobalControls from './components/GlobalControls';
 import CriticalAlerts from './components/CriticalAlerts';
 import TicketVolumeMetrics from './components/TicketVolumeMetrics';
@@ -82,6 +83,7 @@ const ITOperationsCommandCenter = () => {
 
       <div className="min-h-screen bg-background">
         <Header />
+        <BreadcrumbTrail />
         
         {/* Main Content */}
         <main className="pt-16">

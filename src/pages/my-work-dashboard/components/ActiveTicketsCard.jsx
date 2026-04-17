@@ -7,7 +7,7 @@ import { ticketsAPI } from '../../../services/api';
 
 const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const activeTickets = tickets.length > 0 ? tickets.map(t => ({
     backendId: t.id,
@@ -46,9 +46,9 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
 
   const formatTimeAgo = (date) => {
     const minutes = Math.floor((Date.now() - date?.getTime()) / 60000);
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 60) return `${minutes}m ${t('ago', 'ago')}`;
     const hours = Math.floor(minutes / 60);
-    return `${hours}h ago`;
+    return `${hours}h ${t('ago', 'ago')}`;
   };
 
   const filteredTickets = activeTickets?.filter(ticket => {
@@ -69,18 +69,23 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg">
-      <div className="p-6 border-b border-border">
+    <div className="bg-card border border-border rounded-xl shadow-lg hover:shadow-xl transition-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
+      <div className="p-6 border-b border-border bg-gradient-to-r from-blue-500/5 to-transparent">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
-            <Icon name="Inbox" size={20} />
-            <span>{t('activeTicketsCard', 'Active Tickets')} ({filteredTickets?.length})</span>
+          <h3 className={`text-lg font-bold text-foreground flex items-center ${isRtl ? 'space-x-reverse space-x-3' : 'space-x-3'}`}>
+            <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+              <Icon name="Inbox" size={20} className="text-blue-500" />
+            </div>
+            <div>
+              <span className="block">{t('activeTicketsCard', 'Active Tickets')}</span>
+              <span className="text-sm font-normal text-muted-foreground">{filteredTickets?.length} {t('tickets', 'tickets')}</span>
+            </div>
           </h3>
-          <div className="flex space-x-2">
+          <div className={`flex ${isRtl ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
             <button className="p-2 hover:bg-muted rounded-lg transition-colors">
               <Icon name="Filter" size={16} className="text-muted-foreground" />
             </button>
-            <button className="p-2 hover:bg-muted rounded-lg transition-colors">
+            <button className="p-2 hover:bg-muted rounded-lg transition-colors" onClick={() => window.dispatchEvent(new CustomEvent('itsm:refresh'))}>
               <Icon name="RefreshCw" size={16} className="text-muted-foreground" />
             </button>
           </div>
@@ -101,7 +106,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
+                <div className={`flex items-center mb-2 ${isRtl ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                   <span className={`px-2 py-1 text-xs rounded border font-medium ${getPriorityColor(ticket?.priority)}`}>
                     {ticket?.priority}
                   </span>
@@ -112,7 +117,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
                 
                 <h4 className="font-medium text-foreground text-sm mb-1">{ticket?.id}</h4>
                 <p className="text-sm text-foreground mb-2">{ticket?.title}</p>
-                <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                <div className={`flex items-center text-xs text-muted-foreground ${isRtl ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
                   <span>{ticket?.customer}</span>
                   <span>•</span>
                   <span>{ticket?.department}</span>
@@ -121,7 +126,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
                 </div>
               </div>
               
-              <div className="text-right text-xs text-muted-foreground ml-4">
+              <div className={`text-xs text-muted-foreground ${isRtl ? 'ml-4 text-left' : 'ml-4 text-right'}`}>
                 <p>{formatTimeAgo(ticket?.assignedAt)}</p>
                 <p className="mt-1">SLA: {Math.floor(ticket?.slaTime / 60)}h {ticket?.slaTime % 60}m</p>
               </div>
@@ -129,7 +134,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
 
             {/* Quick Actions */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-              <div className="flex space-x-2">
+              <div className={`flex ${isRtl ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                 <button
                   onClick={async (e) => {
                     e?.stopPropagation();
@@ -154,7 +159,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
                 </button>
               </div>
               
-              <div className="flex space-x-1">
+              <div className={`flex ${isRtl ? 'space-x-reverse space-x-1' : 'space-x-1'}`}>
                 <button onClick={() => ticket?.backendId && navigate(`/ticket-details/${ticket.backendId}`)} className="p-1 hover:bg-muted rounded" title={t('openDetails', 'Open details')}>
                   <Icon name="MessageSquare" size={14} className="text-muted-foreground" />
                 </button>
@@ -173,7 +178,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
       {selectedTicket && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b border-border">
+            <div className="p-6 border-b border-border sticky top-0 bg-card">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-foreground">{selectedTicket?.id}</h3>
                 <button
@@ -185,8 +190,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-4">
+            <div className="p-8 space-y-6">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">{t('description', 'Description')}</label>
                   <p className="text-foreground">{selectedTicket?.description}</p>
@@ -214,7 +218,7 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
                   />
                 </div>
                 
-                <div className="flex justify-end space-x-2">
+              <div className={`flex justify-end mt-8 pt-6 border-t border-border ${isRtl ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                   <button
                     onClick={() => setSelectedTicket(null)}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
@@ -231,7 +235,6 @@ const ActiveTicketsCard = ({ tickets = [], filter, loading }) => {
               </div>
             </div>
           </div>
-        </div>
       )}
     </div>
   );

@@ -14,7 +14,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const ManagerDashboard = () => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = useMemo(() => (key, fallback) => getTranslation(language, key, fallback), [language]);
   const [dateRange, setDateRange] = useState('month');
   const [, setMetrics] = useState([]);
@@ -228,7 +228,7 @@ const ManagerDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
       <main className="max-w-[1920px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">

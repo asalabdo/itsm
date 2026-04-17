@@ -6,22 +6,22 @@ import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
 const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService, onServiceSelect, selectedModule, onModuleChange }) => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const modules = [
-    {
-      id: 'dg-assistant',
-      name: 'DG Assistant for IT Office',
-      nameAr: 'مكتب مساعد المحافظ للشئون التقنية',
-      icon: 'Landmark',
-      description: 'Central intake for cybersecurity, infrastructure, QA/QC, development, and PM requests',
-      descriptionAr: 'طلبات الأمن السيبراني والبنية التحتية وضمان الجودة والتطوير والمشاريع',
-      color: 'var(--color-primary)',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      badge: null,
-    },
+    // {
+    //   id: 'dg-assistant',
+    //   name: 'DG Assistant for IT Office',
+    //   nameAr: 'مكتب مساعد المحافظ للشئون التقنية',
+    //   icon: 'Landmark',
+    //   description: 'Central intake for cybersecurity, infrastructure, QA/QC, development, and PM requests',
+    //   descriptionAr: 'طلبات الأمن السيبراني والبنية التحتية وضمان الجودة والتطوير والمشاريع',
+    //   color: 'var(--color-primary)',
+    //   bgColor: 'bg-blue-50',
+    //   borderColor: 'border-blue-200',
+    //   badge: null,
+    // },
     {
       id: 'it-support',
       name: 'IT Support',
@@ -625,69 +625,68 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
   return (
     <>
       <div className="space-y-8">
-        {/* Module Selection */}
-        <motion.div 
-          className="space-y-4"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div>
-            <label className="block text-sm font-semibold text-foreground mb-1">
-              {t('departmentCategoryService', 'Department / Category / Service')} <span className="text-error">*</span>
-            </label>
-            <p className="text-xs text-muted-foreground">{t('pickRouteFlow', 'Pick the route in one flow, from department to category to service.')}</p>
-          </div>
-          {selectedModule && (
-            <button
-              type="button"
-              onClick={() => onModuleChange('')}
-              className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline"
-            >
-              {t('showAllDepartments', 'Show all departments')}
-            </button>
-          )}
           <motion.div 
-            className="flex flex-col gap-3"
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.05,
+            className="space-y-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className={isRtl ? 'text-right' : 'text-left'}>
+              <label className="block text-sm font-semibold text-foreground mb-1">
+                {t('departmentCategoryService', 'Department / Category / Service')} <span className="text-error">*</span>
+              </label>
+              <p className="text-xs text-muted-foreground">{t('pickRouteFlow', 'Pick the route in one flow, from department to category to service.')}</p>
+            </div>
+            {selectedModule && (
+              <button
+                type="button"
+                onClick={() => onModuleChange('')}
+                className="inline-flex items-center gap-2 text-xs font-medium text-primary {isRtl ? 'flex-row-reverse' : ''} hover:underline"
+              >
+                {t('showAllDepartments', 'Show all departments')}
+              </button>
+            )}
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+              variants={{
+                visible: {
+            transition: {
+              staggerChildren: 0.05,
+            },
                 },
+              }}
+              initial="hidden"
+              animate="visible"
+            >
+              {visibleModules.map((module) => (
+                <motion.button
+            key={module.id}
+            type="button"
+            onClick={() => onModuleChange(module.id)}
+            className={`relative overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 group ${isRtl ? 'text-right' : 'text-left'} w-full ${
+              selectedModule === module.id
+                ? 'bg-primary/10 border border-primary shadow-elevation-2'
+                : 'bg-card border border-border hover:border-primary/40 hover:bg-primary/5'
+            }`}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            variants={{
+              hidden: { opacity: 0, scale: 0.8 },
+              visible: { 
+                opacity: 1, 
+                scale: 1,
+                transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }
               },
             }}
-            initial="hidden"
-            animate="visible"
-          >
-            {visibleModules.map((module) => (
-              <motion.button
-                key={module.id}
-                type="button"
-                onClick={() => onModuleChange(module.id)}
-                className={`relative overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 group text-left w-full ${
-                  selectedModule === module.id
-                    ? 'bg-primary/10 border border-primary shadow-elevation-2'
-                    : 'bg-card border border-border hover:border-primary/40 hover:bg-primary/5'
-                }`}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                variants={{
-                  hidden: { opacity: 0, scale: 0.8 },
-                  visible: { 
-                    opacity: 1, 
-                    scale: 1,
-                    transition: { duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }
-                  },
-                }}
-              >
-                {/* Background accent */}
+                >
+            {/* Background accent */}
                 <div className={`absolute inset-0 opacity-10 transition-opacity ${
                   selectedModule === module.id ? 'opacity-20' : 'opacity-0 group-hover:opacity-10'
                 }`}>
                   <div className="absolute inset-0 bg-gradient-to-br from-primary to-transparent"></div>
                 </div>
 
-                <div className="relative flex items-start gap-3">
+                <div className={`relative flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <motion.div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-all ${
                       selectedModule === module.id 
@@ -704,15 +703,16 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                     />
                   </motion.div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground leading-tight">{module.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    <p className={`text-sm font-semibold text-foreground leading-tight ${isRtl ? 'text-right' : 'text-left'}`}>{language === 'ar' ? module.nameAr : module.name}</p>
+                     
+                    <p className={`text-xs text-muted-foreground mt-1 leading-relaxed ${isRtl ? 'text-right' : 'text-left'}`}>
                       {(categoriesByModule[module.id] || []).length} {t('categoriesAvailable', 'categories available')}
                     </p>
                     {selectedModule === module.id && (
                       <motion.div
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-xs text-primary font-medium mt-1"
+                        className={`text-xs text-primary font-medium mt-1 ${isRtl ? 'text-right' : 'text-left'}`}
                       >
                         ✓ {t('selected', 'Selected')}
                       </motion.div>
@@ -739,11 +739,11 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                   {t('category', 'Category')} <span className="text-error">*</span>
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  {selectedModuleConfig ? `${t('categoriesFor', 'Categories for')} ${selectedModuleConfig.name}` : t('chooseDepartmentFirst', 'Choose a department first to see categories')}
+                  {selectedModuleConfig ? `${t('categoriesFor', 'Categories for')} ${language === 'ar' ? selectedModuleConfig.nameAr : selectedModuleConfig.name}` : t('chooseDepartmentFirst', 'Choose a department first to see categories')}
                 </p>
               </div>
               <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
                 variants={{
                   visible: {
                     transition: {
@@ -759,11 +759,11 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                     key={category?.id}
                     type="button"
                     onClick={() => handleCategoryClick(category?.id)}
-                    className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 group text-left w-full h-full ${
+                    className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 group ${isRtl ? 'text-right' : 'text-left'} w-full h-full ${
                       selectedCategory === category?.id
                         ? `${category?.bgColor} ${category?.borderColor} border shadow-elevation-2`
                         : 'bg-card border border-border hover:border-primary/30 hover:bg-primary/5'
-                    }`}
+                    }`}}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     variants={{
@@ -787,29 +787,31 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                       }}
                     ></div>
 
-                    <div className="relative flex items-start gap-4">
-                      <motion.div
-                        className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
-                          selectedCategory === category?.id 
-                            ? category?.bgColor 
-                            : 'bg-muted group-hover:bg-muted/80'
-                        }`}
-                        whileHover={{ scale: 1.15, rotate: 5 }}
-                      >
-                        <Icon
-                          name={category?.icon}
-                          size={22}
-                          color={selectedCategory === category?.id ? category?.color : 'var(--color-muted-foreground)'}
-                        />
-                      </motion.div>
+                    <div className={`relative flex items-start gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                      
                       <div className="flex-1 min-w-0 pt-1">
-                        <div className="flex items-start justify-between gap-2 mb-2">
+                      
+                        <div className={`flex items-start justify-between gap-2 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                            <motion.div
+                            className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+                              selectedCategory === category?.id 
+                                ? category?.bgColor 
+                                : 'bg-muted group-hover:bg-muted/80'
+                            }`}
+                            whileHover={{ scale: 1.15, rotate: 5 }}
+                          >
+                            <Icon
+                              name={category?.icon}
+                              size={22}
+                              color={selectedCategory === category?.id ? category?.color : 'var(--color-muted-foreground)'}
+                            />
+                          </motion.div>
                           <div className="flex-1">
-                            <h3 className="font-bold text-base text-foreground leading-snug">
-                              {category?.name}
+                            <h3 className={`font-bold text-base text-foreground leading-snug ${isRtl ? 'text-right' : 'text-left'}`}>
+                              {language === 'ar' ? category?.nameAr : category?.name}
                             </h3>
-                            <p className="text-xs font-medium text-primary/80 mt-1">
-                              {category?.nameAr}
+                            <p className={`text-xs font-medium text-primary/80 mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>
+                              {language === 'ar' ? category?.name : category?.nameAr}
                             </p>
                           </div>
                           <AnimatePresence>
@@ -828,8 +830,8 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                             )}
                           </AnimatePresence>
                         </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {category?.description}
+                        <p className={`text-xs text-muted-foreground leading-relaxed ${isRtl ? 'text-right' : 'text-left'}`}>
+                          {language === 'ar' ? category?.descriptionAr : category?.description}
                         </p>
                       </div>
                     </div>
@@ -840,7 +842,7 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
                 <button
                   type="button"
                   onClick={() => onCategoryChange('')}
-                  className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline"
+                  className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline {isRtl ? 'flex-row-reverse' : ''}"
                 >
                   {t('showAllCategories', 'Show all categories')}
                 </button>
@@ -858,18 +860,18 @@ const CategorySelector = ({ selectedCategory, onCategoryChange, selectedService,
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
             >
-              <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+              <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className={`flex flex-wrap items-center gap-2 text-xs font-medium ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                    {selectedModuleConfig?.name || t('department', 'Department')}
+                    {language === 'ar' ? selectedModuleConfig?.nameAr || t('department', 'Department') : selectedModuleConfig?.name || t('department', 'Department')}
                   </span>
-                  <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
+                  <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={14} className="text-muted-foreground" />
                   <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                    {selectedCategoryConfig?.name || t('category', 'Category')}
+                    {language === 'ar' ? selectedCategoryConfig?.nameAr || t('category', 'Category') : selectedCategoryConfig?.name || t('category', 'Category')}
                   </span>
-                  <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
+                  <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={14} className="text-muted-foreground" />
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
-                    {selectedService?.nameEn || t('service', 'Service')}
+                    {language === 'ar' ? selectedService?.nameAr || selectedService?.nameEn || t('service', 'Service') : selectedService?.nameEn || t('service', 'Service')}
                   </span>
                 </div>
               </div>

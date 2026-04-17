@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import ChangeCalendar from './components/ChangeCalendar';
 import ApprovalWorkflow from './components/ApprovalWorkflow';
 import ChangeSuccessMetrics from './components/ChangeSuccessMetrics';
@@ -138,6 +139,7 @@ const ChangeManagementDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <BreadcrumbTrail />
       {/* Main Content */}
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-6 py-8">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import { useLanguage } from '../../context/LanguageContext';
@@ -234,6 +235,7 @@ const AssetRegistryAndTracking = () => {
       </Helmet>
       <div className="min-h-screen bg-background">
         <Header />
+        <BreadcrumbTrail />
 
         <main className="pt-16">
           <div className="bg-card border-b border-border px-4 sm:px-6 lg:px-8 py-4">

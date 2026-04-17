@@ -6,6 +6,7 @@ import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import { assetsAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 const emptyForm = {
   assetTag: '',
@@ -57,6 +58,7 @@ const AssetField = ({ label, children, hint }) => (
 
 const ManageAssets = () => {
   const navigate = useNavigate();
+  const { isRtl } = useLanguage();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -232,15 +234,15 @@ const ManageAssets = () => {
           content="Create, edit, and track assets with live backend data."
         />
       </Helmet>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
         <Header />
         <BreadcrumbTrail />
 
         <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8 max-w-[1920px] mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2">Manage Assets</h1>
-              <p className="text-sm md:text-base text-muted-foreground">
+              <h1 className={`text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>Manage Assets</h1>
+              <p className={`text-sm md:text-base text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
                 Live asset inventory, ownership, and lifecycle operations
               </p>
             </div>
@@ -258,41 +260,41 @@ const ManageAssets = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1">
-              <p className="text-xs text-muted-foreground">Total Assets</p>
-              <p className="text-2xl font-semibold text-foreground mt-1">{stats.total}</p>
+            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Total Assets</p>
+              <p className={`text-2xl font-semibold text-foreground mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{stats.total}</p>
             </div>
-            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1">
-              <p className="text-xs text-muted-foreground">Active</p>
-              <p className="text-2xl font-semibold text-success mt-1">{stats.active}</p>
+            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Active</p>
+              <p className={`text-2xl font-semibold text-success mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{stats.active}</p>
             </div>
-            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1">
-              <p className="text-xs text-muted-foreground">Maintenance</p>
-              <p className="text-2xl font-semibold text-warning mt-1">{stats.maintenance}</p>
+            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Maintenance</p>
+              <p className={`text-2xl font-semibold text-warning mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{stats.maintenance}</p>
             </div>
-            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1">
-              <p className="text-xs text-muted-foreground">Total Value</p>
-              <p className="text-2xl font-semibold text-foreground mt-1">{formatCurrency(stats.value)}</p>
+            <div className="bg-card border border-border rounded-lg p-4 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+              <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Total Value</p>
+              <p className={`text-2xl font-semibold text-foreground mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{formatCurrency(stats.value)}</p>
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-lg p-4 md:p-5 shadow-elevation-1 mb-6">
+          <div className="bg-card border border-border rounded-lg p-4 md:p-5 shadow-elevation-1 mb-6" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               <label className="block">
-                <span className="text-xs font-medium text-muted-foreground">Search</span>
+                <span className={`text-xs font-medium text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Search</span>
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by tag, name, owner, serial..."
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  className={`mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ${isRtl ? 'text-right' : 'text-left'}`}
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-muted-foreground">Status</span>
+                <span className={`text-xs font-medium text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Status</span>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  className={`mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ${isRtl ? 'text-right' : 'text-left'}`}
                 >
                   <option value="all">All</option>
                   <option value="active">Active</option>
@@ -301,11 +303,11 @@ const ManageAssets = () => {
                 </select>
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-muted-foreground">Type</span>
+                <span className={`text-xs font-medium text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Type</span>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  className={`mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ${isRtl ? 'text-right' : 'text-left'}`}
                 >
                   <option value="all">All</option>
                   <option value="hardware">Hardware</option>
@@ -318,11 +320,11 @@ const ManageAssets = () => {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 bg-card border border-border rounded-lg shadow-elevation-1 overflow-hidden">
+            <div className="xl:col-span-2 bg-card border border-border rounded-lg shadow-elevation-1 overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
               <div className="p-4 md:p-5 border-b border-border flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">Asset Inventory</h2>
-                  <p className="text-sm text-muted-foreground">{filteredAssets.length} matching assets</p>
+                  <h2 className={`text-lg font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Asset Inventory</h2>
+                  <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{filteredAssets.length} matching assets</p>
                 </div>
               </div>
 
@@ -339,13 +341,13 @@ const ManageAssets = () => {
                   <table className="w-full min-w-[1100px]">
                     <thead className="bg-muted/50 border-b border-border">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Asset</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Owner</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Location</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Value</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Asset</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Type</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Owner</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Location</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Status</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'} text-xs font-medium text-muted-foreground uppercase`}>Value</th>
+                        <th className={`px-4 py-3 ${isRtl ? 'text-left' : 'text-right'} text-xs font-medium text-muted-foreground uppercase`}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -358,15 +360,15 @@ const ManageAssets = () => {
                             <button
                               type="button"
                               onClick={() => openDetails(asset)}
-                              className="text-left"
+                              className={isRtl ? 'text-right' : 'text-left'}
                             >
                               <div className="font-medium text-foreground">{asset.assetTag}</div>
                               <div className="text-sm text-muted-foreground">{asset.name}</div>
                             </button>
                           </td>
-                          <td className="px-4 py-4 text-sm text-foreground">{asset.assetType}</td>
-                          <td className="px-4 py-4 text-sm text-foreground">{asset.ownerName}</td>
-                          <td className="px-4 py-4 text-sm text-foreground">{asset.location}</td>
+                          <td className={`px-4 py-4 text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{asset.assetType}</td>
+                          <td className={`px-4 py-4 text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{asset.ownerName}</td>
+                          <td className={`px-4 py-4 text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{asset.location}</td>
                           <td className="px-4 py-4">
                             <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
                               String(asset.status).toLowerCase() === 'active'
@@ -378,9 +380,9 @@ const ManageAssets = () => {
                               {asset.status}
                             </span>
                           </td>
-                          <td className="px-4 py-4 text-sm text-foreground">{formatCurrency(asset.costAmount)}</td>
+                          <td className={`px-4 py-4 text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{formatCurrency(asset.costAmount)}</td>
                           <td className="px-4 py-4">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className={`flex items-center gap-2 ${isRtl ? 'justify-start' : 'justify-end'}`}>
                               <button
                                 type="button"
                                 onClick={() => openDetails(asset)}
@@ -415,33 +417,33 @@ const ManageAssets = () => {
               )}
             </div>
 
-            <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-5">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Asset Details</h2>
+            <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
+              <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>Asset Details</h2>
               {selectedAsset ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Asset Tag</p>
-                    <p className="font-medium text-foreground">{selectedAsset.assetTag}</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Asset Tag</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.assetTag}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium text-foreground">{selectedAsset.name}</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Name</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Owner</p>
-                    <p className="font-medium text-foreground">{selectedAsset.ownerName}</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Owner</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.ownerName}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Serial Number</p>
-                    <p className="font-medium text-foreground">{selectedAsset.serialNumber || 'N/A'}</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Serial Number</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.serialNumber || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">History Entries</p>
-                    <p className="font-medium text-foreground">{selectedAsset.history.length}</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>History Entries</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.history.length}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Relationships</p>
-                    <p className="font-medium text-foreground">{selectedAsset.relationships.length}</p>
+                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Relationships</p>
+                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{selectedAsset.relationships.length}</p>
                   </div>
                   <div className="pt-3 border-t border-border flex flex-col gap-2">
                     <Button variant="outline" onClick={() => navigate('/asset-registry-and-tracking')}>
@@ -451,7 +453,7 @@ const ManageAssets = () => {
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">
+                <div className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
                   Select an asset from the table to see ownership, history, and relationships.
                 </div>
               )}

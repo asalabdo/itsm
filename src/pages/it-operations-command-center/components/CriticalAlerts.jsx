@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { ticketsAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const CriticalAlerts = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [alerts, setAlerts] = useState([]);
   const [isExpanded, setIsExpanded] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -24,7 +28,7 @@ const CriticalAlerts = () => {
           title: t.title,
           priority: t.priority === 'Critical' ? 'P1' : 'P2',
           age: t.createdAt ? Math.floor((new Date() - new Date(t.createdAt)) / 60000) : 0,
-          assignee: t.assignedToName || 'Unassigned',
+          assignee: t.assignedToName || t('unassigned', 'Unassigned'),
           status: t.status
         }));
       setAlerts(criticalTickets);
@@ -85,14 +89,14 @@ const CriticalAlerts = () => {
           <div className="flex items-center space-x-3">
             <Icon name="AlertTriangle" size={20} className="text-error animate-pulse" />
             <h3 className="font-semibold text-foreground">
-              Critical Alerts {loading ? '(Loading...)' : `(${alerts?.length})`}
+              {t('criticalAlerts', 'Critical Alerts')} {loading ? `(${t('loading', 'Loading...')})` : `(${alerts?.length})`}
             </h3>
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} iconName={isExpanded ? 'ChevronUp' : 'ChevronDown'}>
-              {isExpanded ? 'Collapse' : 'Expand'}
+              {isExpanded ? t('collapse', 'Collapse') : t('expand', 'Expand')}
             </Button>
-            <Button variant="outline" size="sm" iconName="Bell">Acknowledge All</Button>
+            <Button variant="outline" size="sm" iconName="Bell">{t('acknowledgeAll', 'Acknowledge All')}</Button>
           </div>
         </div>
 
@@ -113,17 +117,17 @@ const CriticalAlerts = () => {
                 <h4 className="font-medium text-foreground mb-2 line-clamp-2">{alert?.title}</h4>
                 <div className="space-y-2 mb-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Status:</span>
+                    <span className="text-muted-foreground">{t('status', 'Status')}:</span>
                     <span className={`font-medium ${getStatusColor(alert?.status)}`}>{alert?.status}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Assignee:</span>
+                    <span className="text-muted-foreground">{t('assignee', 'Assignee')}:</span>
                     <span className="font-medium text-foreground">{alert?.assignee}</span>
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openTicketDetails(alert)}>View Details</Button>
-                  <Button variant="default" size="sm" className="flex-1" onClick={() => openTicketDetails(alert)}>Take Action</Button>
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openTicketDetails(alert)}>{t('viewDetails', 'View Details')}</Button>
+                  <Button variant="default" size="sm" className="flex-1" onClick={() => openTicketDetails(alert)}>{t('takeAction', 'Take Action')}</Button>
                 </div>
               </div>
             ))}

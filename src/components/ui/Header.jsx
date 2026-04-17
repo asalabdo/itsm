@@ -498,11 +498,11 @@ const Header = () => {
               variant="ghost"
               size="sm"
               title={isRtl ? t('switchToEnglish', 'Switch to English') : t('switchToArabic', 'Switch to Arabic')}
-              className="h-9 px-2 text-xs font-semibold"
+              className="h-9 px-3 text-xs font-semibold"
               onClick={() => setLanguage(isRtl ? 'en' : 'ar')}
             >
-              <Icon name="Languages" size={16} className={isRtl ? 'ml-1' : 'mr-1'} />
-              <span>{isRtl ? 'EN' : 'AR'}</span>
+              <Icon name={isRtl ? 'Globe' : 'Languages'} size={16} className={isRtl ? 'ml-2' : 'mr-2'} />
+              <span>{isRtl ? 'EN' : 'ع'}</span>
             </Button>
 
             <ThemeToggle />

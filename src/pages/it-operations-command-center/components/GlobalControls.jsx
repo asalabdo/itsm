@@ -53,7 +53,7 @@ const GlobalControls = ({ onServiceFilterChange, onRefreshToggle, isAutoRefresh 
         <div className="flex items-center space-x-4">
           <div className="w-64">
             <Select
-              label="Service Filter"
+              label={t('serviceFilter', 'Service Filter')}
               options={serviceOptions}
               value={selectedService}
               onChange={handleServiceChange}
@@ -64,21 +64,21 @@ const GlobalControls = ({ onServiceFilterChange, onRefreshToggle, isAutoRefresh 
           {/* Connection Status */}
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${connectionStatus === 'connected' ? 'bg-success' : 'bg-error'} animate-pulse`}></div>
-            <span className="text-sm text-muted-foreground capitalize">{connectionStatus}</span>
+            <span className="text-sm text-muted-foreground capitalize">{t(connectionStatus, connectionStatus)}</span>
           </div>
         </div>
 
         {/* Center Section - SLA Countdown */}
         <div className="flex items-center space-x-6">
           <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Next SLA Breach</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('nextSLABreach', 'Next SLA Breach')}</div>
             <div className={`text-2xl font-bold font-data ${getCountdownColor()}`}>
               {formatCountdown(slaCountdown)}
             </div>
           </div>
           
           <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Active Incidents</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('activeIncidents', 'Active Incidents')}</div>
             <div className="text-2xl font-bold text-foreground">
               47
             </div>
@@ -94,19 +94,19 @@ const GlobalControls = ({ onServiceFilterChange, onRefreshToggle, isAutoRefresh 
             iconName={isAutoRefresh ? "Pause" : "Play"}
             iconPosition="left"
           >
-            {isAutoRefresh ? "Auto (30s)" : "Manual"}
+            {isAutoRefresh ? t('autoRefresh30s', 'Auto (30s)') : t('manual', 'Manual')}
           </Button>
           
           <Button variant="outline" size="sm" iconName="RefreshCw">
-            Refresh
+            {t('refresh', 'Refresh')}
           </Button>
           
           <Button variant="outline" size="sm" iconName="Settings">
-            Configure
+            {t('configure', 'Configure')}
           </Button>
           
           <Button variant="outline" size="sm" iconName="Maximize2">
-            Fullscreen
+            {t('fullscreen', 'Fullscreen')}
           </Button>
         </div>
       </div>

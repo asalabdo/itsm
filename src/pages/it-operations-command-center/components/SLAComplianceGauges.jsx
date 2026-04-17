@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { dashboardAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const SLAComplianceGauges = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [slaMetrics, setSlaMetrics] = useState([]);
   const [breachPredictions, setBreachPredictions] = useState([]);
   const [selectedMetric, setSelectedMetric] = useState(null);
@@ -90,7 +94,7 @@ const SLAComplianceGauges = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <Icon name="Gauge" size={24} className="text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">SLA Compliance</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('slaCompliance', 'SLA Compliance')}</h3>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -100,7 +104,7 @@ const SLAComplianceGauges = () => {
             iconName="AlertTriangle"
             onClick={() => navigate('/escalations')}
           >
-            Predictions ({breachPredictions?.length})
+            {t('predictions', 'Predictions')} ({breachPredictions?.length})
           </Button>
           
           <Button
@@ -109,7 +113,7 @@ const SLAComplianceGauges = () => {
             iconName="Settings"
             onClick={() => navigate('/sla-policies')}
           >
-            Configure
+            {t('configure', 'Configure')}
           </Button>
         </div>
       </div>
@@ -170,7 +174,7 @@ const SLAComplianceGauges = () => {
                   {/* Target Line */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-center">
                     <div className="text-xs text-muted-foreground">
-                      Target: {metric?.target}%
+                      {t('target', 'Target')}: {metric?.target}%
                     </div>
                   </div>
                 </div>
@@ -185,12 +189,12 @@ const SLAComplianceGauges = () => {
                 <span className={`text-sm font-medium ${getTrendColor(metric?.trend)}`}>
                   {metric?.trend === 'up' ? '+' : ''}{metric?.trendValue}%
                 </span>
-                <span className="text-xs text-muted-foreground">vs last week</span>
+                <span className="text-xs text-muted-foreground">{t('vsLastWeek', 'vs last week')}</span>
               </div>
               {/* Expanded Details */}
               {selectedMetric === metric?.id && (
                 <div className="border-t border-border pt-4">
-                  <h5 className="text-sm font-medium text-foreground mb-3">Priority Breakdown:</h5>
+                  <h5 className="text-sm font-medium text-foreground mb-3">{t('priorityBreakdown', 'Priority Breakdown')}:</h5>
                   <div className="space-y-2">
                     {Object.entries(metric?.details)?.map(([priority, data]) => (
                       <div key={priority} className="flex items-center justify-between text-sm">
@@ -202,13 +206,13 @@ const SLAComplianceGauges = () => {
                             {data?.current}%
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            (target: {data?.target}%)
+                            ({t('target', 'target')}: {data?.target}%)
                           </span>
                         </div>
                         
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-error">
-                            {data?.breaches} breaches
+                            {data?.breaches} {t('breaches', 'breaches')}
                           </span>
                         </div>
                       </div>
@@ -225,7 +229,7 @@ const SLAComplianceGauges = () => {
         <div className="border-t border-border pt-6">
           <div className="flex items-center space-x-2 mb-4">
             <Icon name="AlertTriangle" size={20} className="text-warning" />
-            <h4 className="font-medium text-foreground">Breach Predictions</h4>
+            <h4 className="font-medium text-foreground">{t('breachPredictions', 'Breach Predictions')}</h4>
           </div>
 
           <div className="space-y-3">
@@ -237,7 +241,7 @@ const SLAComplianceGauges = () => {
                       {prediction?.metric} - {prediction?.priority}
                     </span>
                     <span className="px-2 py-1 bg-warning text-warning-foreground text-xs rounded">
-                      {prediction?.impact} Impact
+                      {prediction?.impact} {t('impact', 'Impact')}
                     </span>
                   </div>
                   
@@ -246,21 +250,21 @@ const SLAComplianceGauges = () => {
                       {prediction?.predictedBreach}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {prediction?.confidence}% confidence
+                      {prediction?.confidence}% {t('confidence', 'confidence')}
                     </div>
                   </div>
                 </div>
 
                 <p className="text-sm text-foreground mb-3">
-                  <strong>Recommendation:</strong> {prediction?.recommendation}
+                  <strong>{t('recommendation', 'Recommendation')}:</strong> {prediction?.recommendation}
                 </p>
 
                 <div className="flex space-x-2">
                   <Button variant="warning" size="sm" onClick={() => navigate('/escalations')}>
-                    Take Action
+                    {t('takeAction', 'Take Action')}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setBreachPredictions(prev => prev.slice(1))}>
-                    Dismiss
+                    {t('dismiss', 'Dismiss')}
                   </Button>
                 </div>
               </div>

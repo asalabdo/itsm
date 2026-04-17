@@ -9,7 +9,7 @@ import Select from '../../../components/ui/Select';
 
 const MyTicketsTable = ({ tickets = [], loading = false }) => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -137,13 +137,13 @@ const MyTicketsTable = ({ tickets = [], loading = false }) => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('ticketID', 'Ticket ID')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('subject', 'Subject')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('status', 'Status')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('category', 'Category')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('lastUpdate', 'Last Update')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('estResolution', 'Est. Resolution')}</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">{t('actions', 'Actions')}</th>
+                  <th className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium text-muted-foreground`}>{t('ticketID', 'Ticket ID')}</th>
+                  <th className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium text-muted-foreground`}>{t('subject', 'Subject')}</th>
+                  <th className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium text-muted-foreground`}>{t('status', 'Status')}</th>
+                  <th className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium text-muted-foreground`}>{t('category', 'Category')}</th>
+                  <th className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium text-muted-foreground`}>{t('lastUpdate', 'Last Update')}</th>
+                  <th className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium text-muted-foreground`}>{t('estResolution', 'Est. Resolution')}</th>
+                  <th className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium text-muted-foreground`}>{t('actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>

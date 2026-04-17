@@ -12,7 +12,7 @@ import { getTranslation } from '../../services/i18n';
 const EscalationsPage = () => {
   const navigate = useNavigate();
   const [escalations, setEscalations] = useState([]);
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const EscalationsPage = () => {
   const cards = escalations.length ? escalations : fallback;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Helmet><title>{t('escalations', 'Escalations')}</title></Helmet>
       <Header />
       <BreadcrumbTrail />

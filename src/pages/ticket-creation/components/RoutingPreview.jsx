@@ -2,7 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 
+import { useLanguage } from '../../../context/LanguageContext';
+
 const RoutingPreview = ({ category, priority, subject }) => {
+  const { isRtl } = useLanguage();
   const getRoutingInfo = () => {
     if (!category || !priority) return null;
 
@@ -133,7 +136,7 @@ const RoutingPreview = ({ category, priority, subject }) => {
       transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
     >
       <motion.div 
-        className="flex items-start gap-3 mb-4"
+        className={`flex items-start gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
@@ -145,7 +148,7 @@ const RoutingPreview = ({ category, priority, subject }) => {
         >
           <Icon name="Route" size={20} color="var(--color-primary)" />
         </motion.div>
-        <div className="flex-1 min-w-0">
+        <div className={`flex-1 min-w-0 ${'text-left'}`}>
           <h3 className="font-semibold text-foreground mb-1">
             Automated Routing Preview
           </h3>
@@ -172,14 +175,14 @@ const RoutingPreview = ({ category, priority, subject }) => {
             key={idx}
             className="flex items-start gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors duration-300"
             variants={{
-              hidden: { opacity: 0, x: -10 },
+              hidden: { opacity: 0, x: isRtl ? 10 : -10 },
               visible: { 
                 opacity: 1, 
                 x: 0,
                 transition: { duration: 0.3 }
               },
             }}
-            whileHover={{ x: 4 }}
+            whileHover={{ x: isRtl ? -4 : 4 }}
           >
             <motion.div
               whileHover={{ scale: 1.1 }}
@@ -192,7 +195,7 @@ const RoutingPreview = ({ category, priority, subject }) => {
                 className="mt-0.5 flex-shrink-0" 
               />
             </motion.div>
-            <div className="flex-1 min-w-0">
+            <div className={`flex-1 min-w-0 ${'text-left'}`}>
               <p className="text-xs text-muted-foreground caption mb-0.5">{item.label}</p>
               <p className="text-sm font-medium text-foreground">{item.value}</p>
             </div>
@@ -208,7 +211,7 @@ const RoutingPreview = ({ category, priority, subject }) => {
           transition={{ delay: 0.3 }}
         >
           <motion.div 
-            className="flex items-center gap-2 text-sm text-success"
+            className={`flex items-center gap-2 text-sm text-success ${isRtl ? 'flex-row-reverse' : ''}`}
             whileHover={{ scale: 1.05 }}
           >
             <motion.div

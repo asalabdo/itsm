@@ -5,7 +5,7 @@ import { getTranslation } from '../../../services/i18n';
 
 const QuickActions = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const actions = [
@@ -44,14 +44,14 @@ const QuickActions = () => {
   ];
 
   return (
-    <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-4 md:p-6">
-      <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">{t('quickActions', 'Quick Actions')}</h2>
+    <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-4 md:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
+      <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('quickActions', 'Quick Actions')}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
         {actions?.map((action) => (
           <button
             key={action?.id}
             onClick={() => navigate(action?.path)}
-            className="flex items-center gap-3 p-3 md:p-4 bg-background border border-border rounded-lg hover:shadow-elevation-2 hover:border-primary/50 transition-smooth text-left"
+            className={`flex items-center gap-3 p-3 md:p-4 bg-background border border-border rounded-lg hover:shadow-elevation-2 hover:border-primary/50 transition-smooth ${isRtl ? 'text-right flex-row-reverse' : 'text-left'}`}
           >
             <div
               className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -60,10 +60,10 @@ const QuickActions = () => {
               <Icon name={action?.icon} size={20} color={action?.color} className="md:w-6 md:h-6" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm md:text-base font-medium text-foreground mb-0.5">{action?.title}</h3>
-              <p className="text-xs md:text-sm text-muted-foreground caption">{action?.description}</p>
+              <h3 className={`text-sm md:text-base font-medium text-foreground mb-0.5 ${isRtl ? 'text-right' : 'text-left'}`}>{action?.title}</h3>
+              <p className={`text-xs md:text-sm text-muted-foreground caption ${isRtl ? 'text-right' : 'text-left'}`}>{action?.description}</p>
             </div>
-            <Icon name="ChevronRight" size={18} color="var(--color-muted-foreground)" className="flex-shrink-0" />
+            <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={18} color="var(--color-muted-foreground)" className="flex-shrink-0" />
           </button>
         ))}
       </div>

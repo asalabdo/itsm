@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import DashboardCard from '../../components/ui/DashboardCard';
 import Icon from '../../components/AppIcon';
@@ -30,6 +31,7 @@ const TicketWorkflowCrud = () => {
       </Helmet>
       <div className="min-h-screen bg-background">
         <Header />
+        <BreadcrumbTrail />
         <main className="pt-16">
           <div className="px-4 md:px-6 lg:px-8 py-6 space-y-6">
             <section className="rounded-3xl border border-border bg-card p-6 md:p-8 shadow-sm">

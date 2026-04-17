@@ -12,7 +12,7 @@ import { getTranslation } from '../../services/i18n';
 const PrioritiesPage = () => {
   const navigate = useNavigate();
   const [priorities, setPriorities] = useState([]);
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const PrioritiesPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Helmet><title>{t('priorities', 'Priorities')}</title></Helmet>
       <Header />
       <BreadcrumbTrail />
@@ -57,17 +57,17 @@ const PrioritiesPage = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {cards.map((priority) => (
-            <div key={priority.key} className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-              <div className="flex items-start justify-between gap-2 mb-4">
+            <div key={priority.key} className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+              <div className={`flex items-start justify-between gap-2 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">{priority.label}</h2>
-                  <p className="text-sm text-muted-foreground">{priority.description}</p>
+                  <h2 className={`text-xl font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{priority.label}</h2>
+                  <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{priority.description}</p>
                 </div>
                 <Icon name="Flag" size={20} className="text-primary" />
               </div>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('impact', 'Impact')}</span><span className="font-medium">{priority.impact}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t('urgency', 'Urgency')}</span><span className="font-medium">{priority.urgency}</span></div>
+                <div className={`flex justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-muted-foreground">{t('impact', 'Impact')}</span><span className="font-medium">{priority.impact}</span></div>
+                <div className={`flex justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-muted-foreground">{t('urgency', 'Urgency')}</span><span className="font-medium">{priority.urgency}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t('response', 'Response')}</span><span className="font-medium">{priority.responseHours}h</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t('resolution', 'Resolution')}</span><span className="font-medium">{priority.resolutionHours}h</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t('escalate', 'Escalate')}</span><span className="font-medium">{priority.escalationMinutes}m</span></div>

@@ -9,7 +9,7 @@ import { getTranslation } from '../../services/i18n';
 
 const Settings = () => {
   const [saving, setSaving] = useState(false);
-  const { setLanguage, language } = useLanguage();
+  const { setLanguage, language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [profile, setProfile] = useState({
     displayName: '',
@@ -96,7 +96,7 @@ const Settings = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
       <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8">

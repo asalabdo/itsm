@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
 
 const TemplateSelector = ({ category, onTemplateSelect }) => {
+  const { isRtl } = useLanguage();
   const [showTemplates, setShowTemplates] = useState(false);
 
   const templates = {
@@ -114,8 +116,8 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-foreground">
+      <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
+        <label className={`block text-sm font-medium text-foreground ${'text-left'}`}>
           Use Template (Optional)
         </label>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -152,7 +154,7 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
                 key={template?.id}
                 type="button"
                 onClick={() => handleTemplateClick(template)}
-                className="p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-elevation-2 transition-all duration-300 text-left"
+                className={`p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-elevation-2 transition-all duration-300 ${'text-left'}`}
                 whileHover={{ y: -4, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 variants={{
@@ -166,7 +168,7 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
                 initial="hidden"
                 animate="visible"
               >
-                <div className="flex items-start gap-3 mb-2">
+                <div className={`flex items-start gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <motion.div 
                     className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0"
                     whileHover={{ scale: 1.1, rotate: 10 }}
@@ -174,7 +176,7 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
                   >
                     <Icon name={template?.icon} size={20} color="var(--color-primary)" />
                   </motion.div>
-                  <div className="flex-1 min-w-0">
+                  <div className={`flex-1 min-w-0 ${'text-left'}`}>
                     <h4 className="font-semibold text-sm text-foreground mb-1">
                       {template?.name}
                     </h4>
@@ -184,7 +186,7 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
                   </div>
                 </div>
                 <motion.div 
-                  className="flex items-center gap-2 text-xs text-primary caption"
+                  className={`flex items-center gap-2 text-xs text-primary caption ${isRtl ? 'flex-row-reverse' : ''}`}
                   initial={{ opacity: 0.7 }}
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.2 }}

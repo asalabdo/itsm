@@ -6,7 +6,7 @@ import Icon from '../../../components/AppIcon';
 
 const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [activeWork, setActiveWork] = useState([]);
 
@@ -100,19 +100,24 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg">
-      <div className="p-6 border-b border-border">
+    <div className="bg-card border border-border rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+      <div className="p-6 border-b border-border bg-gradient-to-r from-warning/5 to-transparent">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
-            <Icon name="Play" size={20} />
-            <span>{t('inProgressCard', 'In Progress')} ({activeWork?.length})</span>
+          <h3 className="text-lg font-bold text-foreground flex items-center space-x-3">
+            <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
+              <Icon name="Play" size={20} className="text-warning" />
+            </div>
+            <div>
+              <span className="block">{t('inProgressCard', 'In Progress')}</span>
+              <span className="text-sm font-normal text-muted-foreground">{activeWork?.length} {t('active', 'active')}</span>
+            </div>
           </h3>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2 rounded-lg transition-all ${
                 isTimerRunning 
-                  ? 'bg-success/10 text-success hover:bg-success/20' :'bg-muted hover:bg-muted/80'
+                  ? 'bg-success/10 text-success hover:bg-success/20 shadow-md' :'bg-muted hover:bg-muted/80'
               }`}
             >
               <Icon name={isTimerRunning ? 'Pause' : 'Play'} size={16} />
@@ -241,7 +246,7 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
       {selectedWork && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border rounded-lg max-w-lg w-full">
-            <div className="p-6 border-b border-border">
+            <div className="p-6 border-b border-border sticky top-0 bg-card">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-foreground">{t('addNote', 'Add Note')} - {selectedWork?.id}</h3>
                 <button
@@ -253,40 +258,38 @@ const InProgressWorkCard = ({ tickets = [], filter, loading }) => {
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">{t('currentNotes', 'Current Notes')}</label>
-                  <p className="text-sm text-foreground bg-muted/30 p-3 rounded-lg mt-1">
-                    {selectedWork?.notes}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">{t('addNewNote', 'Add New Note')}</label>
-                  <textarea
-                    value={newNote}
-                    onChange={(e) => setNewNote(e?.target?.value)}
-                    className="w-full p-3 mt-1 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground"
-                    placeholder={t('enterWorkUpdate', 'Enter work update, findings, or next steps...')}
-                    rows={4}
-                  />
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <button
-                    onClick={() => setSelectedWork(null)}
-                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
-                  >
-                    {t('cancel', 'Cancel')}
-                  </button>
-                  <button
-                    onClick={() => addNote(selectedWork?.id)}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                  >
-                    {t('addNote', 'Add Note')}
-                  </button>
-                </div>
+            <div className="p-8 space-y-6">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">{t('currentNotes', 'Current Notes')}</label>
+                <p className="text-sm text-foreground bg-muted/30 p-4 rounded-lg mt-2">
+                  {selectedWork?.notes}
+                </p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">{t('addNewNote', 'Add New Note')}</label>
+                <textarea
+                  value={newNote}
+                  onChange={(e) => setNewNote(e?.target?.value)}
+                  className="w-full p-4 mt-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground"
+                  placeholder={t('enterWorkUpdate', 'Enter work update, findings, or next steps...')}
+                  rows={4}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-4 border-t border-border">
+                <button
+                  onClick={() => setSelectedWork(null)}
+                  className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
+                >
+                  {t('cancel', 'Cancel')}
+                </button>
+                <button
+                  onClick={() => addNote(selectedWork?.id)}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  {t('addNote', 'Add Note')}
+                </button>
               </div>
             </div>
           </div>

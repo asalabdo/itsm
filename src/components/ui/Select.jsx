@@ -4,6 +4,8 @@ import { ChevronDown, Check, Search, X, Loader2 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import Button from "./Button";
 import Input from "./Input";
+import { useLanguage } from "../../context/LanguageContext";
+import { getTranslation } from "../../services/i18n";
 
 const isGroupOption = (option) => Array.isArray(option?.options);
 
@@ -137,6 +139,9 @@ const Select = React.forwardRef(({
     onOpenChange,
     ...props
 }, ref) => {
+    const { language } = useLanguage();
+    const t = (key, fallback) => getTranslation(language, key, fallback);
+    
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -153,17 +158,17 @@ const Select = React.forwardRef(({
 
     // Get selected option(s) for display
     const getSelectedDisplay = () => {
-        if (!value) return placeholder || "Select an option";
+        if (!value) return placeholder || t('selectOption', 'Select an option');
 
         if (multiple) {
             const selectedOptions = flatOptions?.filter(opt => value?.includes(opt?.value));
-            if (selectedOptions?.length === 0) return placeholder || "Select an option";
+            if (selectedOptions?.length === 0) return placeholder || t('selectOption', 'Select an option');
             if (selectedOptions?.length === 1) return selectedOptions?.[0]?.label;
-            return `${selectedOptions?.length} items selected`;
+            return `${selectedOptions?.length} ${t('itemsSelected', 'items selected')}`;
         }
 
         const selectedOption = flatOptions?.find(opt => opt?.value === value);
-        return selectedOption ? selectedOption?.label : (placeholder || "Select an option");
+        return selectedOption ? selectedOption?.label : (placeholder || t('selectOption', 'Select an option'));
     };
 
     const handleToggle = () => {
@@ -271,7 +276,7 @@ const Select = React.forwardRef(({
                     multiple={multiple}
                     required={required}
                 >
-                    <option value="">Select...</option>
+                    <option value="">{t('selectDots', 'Select...')}</option>
                     {flatOptions?.map(option => (
                         <option key={option?.value} value={option?.value}>
                             {option?.label}
@@ -287,7 +292,7 @@ const Select = React.forwardRef(({
                                 <div className="relative">
                                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
-                                        placeholder="Search options..."
+                                        placeholder={t('searchOptions', 'Search options...')}
                                         value={searchTerm}
                                         onChange={handleSearchChange}
                                         className="pl-8"
@@ -299,7 +304,7 @@ const Select = React.forwardRef(({
                         <div className="py-1 max-h-60 overflow-auto">
                             {filteredOptions?.length === 0 ? (
                                 <div className="px-3 py-2 text-sm text-muted-foreground">
-                                    {searchTerm ? 'No options found' : 'No options available'}
+                                    {searchTerm ? t('noOptionsFound', 'No options found') : t('noOptionsAvailable', 'No options available')}
                                 </div>
                             ) : (
                                 renderOptions(filteredOptions, {

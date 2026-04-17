@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TechnicianWorkload = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [technicians, setTechnicians] = useState([]);
   const [assignmentQueue, setAssignmentQueue] = useState([]);
   const [selectedTechnician, setSelectedTechnician] = useState(null);
@@ -84,11 +88,11 @@ const TechnicianWorkload = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <Icon name="Users" size={24} className="text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">Technician Workload</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('technicianWorkload', 'Technician Workload')}</h3>
         </div>
         
         <Button variant="outline" size="sm" iconName="UserPlus" onClick={() => navigate('/user-management')}>
-          Add Technician
+          {t('addTechnician', 'Add Technician')}
         </Button>
       </div>
       {/* Technician List */}
@@ -132,7 +136,7 @@ const TechnicianWorkload = () => {
                     {tech?.currentLoad}/{tech?.maxCapacity}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {loadPercentage}% capacity
+                    {loadPercentage}% {t('capacity', 'capacity')}
                   </div>
                 </div>
               </div>
@@ -146,12 +150,12 @@ const TechnicianWorkload = () => {
               {/* Performance Metrics */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Avg Resolution:</span>
+                  <span className="text-muted-foreground">{t('avgResolution', 'Avg Resolution')}:</span>
                   <span className="font-medium text-foreground">{tech?.avgResolutionTime}</span>
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Satisfaction:</span>
+                  <span className="text-muted-foreground">{t('satisfaction', 'Satisfaction')}:</span>
                   <div className="flex items-center space-x-1">
                     <Icon name="Star" size={12} className="text-warning fill-current" />
                     <span className="font-medium text-foreground">{tech?.satisfactionScore}</span>
@@ -161,13 +165,13 @@ const TechnicianWorkload = () => {
               {/* Expanded Details */}
               {selectedTechnician === tech?.id && (
                 <div className="mt-4 pt-4 border-t border-border">
-                  <h5 className="text-sm font-medium text-foreground mb-2">Active Tickets:</h5>
+                  <h5 className="text-sm font-medium text-foreground mb-2">{t('activeTickets', 'Active Tickets')}:</h5>
                   <div className="space-y-2">
                     {tech?.activeTickets?.map((ticketId) => (
                       <div key={ticketId} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
                         <span className="font-medium text-foreground">{ticketId}</span>
                         <Button variant="ghost" size="sm" onClick={() => navigate(`/ticket-details/${encodeURIComponent(ticketId)}`)}>
-                          View
+                          {t('view', 'View')}
                         </Button>
                       </div>
                     ))}
@@ -181,9 +185,9 @@ const TechnicianWorkload = () => {
       {/* Assignment Queue */}
       <div className="border-t border-border pt-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-medium text-foreground">Assignment Queue ({assignmentQueue?.length})</h4>
+          <h4 className="font-medium text-foreground">{t('assignmentQueue', 'Assignment Queue')} ({assignmentQueue?.length})</h4>
           <Button variant="outline" size="sm" iconName="RefreshCw">
-            Refresh
+            {t('refresh', 'Refresh')}
           </Button>
         </div>
 
@@ -208,11 +212,11 @@ const TechnicianWorkload = () => {
 
               <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                 <div>
-                  <span className="text-muted-foreground">Category: </span>
+                  <span className="text-muted-foreground">{t('category', 'Category')}: </span>
                   <span className="text-foreground">{ticket?.category}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Effort: </span>
+                  <span className="text-muted-foreground">{t('effort', 'Effort')}: </span>
                   <span className="text-foreground">{ticket?.estimatedEffort}</span>
                 </div>
               </div>
@@ -232,7 +236,7 @@ const TechnicianWorkload = () => {
                     onChange={(e) => e?.target?.value && handleAssignTicket(ticket?.id, e?.target?.value)}
                     defaultValue=""
                   >
-                    <option value="">Assign to...</option>
+                    <option value="">{t('assignTo', 'Assign to...')}</option>
                     {technicians?.filter(tech => tech?.status === 'available' && tech?.currentLoad < tech?.maxCapacity)?.map(tech => (
                         <option key={tech?.id} value={tech?.id}>{tech?.name}</option>
                       ))

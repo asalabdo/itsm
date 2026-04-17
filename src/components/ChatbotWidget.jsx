@@ -9,7 +9,7 @@ import { streamTicketChatResponse } from '../services/ticketChatService';
 
 const ChatbotWidget = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -140,7 +140,7 @@ const ChatbotWidget = () => {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50 hover:scale-110"
+        className={`fixed bottom-6 ${isRtl ? 'left-6' : 'right-6'} w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50 hover:scale-110`}
         aria-label={t('toggleChatbot', 'Toggle chatbot')}
       >
         {isOpen ? (
@@ -149,7 +149,7 @@ const ChatbotWidget = () => {
           <>
             <Icon name="MessageCircle" className="w-6 h-6" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+              <span className={`absolute -top-1 ${isRtl ? '-left-1' : '-right-1'} w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center`}>
                 {unreadCount}
               </span>
             )}
@@ -159,7 +159,7 @@ const ChatbotWidget = () => {
 
       {/* Chat Widget */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[600px] bg-card rounded-lg shadow-2xl border border-border flex flex-col z-50 animate-in slide-in-from-bottom-4 duration-200">
+        <div className={`fixed bottom-24 ${isRtl ? 'left-6' : 'right-6'} w-96 h-[600px] bg-card rounded-lg shadow-2xl border border-border flex flex-col z-50 animate-in slide-in-from-bottom-4 duration-200`} dir={isRtl ? 'rtl' : 'ltr'}>
           {/* Header */}
           <div className="bg-primary text-primary-foreground p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center gap-3">

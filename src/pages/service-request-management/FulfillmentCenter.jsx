@@ -7,7 +7,7 @@ import serviceRequestService from '../../services/serviceRequestService';
 
 const FulfillmentCenter = () => {
   const location = useLocation();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);

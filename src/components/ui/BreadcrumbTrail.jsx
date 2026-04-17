@@ -66,7 +66,7 @@ const BreadcrumbTrail = () => {
   };
 
   return (
-    <nav className={`flex items-center gap-2 text-sm text-muted-foreground px-4 py-3 bg-muted/30 border-b border-border ${isRtl ? 'flex-row-reverse' : ''}`}>
+    <nav className={`flex items-center gap-2 text-sm text-muted-foreground px-4 py-3 bg-muted/30 border-b border-border`} dir={isRtl ? 'rtl' : 'ltr'}>
       {breadcrumbs.map((crumb, index) => (
         <React.Fragment key={crumb.path}>
           <button

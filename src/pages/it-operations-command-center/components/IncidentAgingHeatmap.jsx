@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { ticketsAPI, dashboardAPI } from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const IncidentAgingHeatmap = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [heatmapData, setHeatmapData] = useState([]);
   const [selectedBucket, setSelectedBucket] = useState(null);
   const [viewMode, setViewMode] = useState('heatmap'); // 'heatmap' or 'list'
@@ -130,7 +134,7 @@ const IncidentAgingHeatmap = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <Icon name="Grid3X3" size={24} className="text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">Incident Aging Analysis</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('incidentAgingAnalysis', 'Incident Aging Analysis')}</h3>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -140,7 +144,7 @@ const IncidentAgingHeatmap = () => {
             onClick={() => setViewMode('heatmap')}
             iconName="Grid3X3"
           >
-            Heatmap
+            {t('heatmap', 'Heatmap')}
           </Button>
           
           <Button
@@ -149,7 +153,7 @@ const IncidentAgingHeatmap = () => {
             onClick={() => setViewMode('list')}
             iconName="List"
           >
-            List
+            {t('list', 'List')}
           </Button>
         </div>
       </div>
@@ -157,14 +161,14 @@ const IncidentAgingHeatmap = () => {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="text-center p-3 bg-muted rounded-lg">
           <div className="text-2xl font-bold text-foreground">{totalIncidents}</div>
-          <div className="text-sm text-muted-foreground">Total Active</div>
+          <div className="text-sm text-muted-foreground">{t('totalActive', 'Total Active')}</div>
         </div>
         
         <div className="text-center p-3 bg-muted rounded-lg">
           <div className="text-2xl font-bold text-error">
             {heatmapData?.filter(b => b?.severity === 'critical')?.reduce((sum, b) => sum + b?.count, 0)}
           </div>
-          <div className="text-sm text-muted-foreground">Critical Age</div>
+          <div className="text-sm text-muted-foreground">{t('criticalAge', 'Critical Age')}</div>
         </div>
       </div>
       {viewMode === 'heatmap' ? (
@@ -200,19 +204,19 @@ const IncidentAgingHeatmap = () => {
           <div className="flex items-center justify-center space-x-6 mb-4">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-success/20 border border-success/40 rounded"></div>
-              <span className="text-xs text-muted-foreground">Low Risk</span>
+              <span className="text-xs text-muted-foreground">{t('lowRisk', 'Low Risk')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-warning/30 border border-warning/50 rounded"></div>
-              <span className="text-xs text-muted-foreground">Medium Risk</span>
+              <span className="text-xs text-muted-foreground">{t('mediumRisk', 'Medium Risk')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-error/40 border border-error/60 rounded"></div>
-              <span className="text-xs text-muted-foreground">High Risk</span>
+              <span className="text-xs text-muted-foreground">{t('highRisk', 'High Risk')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-error border border-error rounded"></div>
-              <span className="text-xs text-muted-foreground">Critical</span>
+              <span className="text-xs text-muted-foreground">{t('critical', 'Critical')}</span>
             </div>
           </div>
 
@@ -220,7 +224,7 @@ const IncidentAgingHeatmap = () => {
           {selectedBucket !== null && heatmapData?.[selectedBucket]?.count > 0 && (
             <div className="border-t border-border pt-4">
               <h4 className="font-medium text-foreground mb-2">
-                Incidents in {heatmapData?.[selectedBucket]?.bucket} bucket:
+                {t('incidentsInBucket', 'Incidents in')} {heatmapData?.[selectedBucket]?.bucket}:
               </h4>
               <div className="space-y-2">
                 {heatmapData?.[selectedBucket]?.incidents?.map((incidentId) => (
@@ -231,7 +235,7 @@ const IncidentAgingHeatmap = () => {
                       size="sm"
                       onClick={() => navigate(`/search?q=${encodeURIComponent(incidentId)}`)}
                     >
-                      View Details
+                      {t('viewDetails', 'View Details')}
                     </Button>
                   </div>
                 ))}
@@ -262,14 +266,14 @@ const IncidentAgingHeatmap = () => {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Status:</span>
+                  <span className="text-muted-foreground">{t('status', 'Status')}:</span>
                   <span className={`font-medium ${getStatusColor(incident?.status)}`}>
                     {incident?.status}
                   </span>
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Assignee:</span>
+                  <span className="text-muted-foreground">{t('assignee', 'Assignee')}:</span>
                   <span className="font-medium text-foreground">{incident?.assignee}</span>
                 </div>
               </div>
@@ -285,14 +289,14 @@ const IncidentAgingHeatmap = () => {
                     size="sm"
                     onClick={() => navigate(`/ticket-details/${encodeURIComponent(incident?.backendId || incident?.id)}`)}
                   >
-                    Assign
+                    {t('assign', 'Assign')}
                   </Button>
                   <Button
                     variant="default"
                     size="sm"
                     onClick={() => navigate(`/ticket-details/${encodeURIComponent(incident?.backendId || incident?.id)}`)}
                   >
-                    View
+                    {t('view', 'View')}
                   </Button>
                 </div>
               </div>

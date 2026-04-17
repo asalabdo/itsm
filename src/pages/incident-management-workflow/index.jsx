@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import IncidentCreationWizard from './components/IncidentCreationWizard';
 import IncidentDetailsCard from './components/IncidentDetailsCard';
 import RelatedInformationCard from './components/RelatedInformationCard';
@@ -208,6 +209,7 @@ const IncidentManagementWorkflow = () => {
       </Helmet>
       <div className="min-h-screen bg-background">
         <Header />
+        <BreadcrumbTrail />
         
         <main className="pt-16">
           {/* Navigation Tabs */}

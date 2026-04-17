@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import serviceRequestService from '../../services/serviceRequestService';
@@ -79,6 +80,7 @@ const ServiceCatalogHub = () => {
         <title>{t('serviceCatalogTitle', 'Service Catalog')} - ITSM</title>
       </Helmet>
       <Header />
+      <BreadcrumbTrail />
       <main className="pt-16 min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           <div className="flex flex-col gap-4">

@@ -1,7 +1,11 @@
 ﻿import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ServiceSelector = ({ category, categoryLabel, selectedService, onServiceSelect, onClose }) => {
+  const { language, isRtl } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
 
   const servicesByCategory = {
@@ -84,17 +88,17 @@ const ServiceSelector = ({ category, categoryLabel, selectedService, onServiceSe
     { "id": "ts-other-support", "nameEn": "Other Technical Support Request", "nameAr": "Ø®Ø¯Ù…Ø§Øª Ø§Ø®Ø±Ù‰" }
   ],
   "technical-support": [
-    { "id": "ts-device-not-working", "nameEn": "Device Not Working", "nameAr": "Ø§Ù„Ø¬Ù‡Ø§Ø² Ù„Ø§ ÙŠØ¹Ù…Ù„" },
-    { "id": "ts-slow-performance", "nameEn": "Slow Performance", "nameAr": "Ø¨Ø·Ø¡ ÙÙŠ Ø§Ù„Ø£Ø¯Ø§Ø¡" },
-    { "id": "ts-blue-screen", "nameEn": "Blue Screen / System Crash", "nameAr": "Ø§Ù„Ø´Ø§Ø´Ø© Ø§Ù„Ø²Ø±Ù‚Ø§Ø¡ / ØªØ¹Ø·Ù„ Ø§Ù„Ù†Ø¸Ø§Ù…" },
-    { "id": "ts-monitor-issue", "nameEn": "Monitor Issue", "nameAr": "Ù…Ø´ÙƒÙ„Ø© ÙÙŠ Ø§Ù„Ø´Ø§Ø´Ø©" },
-    { "id": "ts-printer-issue", "nameEn": "Printer Issue", "nameAr": "Ù…Ø´ÙƒÙ„Ø© ÙÙŠ Ø§Ù„Ø·Ø§Ø¨Ø¹Ø©" },
-    { "id": "ts-keyboard-mouse", "nameEn": "Keyboard / Mouse Issue", "nameAr": "Ù…Ø´ÙƒÙ„Ø© ÙÙŠ Ù„ÙˆØ­Ø© Ø§Ù„Ù…ÙØ§ØªÙŠØ­ Ø£Ùˆ Ø§Ù„ÙØ£Ø±Ø©" },
-    { "id": "ts-network-connection", "nameEn": "Network Connection Issue", "nameAr": "Ù…Ø´ÙƒÙ„Ø© ÙÙŠ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø§Ù„Ø´Ø¨ÙƒØ©" },
-    { "id": "ts-internet-access", "nameEn": "Internet Access Issue", "nameAr": "Ù…Ø´ÙƒÙ„Ø© ÙÙŠ Ø§Ù„ÙˆØµÙˆÙ„ Ù„Ù„Ø¥Ù†ØªØ±Ù†Øª" },
-    { "id": "ts-email-issue", "nameEn": "Email Issue", "nameAr": "Ù…Ø´ÙƒÙ„Ø© ÙÙŠ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ" },
-    { "id": "ts-transfer-device", "nameEn": "Transfer Device", "nameAr": "Ù†Ù‚Ù„ Ø¬Ù‡Ø§Ø²" },
-    { "id": "ts-other", "nameEn": "Other", "nameAr": "Ø£Ø®Ø±Ù‰" }
+    { "id": "ts-device-not-working", "nameEn": "Device Not Working", "nameAr": "الجهاز لا يعمل" },
+    { "id": "ts-slow-performance", "nameEn": "Slow Performance", "nameAr": "أداء بطيء" },
+    { "id": "ts-blue-screen", "nameEn": "Blue Screen / System Crash", "nameAr": "الشاشة الزرقاء / تعطل النظام" },
+    { "id": "ts-monitor-issue", "nameEn": "Monitor Issue", "nameAr": "مشكلة في الشاشة" },
+    { "id": "ts-printer-issue", "nameEn": "Printer Issue", "nameAr": "مشكلة في الطابعة" },
+    { "id": "ts-keyboard-mouse", "nameEn": "Keyboard / Mouse Issue", "nameAr": "مشكلة في لوحة المفاتيح أو الفأرة" },
+    { "id": "ts-network-connection", "nameEn": "Network Connection Issue", "nameAr": "مشكلة في الاتصال بالشبكة" },
+    { "id": "ts-internet-access", "nameEn": "Internet Access Issue", "nameAr": "مشكلة في الوصول للإنترنت" },
+    { "id": "ts-email-issue", "nameEn": "Email Issue", "nameAr": "مشكلة في البريد الإلكتروني" },
+    { "id": "ts-transfer-device", "nameEn": "Transfer Device", "nameAr": "نقل جهاز" },
+    { "id": "ts-other", "nameEn": "Other", "nameAr": "أخرى" }
   ],
   "project-management": [
     { "id": "pm-request", "nameEn": "Project management", "nameAr": "Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹" }
@@ -311,10 +315,10 @@ const serviceArabicOverrides = {
   return (
     <div className="space-y-3">
       <div className="space-y-3">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-base font-semibold text-foreground">Select Service</h3>
-            <p className="text-xs text-muted-foreground">Choose a service from {categoryLabel || category}.</p>
+        <div className={`flex items-start justify-between gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className={isRtl ? 'text-right' : 'text-left'}>
+            <h3 className="text-base font-semibold text-foreground">{t('selectService', 'Select Service')}</h3>
+            <p className="text-xs text-muted-foreground">{t('chooseServiceFrom', 'Choose a service from')} {language === 'ar' ? categoryLabel || category : categoryLabel || category}.</p>
           </div>
           {onClose && (
             <button onClick={onClose} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" type="button">
@@ -324,7 +328,7 @@ const serviceArabicOverrides = {
         </div>
         <input
           type="text"
-          placeholder="Search services..."
+          placeholder={t('searchServices', 'Search services...') }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -333,7 +337,7 @@ const serviceArabicOverrides = {
 
       <div className="space-y-3">
         <div className="text-xs text-muted-foreground">
-          {filteredServices.length} services
+          {filteredServices.length} {t('servicesAvailable', 'services available')}
         </div>
 
         <div className="space-y-1">
@@ -341,62 +345,62 @@ const serviceArabicOverrides = {
             <button
               key={service.id}
               onClick={() => handleServiceSelect(service)}
-              className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-all hover:border-primary/40 hover:bg-primary/5 ${
+              className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 ${isRtl ? 'text-right flex-row-reverse' : 'text-left'} transition-all hover:border-primary/40 hover:bg-primary/5 ${
                 selectedService?.id === service.id ? 'border-primary bg-primary/10' : 'border-border bg-background'
               }`}
               type="button"
             >
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <span className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
                     selectedService?.id === service.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}>
                     {index + 1}
                   </span>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-foreground truncate">{service.nameEn}</div>
-                      {getArabicLabel(service) && (
+                    <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
+                      <div className="text-sm font-medium text-foreground truncate">{language === 'ar' ? (serviceArabicOverrides[service.id] || service.nameEn) : service.nameEn}</div>
+                      {getArabicLabel(service) && language !== 'ar' && (
                         <div className="text-xs text-muted-foreground truncate" dir="rtl">{getArabicLabel(service)}</div>
                       )}
                     </div>
                 </div>
               </div>
-              <Icon name="ChevronRight" size={14} className="shrink-0 text-muted-foreground" />
+              <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={14} className="shrink-0 text-muted-foreground" />
             </button>
           ))}
         </div>
 
         {filteredServices.length === 0 && (
           <div className="rounded-xl border border-dashed border-border bg-muted/20 py-6 text-center text-sm text-muted-foreground">
-            No services found
+            {t('noServicesFound', 'No services found')}
           </div>
         )}
 
         {selectedService?.id === 'general-issue' && (
-          <div className="rounded-xl border border-border bg-muted/20 p-4">
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Please specify the reason:
+          <div className="rounded-xl border border-border bg-muted/20 p-4" dir={isRtl ? 'rtl' : 'ltr'}>
+            <label className={`block text-sm font-medium text-foreground mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>
+              {t('pleaseSpecifyReason', 'Please specify the reason:')}
             </label>
             <textarea
               rows={4}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Please describe your issue in detail..."
+              placeholder={t('describeIssuePlaceholder', 'Please describe your issue in detail...') }
             />
             {onClose && (
-              <div className="mt-4 flex justify-end gap-2">
+              <div className={`mt-4 flex justify-end gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
                 <button
                   onClick={onClose}
                   className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
                   type="button"
                 >
-                  Cancel
+                  {t('cancel', 'Cancel')}
                 </button>
                 <button
                   onClick={onClose}
                   className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:opacity-90"
                   type="button"
                 >
-                  Confirm
+                  {t('confirm', 'Confirm')}
                 </button>
               </div>
             )}

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -528,6 +529,7 @@ const UserManagement = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <BreadcrumbTrail />
       <main className="pt-16 px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>

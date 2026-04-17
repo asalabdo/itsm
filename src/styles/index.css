@@ -21,4 +21,48 @@ body {
   html[dir="rtl"] body {
     font-family: var(--font-body);
   }
+
+  /* RTL improvements for My Work Dashboard */
+  html[dir="rtl"] .space-x-reverse > * + * {
+    --tw-space-x-reverse: 1;
+    margin-right: calc(var(--tw-space-x) * var(--tw-space-x-reverse));
+    margin-left: calc(var(--tw-space-x) * calc(1 - var(--tw-space-x-reverse)));
+  }
+
+  html[dir="rtl"] .justify-end {
+    justify-content: flex-start;
+  }
+
+  /* Better RTL navigation */
+  html[dir="rtl"] .sticky {
+    right: 0;
+    left: auto;
+  }
+
+  /* RTL modal positioning */
+  html[dir="rtl"] .fixed.inset-0 {
+    direction: rtl;
+  }
+
+  /* RTL grid improvements */
+  html[dir="rtl"] .grid {
+    direction: rtl;
+  }
+
+  html[dir="rtl"] .grid > * {
+    direction: ltr;
+  }
+
+  /* RTL breadcrumb improvements */
+  html[dir="rtl"] nav[dir="rtl"] {
+    direction: rtl;
+  }
+
+  html[dir="rtl"] nav[dir="rtl"] .flex {
+    flex-direction: row;
+  }
+
+  html[dir="rtl"] nav[dir="rtl"] button {
+    text-align: right;
+  }
   

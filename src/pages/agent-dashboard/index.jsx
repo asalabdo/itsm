@@ -14,7 +14,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const AgentDashboard = () => {
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   
   const [filters, setFilters] = useState({ priority: 'all', status: 'all', category: 'all', sla: 'all' });
@@ -129,14 +129,14 @@ const AgentDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
       <BreadcrumbTrail />
       <main className="px-4 md:px-6 lg:px-8 py-6 md:py-8 max-w-[1920px] mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2">{t('myTicketsTitle', 'My Tickets')}</h1>
-            <p className="text-sm md:text-base text-muted-foreground">{t('manageTrackTicketsDesc', 'Manage and track your support tickets')}</p>
+            <h1 className={`text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2 text-left`}>{t('myTicketsTitle', 'My Tickets')}</h1>
+            <p className={`text-sm md:text-base text-muted-foreground text-left`}>{t('manageTrackTicketsDesc', 'Manage and track your support tickets')}</p>
           </div>
           <QuickActions />
         </div>
@@ -149,12 +149,12 @@ const AgentDashboard = () => {
           <FilterPanel filters={filters} onFilterChange={handleFilterChange} onClearFilters={handleClearFilters} />
         </div>
 
-        <div className="bg-card border border-border rounded-lg shadow-elevation-1">
+        <div className="bg-card border border-border rounded-lg shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
           <div className="p-4 md:p-6 border-b border-border">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-lg md:text-xl font-semibold text-foreground mb-1">{t('activeTicketsTitle', 'Active Tickets')}</h2>
-                <p className="text-sm md:text-base text-muted-foreground caption">
+                <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-1 ${isRtl ? 'text-right' : 'text-left'}`}>{t('activeTicketsTitle', 'Active Tickets')}</h2>
+                <p className={`text-sm md:text-base text-muted-foreground caption ${isRtl ? 'text-right' : 'text-left'}`}>
                   {loading ? t('loading', 'Loading...') : `${tickets?.length} ${t('ticketsFoundCount', 'tickets found')}`}
                 </p>
               </div>
@@ -176,9 +176,9 @@ const AgentDashboard = () => {
                 <thead className="bg-muted/50 border-b border-border">
                   <tr>
                     {colHeaders.map(({ key, label, sortable }) => (
-                      <th key={key} className="px-3 md:px-4 py-3 md:py-4 text-left">
+                      <th key={key} className={`px-3 md:px-4 py-3 md:py-4 ${isRtl ? 'text-right' : 'text-left'}`}>
                         {sortable ? (
-                          <button className="flex items-center gap-2 text-xs md:text-sm font-medium text-muted-foreground hover:text-foreground transition-smooth caption" onClick={() => handleSort(key)}>
+                          <button className={`flex items-center gap-2 text-xs md:text-sm font-medium text-muted-foreground hover:text-foreground transition-smooth caption ${isRtl ? 'flex-row-reverse' : ''}`} onClick={() => handleSort(key)}>
                             {label}<Icon name={getSortIcon(key)} size={16} />
                           </button>
                         ) : (
@@ -222,7 +222,7 @@ const AgentDashboard = () => {
           {tickets?.length > 0 && (
             <div className="p-4 md:p-6 border-t border-border">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className="text-sm text-muted-foreground caption">{t('showingTickets', 'Showing')} {tickets?.length} {t('ofTickets', 'of')} {allTickets?.length} {t('ticketsLabel', 'tickets')}</p>
+                <p className={`text-sm text-muted-foreground caption ${isRtl ? 'text-right' : 'text-left'}`}>{t('showingTickets', 'Showing')} {tickets?.length} {t('ofTickets', 'of')} {allTickets?.length} {t('ticketsLabel', 'tickets')}</p>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" iconName="ChevronLeft" disabled>{t('previousBtn', 'Previous')}</Button>
                   <Button variant="default" size="sm">1</Button>

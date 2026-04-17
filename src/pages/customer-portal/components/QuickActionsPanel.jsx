@@ -8,7 +8,7 @@ import { getTranslation } from '../../../services/i18n';
 
 const QuickActionsPanel = ({ tickets = [] }) => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [notificationPreferences, setNotificationPreferences] = useState({
     emailUpdates: true,
@@ -126,7 +126,7 @@ const QuickActionsPanel = ({ tickets = [] }) => {
             <button
               key={action.id}
               onClick={action.action}
-              className="group flex items-start gap-4 p-4 bg-background border border-border rounded-lg hover:border-primary hover:shadow-elevation-2 transition-smooth text-left hover-lift"
+              className={`group flex items-start gap-4 p-4 bg-background border border-border rounded-lg hover:border-primary hover:shadow-elevation-2 transition-smooth ${isRtl ? 'text-right' : 'text-left'} hover-lift`}
             >
               <div className={`w-12 h-12 ${action.bgColor} rounded-lg flex items-center justify-center flex-shrink-0 transition-smooth group-hover:scale-110`}>
                 <Icon name={action.icon} size={24} color={action.color} />

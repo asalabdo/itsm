@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../../components/ui/Header';
+import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import ComponentPalette from './components/ComponentPalette';
 import WorkflowCanvas from './components/WorkflowCanvas';
 import PropertiesPanel from './components/PropertiesPanel';
@@ -176,6 +177,7 @@ const WorkflowBuilderStudio = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <BreadcrumbTrail />
       <div className="pt-16 h-screen flex flex-col">
         <WorkflowToolbar
           workflowName={workflowName}

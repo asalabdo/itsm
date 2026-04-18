@@ -39,13 +39,24 @@ export const getLocalizedKnowledgeBaseField = (article, field, language) => {
   }
 
   const localizedField = `${field}Ar`;
-  const preferredValue = language === 'ar' ? article[localizedField] || article[field] : article[field] || article[localizedField];
+  const fallbackTranslation = ARTICLE_TRANSLATIONS[article?.title];
+
+  if (language === 'ar') {
+    const preferredValue = article[localizedField]
+      || fallbackTranslation?.[field]
+      || fallbackTranslation?.summary
+      || fallbackTranslation?.title
+      || article[field]
+      || article[localizedField];
+    return formatLocalizedValue(preferredValue, language);
+  }
+
+  const preferredValue = article[field] || article[localizedField];
   const formattedValue = formatLocalizedValue(preferredValue, language);
   if (formattedValue) {
     return formattedValue;
   }
 
-  const fallbackTranslation = ARTICLE_TRANSLATIONS[article?.title];
   if (!fallbackTranslation) {
     return '';
   }

@@ -6,14 +6,22 @@ import Input from '../../components/ui/Input';
 import { streamTicketChatResponse } from '../../services/ticketChatService';
 import { ticketsAPI } from '../../services/api';
 import Icon from '../../components/AppIcon';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const TicketChatbot = () => {
   const navigate = useNavigate();
+  const { language, isRtl } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [messages, setMessages] = useState([
     {
       id: 1,
       role: 'assistant',
-      content: 'Hello! I am your ServiceDesk assistant. I can help you create tickets, check ticket status, answer questions, and provide troubleshooting guidance. How can I assist you today?',
+      content: t(
+        'ticketChatWelcome',
+        'Hello! I am your ServiceDesk assistant. I can help you create tickets, check ticket status, answer questions, and provide troubleshooting guidance. How can I assist you today?'
+      ),
       timestamp: new Date()
     }
   ]);
@@ -37,6 +45,33 @@ const TicketChatbot = () => {
       return null;
     }
   })();
+
+  const localizeStatus = (value) => {
+    const raw = String(value || '').trim();
+    if (!isArabic) return raw;
+    const map = {
+      open: 'مفتوحة',
+      new: 'جديدة',
+      assigned: 'مُسندة',
+      'in progress': 'قيد التنفيذ',
+      resolved: 'محلولة',
+      closed: 'مغلقة',
+      pending: 'قيد الانتظار',
+    };
+    return map[raw.toLowerCase()] || raw;
+  };
+
+  const localizePriority = (value) => {
+    const raw = String(value || '').trim();
+    if (!isArabic) return raw;
+    const map = {
+      critical: 'حرجة',
+      high: 'عالية',
+      medium: 'متوسطة',
+      low: 'منخفضة',
+    };
+    return map[raw.toLowerCase()] || raw;
+  };
 
   useEffect(() => {
     const loadTickets = async () => {
@@ -94,11 +129,11 @@ const TicketChatbot = () => {
     const context = {
       tickets: tickets.map((ticket) => ({
         id: ticket?.ticketNumber || `TKT-${ticket?.id}`,
-        subject: ticket?.title || ticket?.subject || 'Untitled ticket',
+        subject: ticket?.title || ticket?.subject || t('untitledTicket', 'Untitled ticket'),
         status: ticket?.status || 'Open',
         priority: ticket?.priority || 'Medium'
       })),
-      userName: 'Current User'
+      userName: t('currentUser', 'Current User')
     };
 
     try {
@@ -125,7 +160,7 @@ const TicketChatbot = () => {
         setStreamingMessage('');
       });
     } catch (err) {
-      setError(err?.message || 'Failed to get response. Please try again.');
+      setError(err?.message || t('failedToGetResponse', 'Failed to get response. Please try again.'));
       setStreamingMessage('');
     } finally {
       setIsLoading(false);
@@ -145,7 +180,7 @@ const TicketChatbot = () => {
       {
         id: 1,
         role: 'assistant',
-        content: 'Chat cleared. How can I assist you today?',
+        content: t('chatCleared', 'Chat cleared. How can I assist you today?'),
         timestamp: new Date()
       }
     ]);
@@ -154,10 +189,10 @@ const TicketChatbot = () => {
   };
 
   const quickActions = [
-    { label: 'Create a ticket', icon: 'Plus', prompt: 'I need to create a new support ticket' },
-    { label: 'Check ticket status', icon: 'Search', prompt: 'Can you check the status of my tickets?' },
-    { label: 'VPN troubleshooting', icon: 'Wifi', prompt: 'I am having VPN connection issues' },
-    { label: 'Password reset', icon: 'Key', prompt: 'I need help resetting my password' }
+    { label: t('createTicket', 'Create a ticket'), icon: 'Plus', prompt: t('createTicketPrompt', 'I need to create a new support ticket') },
+    { label: t('checkTicketStatus', 'Check ticket status'), icon: 'Search', prompt: t('checkTicketStatusPrompt', 'Can you check the status of my tickets?') },
+    { label: t('vpnTroubleshooting', 'VPN troubleshooting'), icon: 'Wifi', prompt: t('vpnTroubleshootingPrompt', 'I am having VPN connection issues') },
+    { label: t('passwordReset', 'Password reset'), icon: 'Key', prompt: t('passwordResetPrompt', 'I need help resetting my password') }
   ];
 
   const handleQuickAction = (prompt) => {
@@ -171,10 +206,11 @@ const TicketChatbot = () => {
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>');
 
-  const formatTime = (date) => new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (date) =>
+    new Date(date).toLocaleTimeString(isArabic ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Header />
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
@@ -186,20 +222,20 @@ const TicketChatbot = () => {
                   <Icon name="Bot" className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">AI Ticket Assistant</h1>
+                  <h1 className="text-2xl font-bold text-foreground">{t('aiTicketAssistant', 'AI Ticket Assistant')}</h1>
                   <p className="text-sm text-muted-foreground">
-                    Powered by Gemini AI and live ticket context
+                    {t('aiTicketAssistantSubtitle', 'Powered by Gemini AI and live ticket context')}
                   </p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleClearChat} disabled={isLoading}>
                   <Icon name="Trash2" className="w-4 h-4 mr-2" />
-                  Clear Chat
+                  {t('clearChat', 'Clear Chat')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate('/ticket-creation')}>
                   <Icon name="Plus" className="w-4 h-4 mr-2" />
-                  Create Ticket
+                  {t('createTicket', 'Create Ticket')}
                 </Button>
               </div>
             </div>
@@ -207,9 +243,11 @@ const TicketChatbot = () => {
 
           <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-foreground">Live Context</h2>
+              <h2 className="text-sm font-semibold text-foreground">{t('liveContext', 'Live Context')}</h2>
               <span className="text-xs text-muted-foreground">
-                {loadingTickets ? 'Loading tickets...' : `${tickets.length} ticket(s) available`}
+                {loadingTickets
+                  ? t('loadingTickets', 'Loading tickets...')
+                  : t('ticketsAvailable', '{count} ticket(s) available').replace('{count}', String(tickets.length))}
               </span>
             </div>
             {tickets.length > 0 ? (
@@ -220,24 +258,24 @@ const TicketChatbot = () => {
                       {ticket.ticketNumber || `TKT-${ticket.id}`}
                     </div>
                     <div className="mt-2 text-sm font-medium text-foreground line-clamp-2">
-                      {ticket.title || ticket.subject || 'Untitled ticket'}
+                      {ticket.title || ticket.subject || t('untitledTicket', 'Untitled ticket')}
                     </div>
                     <div className="mt-2 text-xs text-muted-foreground">
-                      {ticket.status || 'Open'} • {ticket.priority || 'Medium'}
+                      {localizeStatus(ticket.status || 'Open')} • {localizePriority(ticket.priority || 'Medium')}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-                No recent tickets were found for the current user.
+                {t('noRecentTickets', 'No recent tickets were found for the current user.')}
               </div>
             )}
           </div>
 
           {messages?.length <= 1 && (
             <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
-              <h2 className="text-sm font-semibold text-foreground mb-4">Quick Actions</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-4">{t('quickActions', 'Quick Actions')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {quickActions.map((action) => (
                   <button
@@ -321,7 +359,7 @@ const TicketChatbot = () => {
                   <div className="flex items-start gap-3">
                     <Icon name="AlertCircle" className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-destructive">Error</p>
+                      <p className="text-sm font-medium text-destructive">{t('error', 'Error')}</p>
                       <p className="text-sm text-destructive/80 mt-1">{error}</p>
                     </div>
                   </div>
@@ -337,7 +375,7 @@ const TicketChatbot = () => {
                   <Input
                     ref={inputRef}
                     type="text"
-                    placeholder="Type your message... (Press Enter to send)"
+                    placeholder={t('typeYourMessage', 'Type your message... (Press Enter to send)')}
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e?.target?.value)}
                     onKeyPress={handleKeyPress}
@@ -350,7 +388,7 @@ const TicketChatbot = () => {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                AI responses are based on live ticket context. For critical issues, please create a formal ticket.
+                {t('ticketChatDisclaimer', 'AI responses are based on live ticket context. For critical issues, please create a formal ticket.')}
               </p>
             </div>
           </div>

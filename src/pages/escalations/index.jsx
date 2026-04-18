@@ -14,6 +14,23 @@ const EscalationsPage = () => {
   const [escalations, setEscalations] = useState([]);
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
+
+  const localizeFallback = (enValue, arValue) => (isArabic ? arValue : enValue);
+  const localizeLevel = (level) => {
+    const map = { L1: 'المستوى الأول', L2: 'المستوى الثاني', L3: 'المستوى الثالث', L4: 'المستوى الرابع' };
+    return isArabic ? (map[level] || level) : level;
+  };
+  const localizeRouteLabel = (route) => {
+    const map = {
+      '/ticket-management-center': isArabic ? 'فتح مركز التذاكر' : 'Open ticket center',
+      '/ticket-details': isArabic ? 'فتح التفاصيل' : 'Open details',
+      '/incident-management-workflow': isArabic ? 'فتح إدارة الحوادث' : 'Open incident workflow',
+      '/manager-dashboard': isArabic ? 'فتح لوحة المدير' : 'Open manager dashboard',
+      '/search': isArabic ? 'بحث' : 'Search',
+    };
+    return map[route] || (isArabic ? 'فتح' : 'Open');
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -28,10 +45,34 @@ const EscalationsPage = () => {
   }, []);
 
   const fallback = [
-    { level: 'L1', trigger: t('30minutes', '30 minutes'), action: t('serviceDeskReview', 'Service desk review'), owner: t('serviceDesk', 'Service Desk'), route: '/ticket-management-center' },
-    { level: 'L2', trigger: t('2hours', '2 hours'), action: t('specialistQueueEscalation', 'Specialist queue escalation'), owner: t('teamLead', 'Team Lead'), route: '/ticket-details' },
-    { level: 'L3', trigger: t('4hours', '4 hours'), action: t('incidentBridgeManagerNotify', 'Incident bridge and manager notify'), owner: t('incidentManager', 'Incident Manager'), route: '/incident-management-workflow' },
-    { level: 'L4', trigger: t('8hours', '8 hours'), action: t('executiveEscalation', 'Executive escalation'), owner: t('itServiceManager', 'IT Service Manager'), route: '/manager-dashboard' },
+    {
+      level: 'L1',
+      trigger: localizeFallback('Initial assignment / no response', 'التعيين الأولي / لا يوجد استجابة'),
+      action: localizeFallback('Notify service desk and keep on queue', 'أخطر مكتب الخدمة وأبقِها في قائمة الانتظار'),
+      owner: t('serviceDesk', 'Service Desk'),
+      route: '/ticket-management-center',
+    },
+    {
+      level: 'L2',
+      trigger: localizeFallback('High priority still open', 'الأولوية العالية لا تزال مفتوحة'),
+      action: localizeFallback('Escalate to specialist queue', 'تصعيد إلى قائمة انتظار المختص'),
+      owner: t('teamLead', 'Team Lead'),
+      route: '/ticket-details',
+    },
+    {
+      level: 'L3',
+      trigger: localizeFallback('SLA risk / critical outage', 'خطر SLA / انقطاع حرج'),
+      action: localizeFallback('Notify incident manager and start bridge', 'أخطر مدير الحوادث وابدأ الجسر'),
+      owner: t('incidentManager', 'Incident Manager'),
+      route: '/incident-management-workflow',
+    },
+    {
+      level: 'L4',
+      trigger: localizeFallback('Breach or executive impact', 'انتهاك أو تأثير تنفيذي'),
+      action: localizeFallback('Escalate to management and executive dashboard', 'تصعيد إلى الإدارة ولوحة القيادة التنفيذية'),
+      owner: t('itServiceManager', 'IT Service Manager'),
+      route: '/manager-dashboard',
+    },
   ];
 
   const cards = escalations.length ? escalations : fallback;
@@ -47,12 +88,12 @@ const EscalationsPage = () => {
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-primary font-semibold">{t('escalationPaths', 'Escalation Paths')}</p>
               <h1 className="text-3xl font-bold text-foreground mt-1">{t('escalations', 'Escalations')}</h1>
-              <p className="text-muted-foreground">{t('escalationsDescription', 'See when tickets move up the chain and jump into the right operational page.')}</p>
+              <p className="text-muted-foreground">{isArabic ? 'شاهد متى تنتقل التذاكر في السلسلة وانتقل مباشرة إلى الصفحة التشغيلية المناسبة.' : t('escalationsDescription', 'See when tickets move up the chain and jump into the right operational page.')}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="default" onClick={() => navigate('/incident-management-workflow')} iconName="AlertTriangle">{t('incidents', 'Incidents')}</Button>
-              <Button variant="outline" onClick={() => navigate('/ticket-management-center')} iconName="Ticket">{t('tickets', 'Tickets')}</Button>
-              <Button variant="outline" onClick={() => navigate('/manager-dashboard')} iconName="LineChart">{t('manager', 'Manager')}</Button>
+              <Button variant="default" onClick={() => navigate('/incident-management-workflow')} iconName="AlertTriangle">{isArabic ? 'حوادث' : t('incidents', 'Incidents')}</Button>
+              <Button variant="outline" onClick={() => navigate('/ticket-management-center')} iconName="Ticket">{isArabic ? 'تذاكر' : t('tickets', 'Tickets')}</Button>
+              <Button variant="outline" onClick={() => navigate('/manager-dashboard')} iconName="LineChart">{isArabic ? 'المدير' : t('manager', 'Manager')}</Button>
             </div>
           </div>
         </section>
@@ -66,22 +107,22 @@ const EscalationsPage = () => {
                     <Icon name="ArrowUpRight" size={20} className="text-primary" />
                   </div>
                   <div>
-                    <div className="text-xs uppercase tracking-wider text-muted-foreground">{item.level || item.Level}</div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">{localizeLevel(item.level || item.Level)}</div>
                     <h2 className="text-lg font-semibold text-foreground mt-1">{item.trigger || item.Trigger}</h2>
                     <p className="text-sm text-muted-foreground mt-1">{item.action || item.Action}</p>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button size="sm" variant="outline" onClick={() => navigate(item.route || item.Route || '/ticket-management-center')}>{t('open', 'Open')}</Button>
-                  <Button size="sm" variant="ghost" onClick={() => navigate('/search')}>{t('search', 'Search')}</Button>
+                  <Button size="sm" variant="outline" onClick={() => navigate(item.route || item.Route || '/ticket-management-center')}>{localizeRouteLabel(item.route || item.Route || '/ticket-management-center')}</Button>
+                  <Button size="sm" variant="ghost" onClick={() => navigate('/search')}>{isArabic ? 'بحث' : t('search', 'Search')}</Button>
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-4 text-sm">
                 <div className="rounded-lg bg-muted px-3 py-2">
-                  <span className="text-muted-foreground">{t('owner', 'Owner')}</span> <span className="font-medium text-foreground ml-2">{item.owner || item.Owner}</span>
+                  <span className="text-muted-foreground">{isArabic ? 'المالك' : t('owner', 'Owner')}</span> <span className="font-medium text-foreground ml-2">{item.owner || item.Owner}</span>
                 </div>
                 <div className="rounded-lg bg-muted px-3 py-2">
-                  <span className="text-muted-foreground">{t('threshold', 'Threshold')}</span> <span className="font-medium text-foreground ml-2">{item.triggerMinutes || item.TriggerMinutes || item.trigger}</span>
+                  <span className="text-muted-foreground">{isArabic ? 'العتبة' : t('threshold', 'Threshold')}</span> <span className="font-medium text-foreground ml-2">{item.triggerMinutes || item.TriggerMinutes || item.trigger}</span>
                 </div>
               </div>
             </div>

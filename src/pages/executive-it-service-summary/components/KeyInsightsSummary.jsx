@@ -7,6 +7,7 @@ import { getTranslation } from '../../../services/i18n';
 const KeyInsightsSummary = ({ insights = [], recommendations = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
 
   const getInsightIcon = (type) => {
     switch (type) {
@@ -44,6 +45,18 @@ const KeyInsightsSummary = ({ insights = [], recommendations = [] }) => {
     }
   };
 
+  const localizedImpact = (impact) => {
+    if (!isArabic) return `${impact} ${t('impact', 'Impact')}`;
+    const map = { High: 'مرتفع التأثير', Medium: 'متوسط التأثير', Low: 'منخفض التأثير' };
+    return map[impact] || impact;
+  };
+
+  const localizedPriority = (priority) => {
+    if (!isArabic) return `${priority} ${t('priority', 'Priority')}`;
+    const map = { high: 'عالية الأولوية', medium: 'متوسطة الأولوية', low: 'منخفضة الأولوية' };
+    return map[priority] || priority;
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
@@ -68,7 +81,7 @@ const KeyInsightsSummary = ({ insights = [], recommendations = [] }) => {
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-foreground">{insight?.title}</h4>
                     <span className={`text-xs px-2 py-1 rounded-full ${insight?.impact === 'High' ? 'bg-error/10 text-error' : insight?.impact === 'Medium' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'}`}>
-                      {insight?.impact} {t('impact', 'Impact')}
+                      {localizedImpact(insight?.impact)}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{insight?.description}</p>
@@ -106,7 +119,7 @@ const KeyInsightsSummary = ({ insights = [], recommendations = [] }) => {
                   <h4 className="font-medium text-foreground">{rec?.title}</h4>
                 </div>
                 <span className={`text-xs font-medium uppercase tracking-wide ${getPriorityColor(rec?.priority)}`}>
-                  {rec?.priority} {t('priority', 'Priority')}
+                  {localizedPriority(rec?.priority)}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mb-3 ml-5">{rec?.description}</p>
@@ -130,7 +143,9 @@ const KeyInsightsSummary = ({ insights = [], recommendations = [] }) => {
         <div className="mt-6 pt-4 border-t border-border">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {recommendations.length} {t('recommendations', 'recommendations')} • {t('liveOperationalSummary', 'Live operational summary')}
+              {isArabic
+                ? `${recommendations.length} توصيات • ملخص التشغيل المباشر`
+                : `${recommendations.length} ${t('recommendations', 'recommendations')} • ${t('liveOperationalSummary', 'Live operational summary')}`}
             </div>
             <Button variant="outline" size="sm">{t('exportActionPlan', 'Export Action Plan')}</Button>
           </div>

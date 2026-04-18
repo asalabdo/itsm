@@ -8,11 +8,12 @@ import { getTranslation } from '../../../services/i18n';
 const TrendAnalysisChart = ({ data = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
 
   const monthlyData = useMemo(() => {
     return (data || []).map((d, index) => ({
-      month: d.date || `Point ${index + 1}`,
+      month: d.date || (isArabic ? `النقطة ${index + 1}` : `Point ${index + 1}`),
       incidents: Number(d.count ?? 0),
       availability: Number((99 - Math.min(1.5, Number(d.count ?? 0) / 100)).toFixed(1)),
       satisfaction: Number((4.1 + Math.min(0.6, Number(d.count ?? 0) / 200)).toFixed(1)),
@@ -26,7 +27,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
       const slice = monthlyData.slice(i, i + 3);
       const total = slice.reduce((sum, item) => sum + Number(item.incidents || 0), 0);
       groups.push({
-        quarter: `Q${Math.floor(i / 3) + 1}`,
+        quarter: isArabic ? `الربع ${Math.floor(i / 3) + 1}` : `Q${Math.floor(i / 3) + 1}`,
         availability: Number((99 - Math.min(1.2, total / 300)).toFixed(1)),
         satisfaction: Number((4.1 + Math.min(0.5, total / 500)).toFixed(1)),
         incidents: total,
@@ -66,9 +67,9 @@ const TrendAnalysisChart = ({ data = [] }) => {
   };
 
   const periods = [
-    { key: 'monthly', label: t('monthly', 'Monthly'), icon: 'Calendar' },
-    { key: 'quarterly', label: t('quarterly', 'Quarterly'), icon: 'BarChart3' },
-    { key: 'yearly', label: t('yearly', 'Yearly'), icon: 'TrendingUp' }
+    { key: 'monthly', label: isArabic ? 'شهري' : t('monthly', 'Monthly'), icon: 'Calendar' },
+    { key: 'quarterly', label: isArabic ? 'ربع سنوي' : t('quarterly', 'Quarterly'), icon: 'BarChart3' },
+    { key: 'yearly', label: isArabic ? 'سنوي' : t('yearly', 'Yearly'), icon: 'TrendingUp' }
   ];
 
   return (
@@ -76,7 +77,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-foreground">{t('performanceTrendAnalysis', 'Performance Trend Analysis')}</h3>
-          <p className="text-sm text-muted-foreground">{t('keyMetricsTrendingOverTime', 'Key metrics trending over time')}</p>
+          <p className="text-sm text-muted-foreground">{isArabic ? 'تتبع اتجاهات المؤشرات الرئيسية عبر الزمن' : t('keyMetricsTrendingOverTime', 'Key metrics trending over time')}</p>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -122,7 +123,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
               dataKey="availability" 
               stroke="var(--color-success)" 
               strokeWidth={3}
-              name={t('availabilityPercent', 'Availability %')}
+              name={isArabic ? 'التوفر %' : t('availabilityPercent', 'Availability %')}
               dot={{ fill: 'var(--color-success)', strokeWidth: 2, r: 4 }}
             />
             <Line 
@@ -130,7 +131,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
               dataKey="satisfaction" 
               stroke="var(--color-primary)" 
               strokeWidth={3}
-              name={t('satisfactionScore', 'Satisfaction Score')}
+              name={isArabic ? 'مؤشر الرضا' : t('satisfactionScore', 'Satisfaction Score')}
               dot={{ fill: 'var(--color-primary)', strokeWidth: 2, r: 4 }}
             />
             <Line 
@@ -138,7 +139,7 @@ const TrendAnalysisChart = ({ data = [] }) => {
               dataKey="resolution" 
               stroke="var(--color-accent)" 
               strokeWidth={3}
-              name={t('avgResolutionHours', 'Avg Resolution (hrs)')}
+              name={isArabic ? 'متوسط الحل (ساعة)' : t('avgResolutionHours', 'Avg Resolution (hrs)')}
               dot={{ fill: 'var(--color-accent)', strokeWidth: 2, r: 4 }}
             />
           </LineChart>
@@ -148,25 +149,25 @@ const TrendAnalysisChart = ({ data = [] }) => {
         <div className="text-center p-3 bg-success/10 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <Icon name="TrendingUp" size={16} className="text-success" />
-            <span className="text-sm font-medium text-success">{t('availability', 'Availability')}</span>
+            <span className="text-sm font-medium text-success">{isArabic ? 'التوفر' : t('availability', 'Availability')}</span>
           </div>
-          <p className="text-xs text-muted-foreground">{t('trendingUpwardXpercent', 'Trending upward +0.8%')}</p>
+          <p className="text-xs text-muted-foreground">{isArabic ? 'اتجاه صاعد +0.8%' : t('trendingUpwardXpercent', 'Trending upward +0.8%')}</p>
         </div>
         
         <div className="text-center p-3 bg-primary/10 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <Icon name="TrendingUp" size={16} className="text-primary" />
-            <span className="text-sm font-medium text-primary">{t('satisfaction', 'Satisfaction')}</span>
+            <span className="text-sm font-medium text-primary">{isArabic ? 'الرضا' : t('satisfaction', 'Satisfaction')}</span>
           </div>
-          <p className="text-xs text-muted-foreground">{t('steadyImprovementX', 'Steady improvement +0.4')}</p>
+          <p className="text-xs text-muted-foreground">{isArabic ? 'تحسن مستمر +0.4' : t('steadyImprovementX', 'Steady improvement +0.4')}</p>
         </div>
         
         <div className="text-center p-3 bg-accent/10 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <Icon name="TrendingDown" size={16} className="text-accent" />
-            <span className="text-sm font-medium text-accent">{t('resolutionTime', 'Resolution Time')}</span>
+            <span className="text-sm font-medium text-accent">{isArabic ? 'وقت الحل' : t('resolutionTime', 'Resolution Time')}</span>
           </div>
-          <p className="text-xs text-muted-foreground">{t('fasterByXhours', 'Faster by 1.1 hours')}</p>
+          <p className="text-xs text-muted-foreground">{isArabic ? 'أسرع بمقدار 1.1 ساعة' : t('fasterByXhours', 'Faster by 1.1 hours')}</p>
         </div>
       </div>
     </div>

@@ -7,10 +7,20 @@ import { getTranslation } from '../../../services/i18n';
 const DepartmentPerformance = ({ data = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
+
+  const departmentMap = {
+    engineering: 'الهندسة',
+    operations: 'العمليات',
+    hr: 'الموارد البشرية',
+    finance: 'المالية',
+    marketing: 'التسويق',
+    sales: 'المبيعات',
+  };
 
   const departmentData = useMemo(() => {
     if (!data.length) return [];
-    return data.map((d) => ({
+      return data.map((d) => ({
       department: d.metricName,
       satisfaction: Number(d.value),
       incidents: Math.max(1, Math.round(10 - Number(d.value || 0))),
@@ -32,11 +42,11 @@ const DepartmentPerformance = ({ data = [] }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-foreground">{t('departmentPerformance', 'Department Performance')}</h3>
-          <p className="text-sm text-muted-foreground">{t('itServiceSatisfactionByBusinessUnit', 'IT service satisfaction by business unit')}</p>
+          <p className="text-sm text-muted-foreground">{isArabic ? 'رضا خدمات تقنية المعلومات حسب وحدة الأعمال' : t('itServiceSatisfactionByBusinessUnit', 'IT service satisfaction by business unit')}</p>
         </div>
         <div className="flex items-center space-x-2">
           <Icon name="Users" size={16} className="text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">{t('totalUsersCount', '1,730 total users')}</span>
+          <span className="text-sm text-muted-foreground">{isArabic ? 'إجمالي 1,730 مستخدمًا' : t('totalUsersCount', '1,730 total users')}</span>
         </div>
       </div>
 
@@ -73,26 +83,26 @@ const DepartmentPerformance = ({ data = [] }) => {
                   <span className={`text-sm font-bold ${performance.color}`}>{dept.department?.charAt(0)}</span>
                 </div>
                 <div>
-                  <h4 className="font-medium text-foreground">{dept.department}</h4>
+                  <h4 className="font-medium text-foreground">{isArabic ? (departmentMap[String(dept.department || '').toLowerCase()] || dept.department) : dept.department}</h4>
                   <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                    <span>{dept.users} {t('users', 'users')}</span>
+                    <span>{dept.users} {isArabic ? 'مستخدم' : t('users', 'users')}</span>
                     <span>•</span>
-                    <span>{dept.ticketVolume} {t('ticketsPerMonth', 'tickets/month')}</span>
+                    <span>{dept.ticketVolume} {isArabic ? 'تذكرة/شهر' : t('ticketsPerMonth', 'tickets/month')}</span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center space-x-6 text-sm">
                 <div className="text-center">
                   <div className={`font-semibold ${performance.color}`}>{dept.satisfaction}/5.0</div>
-                  <div className="text-xs text-muted-foreground">{t('satisfaction', 'Satisfaction')}</div>
+                  <div className="text-xs text-muted-foreground">{isArabic ? 'الرضا' : t('satisfaction', 'Satisfaction')}</div>
                 </div>
                 <div className="text-center">
                   <div className="font-semibold text-foreground">{dept.incidents}</div>
-                  <div className="text-xs text-muted-foreground">{t('incidents', 'Incidents')}</div>
+                  <div className="text-xs text-muted-foreground">{isArabic ? 'حوادث' : t('incidents', 'Incidents')}</div>
                 </div>
                 <div className="text-center">
                   <div className="font-semibold text-foreground">{dept.resolution}h</div>
-                  <div className="text-xs text-muted-foreground">{t('avgResolution', 'Avg Resolution')}</div>
+                  <div className="text-xs text-muted-foreground">{isArabic ? 'متوسط الحل' : t('avgResolution', 'Avg Resolution')}</div>
                 </div>
               </div>
             </div>
@@ -104,15 +114,15 @@ const DepartmentPerformance = ({ data = [] }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-bold text-success">4.5/5.0</div>
-            <div className="text-sm text-muted-foreground">{t('averageSatisfaction', 'Average Satisfaction')}</div>
+            <div className="text-sm text-muted-foreground">{isArabic ? 'متوسط الرضا' : t('averageSatisfaction', 'Average Satisfaction')}</div>
           </div>
           <div>
             <div className="text-lg font-bold text-foreground">53</div>
-            <div className="text-sm text-muted-foreground">{t('totalIncidents', 'Total Incidents')}</div>
+            <div className="text-sm text-muted-foreground">{isArabic ? 'إجمالي الحوادث' : t('totalIncidents', 'Total Incidents')}</div>
           </div>
           <div>
             <div className="text-lg font-bold text-accent">1.5h</div>
-            <div className="text-sm text-muted-foreground">{t('avgResolutionTime', 'Avg Resolution Time')}</div>
+            <div className="text-sm text-muted-foreground">{isArabic ? 'متوسط وقت الحل' : t('avgResolutionTime', 'Avg Resolution Time')}</div>
           </div>
         </div>
       </div>

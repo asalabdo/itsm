@@ -16,6 +16,20 @@ const MetricCard = ({
 }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
+
+  const titleMap = {
+    'it service availability': { en: 'IT Service Availability', ar: 'توافر خدمات تقنية المعلومات' },
+    'employee satisfaction': { en: 'Employee Satisfaction', ar: 'رضا الموظفين' },
+    'cost per ticket': { en: 'Cost per Ticket', ar: 'تكلفة كل تذكرة' },
+    'business impact score': { en: 'Business Impact Score', ar: 'مؤشر تأثير الأعمال' },
+  };
+
+  const metricName = String(title || '').trim().toLowerCase();
+  const displayTitle = isArabic ? (titleMap[metricName]?.ar || title) : (titleMap[metricName]?.en || title);
+  const displayDescription = isArabic
+    ? `أداء ${displayTitle} الحالي`
+    : description || `Current ${displayTitle} performance`;
 
   const getStatusColor = () => {
     switch (status) {
@@ -47,8 +61,8 @@ const MetricCard = ({
             <Icon name={icon} size={20} className={getStatusColor()} />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            <h3 className="text-sm font-medium text-muted-foreground">{displayTitle}</h3>
+            <p className="text-xs text-muted-foreground mt-1">{displayDescription}</p>
           </div>
         </div>
         <div className="flex items-center space-x-1">

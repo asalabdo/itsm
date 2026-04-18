@@ -12,6 +12,7 @@ const KnowledgeBaseSection = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [rawArticles, setRawArticles] = useState([]);
@@ -39,7 +40,7 @@ const KnowledgeBaseSection = () => {
       views: article.views || 0,
       helpful: 90,
       lastUpdated: article.updatedAt || article.createdAt || new Date().toISOString().slice(0, 10),
-      readTime: '4 min',
+      readTime: isArabic ? '4 دقائق' : '4 min',
     })),
     [rawArticles, language]
   );
@@ -153,7 +154,7 @@ const KnowledgeBaseSection = () => {
                 {category?.label}
               </div>
               <div className="text-xs text-muted-foreground text-center caption data-text">
-                {category?.count} {t('articles', 'articles')}
+                {category?.count} {isArabic ? 'مقال' : t('articles', 'articles')}
               </div>
             </button>
           ))}
@@ -187,7 +188,7 @@ const KnowledgeBaseSection = () => {
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1">
                     <Icon name="Eye" size={14} />
-                    {article?.views?.toLocaleString()}
+                    {article?.views?.toLocaleString()} {isArabic ? 'مشاهدة' : t('views', 'views')}
                   </span>
                   <span className="flex items-center gap-1">
                     <Icon name="ThumbsUp" size={14} />

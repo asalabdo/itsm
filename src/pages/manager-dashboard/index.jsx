@@ -25,6 +25,35 @@ const ManagerDashboard = () => {
   const [, setChartData] = useState([]);
   const [, setPendingTickets] = useState([]);
 
+  function translateCategory(category) {
+    const normalized = String(category || 'General').toLowerCase().replace(/[\s_-]+/g, '');
+    const categoryMap = {
+      technicalsupport: t('technicalSupport', 'Technical Support'),
+      software: t('software', 'Software'),
+      alert: t('alert', 'Alert'),
+      incident: t('incident', 'Incident'),
+      access: t('access', 'Access'),
+      servicerequest: t('serviceRequest', 'Service Request'),
+      network: t('network', 'Network'),
+      problem: t('problem', 'Problem'),
+      email: t('email', 'Email'),
+      hardware: t('hardware', 'Hardware'),
+      printing: t('printing', 'Printing'),
+      general: t('generalInquiry', 'General Inquiry'),
+    };
+    return categoryMap[normalized] || category || t('generalInquiry', 'General Inquiry');
+  }
+
+  function formatTimeRemaining(dueDate) {
+    if (!dueDate) return 'N/A';
+    const diff = new Date(dueDate) - new Date();
+    if (diff < 0) return `${t('overdueBy', 'Overdue by')} ${Math.floor(-diff / 60000)} ${t('minutesShort', 'min')}`;
+    const hours = Math.floor(diff / 3600000);
+    return hours > 0
+      ? `${hours}${t('hoursShort', 'h')} ${t('remaining', 'remaining')}`
+      : `${Math.floor(diff / 60000)} ${t('minutesShort', 'min')} ${t('remaining', 'remaining')}`;
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -111,7 +140,7 @@ const ManagerDashboard = () => {
       }
     };
     fetchData();
-  }, [t, locale, formatTimeRemaining, translateCategory]);
+  }, [t, locale]);
 
   const rangeToDays = (range) => {
     switch (range) {
@@ -124,35 +153,6 @@ const ManagerDashboard = () => {
         return 30;
     }
   };
-
-  const translateCategory = useCallback((category) => {
-    const normalized = String(category || 'General').toLowerCase().replace(/[\s_-]+/g, '');
-    const categoryMap = {
-      technicalsupport: t('technicalSupport', 'Technical Support'),
-      software: t('software', 'Software'),
-      alert: t('alert', 'Alert'),
-      incident: t('incident', 'Incident'),
-      access: t('access', 'Access'),
-      servicerequest: t('serviceRequest', 'Service Request'),
-      network: t('network', 'Network'),
-      problem: t('problem', 'Problem'),
-      email: t('email', 'Email'),
-      hardware: t('hardware', 'Hardware'),
-      printing: t('printing', 'Printing'),
-      general: t('generalInquiry', 'General Inquiry'),
-    };
-    return categoryMap[normalized] || category || t('generalInquiry', 'General Inquiry');
-  }, [t]);
-
-  const formatTimeRemaining = useCallback((dueDate) => {
-    if (!dueDate) return 'N/A';
-    const diff = new Date(dueDate) - new Date();
-    if (diff < 0) return `${t('overdueBy', 'Overdue by')} ${Math.floor(-diff / 60000)} ${t('minutesShort', 'min')}`;
-    const hours = Math.floor(diff / 3600000);
-    return hours > 0
-      ? `${hours}${t('hoursShort', 'h')} ${t('remaining', 'remaining')}`
-      : `${Math.floor(diff / 60000)} ${t('minutesShort', 'min')} ${t('remaining', 'remaining')}`;
-  }, [t]);
 
   const filteredTickets = useMemo(() => {
     const cutoff = new Date();

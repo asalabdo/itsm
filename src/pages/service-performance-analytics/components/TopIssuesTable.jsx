@@ -8,8 +8,48 @@ import { formatLocalizedValue } from '../../../services/displayValue';
 const TopIssuesTable = ({ tickets = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [sortBy, setSortBy] = useState('frequency');
   const [sortOrder, setSortOrder] = useState('desc');
+
+  const translateCategory = (value) => {
+    const normalized = String(value || '').toLowerCase().replace(/[\s_-]+/g, '');
+    const map = {
+      technicalsupport: isArabic ? 'الدعم الفني' : 'Technical Support',
+      network: isArabic ? 'الشبكة' : 'Network',
+      access: isArabic ? 'الوصول' : 'Access',
+      servicerequest: isArabic ? 'طلب خدمة' : 'Service Request',
+      problem: isArabic ? 'مشكلة' : 'Problem',
+      incident: isArabic ? 'حادث' : 'Incident',
+      alert: isArabic ? 'تنبيه' : 'Alert',
+      software: isArabic ? 'برمجيات' : 'Software',
+      hardware: isArabic ? 'أجهزة' : 'Hardware',
+      printing: isArabic ? 'الطباعة' : 'Printing',
+      billing: isArabic ? 'الفوترة' : 'Billing',
+      sales: isArabic ? 'المبيعات' : 'Sales',
+      general: isArabic ? 'عام' : 'General'
+    };
+    return map[normalized] || value || (isArabic ? 'عام' : 'General');
+  };
+
+  const translateImpact = (impactKey) => {
+    const map = {
+      Critical: isArabic ? 'حرج' : 'Critical',
+      High: isArabic ? 'مرتفع' : 'High',
+      Medium: isArabic ? 'متوسط' : 'Medium',
+      Low: isArabic ? 'منخفض' : 'Low'
+    };
+    return map[impactKey] || impactKey;
+  };
+
+  const translateTrend = (trend) => {
+    const map = {
+      up: isArabic ? 'تصاعد' : 'Up',
+      down: isArabic ? 'انخفاض' : 'Down',
+      stable: isArabic ? 'مستقر' : 'Stable'
+    };
+    return map[trend] || trend;
+  };
 
   const issuesData = useMemo(() => {
     const groups = new Map();
@@ -20,12 +60,12 @@ const TopIssuesTable = ({ tickets = [] }) => {
       const existing = groups.get(key) || {
         id: key,
         issue: formatLocalizedValue(ticket?.titleAr || ticket?.title || key, language) || key,
-        category: formatLocalizedValue(ticket?.categoryAr || ticket?.category || 'General', language) || 'General',
+        category: formatLocalizedValue(ticket?.categoryAr || ticket?.category || 'General', language) || translateCategory('General'),
         frequency: 0,
         totalHours: 0,
         impactScore: 0,
         trend: 'stable',
-        rootCause: formatLocalizedValue(ticket?.subcategoryAr || ticket?.subcategory || ticket?.categoryAr || ticket?.category || 'Unclassified', language) || 'Unclassified',
+        rootCause: formatLocalizedValue(ticket?.subcategoryAr || ticket?.subcategory || ticket?.categoryAr || ticket?.category || 'Unclassified', language) || (isArabic ? 'غير مصنف' : 'Unclassified'),
         impactKey: 'Low',
       };
 
@@ -47,9 +87,9 @@ const TopIssuesTable = ({ tickets = [] }) => {
           ...item,
           avgResolution: `${avgHours.toFixed(1)}h`,
           impactKey,
-          impact: t(impactKey.toLowerCase(), impactKey),
-          trend: avgHours > 4 ? 'up' : avgHours < 1.5 ? 'down' : 'stable',
-        };
+        impact: translateImpact(impactKey),
+        trend: avgHours > 4 ? 'up' : avgHours < 1.5 ? 'down' : 'stable',
+      };
       })
       .sort((a, b) => b.frequency - a.frequency)
       .slice(0, 8);
@@ -125,29 +165,29 @@ const TopIssuesTable = ({ tickets = [] }) => {
           <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                <button onClick={() => handleSort('issue')} className="flex items-center space-x-1 hover:text-foreground">
+                <button onClick={() => handleSort('issue')} className={`flex items-center space-x-1 hover:text-foreground ${isArabic ? 'flex-row-reverse' : ''}`}>
                   <span>{t('issue', 'Issue')}</span>
                   <Icon name="ArrowUpDown" size={14} />
                 </button>
               </th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('serviceCategory', 'Category')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{isArabic ? 'فئة الخدمة' : t('serviceCategory', 'Category')}</th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                <button onClick={() => handleSort('frequency')} className="flex items-center space-x-1 hover:text-foreground">
-                  <span>{t('frequency', 'Frequency')}</span>
+                <button onClick={() => handleSort('frequency')} className={`flex items-center space-x-1 hover:text-foreground ${isArabic ? 'flex-row-reverse' : ''}`}>
+                  <span>{isArabic ? 'التكرار' : t('frequency', 'Frequency')}</span>
                   <Icon name="ArrowUpDown" size={14} />
                 </button>
               </th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('averageResolution', 'Avg Resolution')}</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('impact', 'Impact')}</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('trend', 'Trend')}</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('rootCause', 'Root Cause')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{isArabic ? 'متوسط الحل' : t('averageResolution', 'Avg Resolution')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{isArabic ? 'التأثير' : t('impact', 'Impact')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{isArabic ? 'الاتجاه' : t('trend', 'Trend')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{isArabic ? 'السبب الجذري' : t('rootCause', 'Root Cause')}</th>
             </tr>
           </thead>
           <tbody>
             {sortedData.map((issue, index) => (
               <tr key={issue?.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                 <td className="p-4">
-                  <div className="flex items-center space-x-3">
+                  <div className={`flex items-center space-x-3 ${isArabic ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-xs font-medium text-primary">
                       {index + 1}
                     </div>
@@ -157,12 +197,12 @@ const TopIssuesTable = ({ tickets = [] }) => {
                   </div>
                 </td>
                 <td className="p-4">
-                  <span className="text-sm text-muted-foreground">{issue?.category}</span>
+                  <span className="text-sm text-muted-foreground">{translateCategory(issue?.category)}</span>
                 </td>
                 <td className="p-4">
-                  <div className="flex items-center space-x-2">
+                  <div className={`flex items-center space-x-2 ${isArabic ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <span className="font-medium text-foreground">{issue?.frequency}</span>
-                    <span className="text-xs text-muted-foreground">{t('ticketsCount', 'tickets')}</span>
+                    <span className="text-xs text-muted-foreground">{isArabic ? 'تذكرة' : t('ticketsCount', 'tickets')}</span>
                   </div>
                 </td>
                 <td className="p-4">
@@ -170,14 +210,17 @@ const TopIssuesTable = ({ tickets = [] }) => {
                 </td>
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(issue?.impactKey)}`}>
-                    {issue?.impact}
+                    {translateImpact(issue?.impactKey)}
                   </span>
                 </td>
                 <td className="p-4">
-                  <Icon name={getTrendIcon(issue?.trend)} size={16} className={getTrendColor(issue?.trend)} />
+                  <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    <Icon name={getTrendIcon(issue?.trend)} size={16} className={getTrendColor(issue?.trend)} />
+                    <span className="text-xs text-muted-foreground">{translateTrend(issue?.trend)}</span>
+                  </div>
                 </td>
                 <td className="p-4">
-                  <span className="text-sm text-muted-foreground">{issue?.rootCause}</span>
+                  <span className="text-sm text-muted-foreground">{translateCategory(issue?.rootCause)}</span>
                 </td>
               </tr>
             ))}
@@ -187,10 +230,10 @@ const TopIssuesTable = ({ tickets = [] }) => {
 
       <div className="p-4 border-t border-border bg-muted/20">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{t('showingTopIssues', 'Showing top 8 issues from last 30 days')}</span>
+          <span>{isArabic ? 'عرض أهم 8 مشاكل من آخر 30 يومًا' : t('showingTopIssues', 'Showing top 8 issues from last 30 days')}</span>
           <Button variant="ghost" size="sm">
-            {t('viewAllIssues', 'View All Issues')}
-            <Icon name="ArrowRight" size={14} className="ml-2" />
+            {isArabic ? 'عرض كل المشاكل' : t('viewAllIssues', 'View All Issues')}
+            <Icon name={isArabic ? 'ArrowLeft' : 'ArrowRight'} size={14} className="ml-2" />
           </Button>
         </div>
       </div>

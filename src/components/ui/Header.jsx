@@ -215,7 +215,7 @@ const Header = () => {
       submenu: [
         { label: t('servicePerformance', 'Service Performance'), path: '/service-performance-analytics' },
         { label: t('advancedAnalytics', 'Advanced Analytics'), path: '/advanced-analytics' },
-        { label: t('reportsAnalytics', 'Reports & Analytics'), path: '/reporting-and-analytics-hub' },
+        // { label: t('reportsAnalytics', 'Reports & Analytics'), path: '/reporting-and-analytics-hub' },
         { label: t('changeManagement', 'Change Management'), path: '/change-management-dashboard' },
         { label: t('assetLifecycle', 'Asset Lifecycle'), path: '/asset-lifecycle-management' },
         { label: t('managerDashboard', 'Manager Dashboard'), path: '/manager-dashboard', icon: 'LineChart' },

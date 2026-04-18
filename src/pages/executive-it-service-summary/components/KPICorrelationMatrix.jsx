@@ -7,29 +7,30 @@ import { getTranslation } from '../../../services/i18n';
 const KPICorrelationMatrix = ({ correlations: correlationsProp }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [selectedMetric, setSelectedMetric] = useState('availability');
 
   const correlationData = correlationsProp || useMemo(() => ({
-    availability: { name: t('serviceAvailability', 'Service Availability'), correlations: [] },
-    satisfaction: { name: t('employeeSatisfaction', 'Employee Satisfaction'), correlations: [] },
-    cost: { name: t('costPerTicket', 'Cost per Ticket'), correlations: [] },
-    business: { name: t('businessImpactScore', 'Business Impact Score'), correlations: [] },
+    availability: { name: isArabic ? 'توافر الخدمة' : t('serviceAvailability', 'Service Availability'), correlations: [] },
+    satisfaction: { name: isArabic ? 'رضا الموظفين' : t('employeeSatisfaction', 'Employee Satisfaction'), correlations: [] },
+    cost: { name: isArabic ? 'تكلفة كل تذكرة' : t('costPerTicket', 'Cost per Ticket'), correlations: [] },
+    business: { name: isArabic ? 'تأثير الأعمال' : t('businessImpactScore', 'Business Impact Score'), correlations: [] },
   }), [correlationsProp, language]);
 
   const metrics = [
-    { key: 'availability', label: t('serviceAvailability', 'Service Availability'), icon: 'Activity' },
-    { key: 'satisfaction', label: t('employeeSatisfaction', 'Employee Satisfaction'), icon: 'Heart' },
-    { key: 'cost', label: t('costPerTicket', 'Cost per Ticket'), icon: 'Banknote' },
-    { key: 'business', label: t('businessImpact', 'Business Impact'), icon: 'TrendingUp' },
+    { key: 'availability', label: isArabic ? 'توافر الخدمة' : t('serviceAvailability', 'Service Availability'), icon: 'Activity' },
+    { key: 'satisfaction', label: isArabic ? 'رضا الموظفين' : t('employeeSatisfaction', 'Employee Satisfaction'), icon: 'Heart' },
+    { key: 'cost', label: isArabic ? 'تكلفة كل تذكرة' : t('costPerTicket', 'Cost per Ticket'), icon: 'Banknote' },
+    { key: 'business', label: isArabic ? 'تأثير الأعمال' : t('businessImpact', 'Business Impact'), icon: 'TrendingUp' },
   ];
 
   const getCorrelationStrength = (correlation) => {
     const abs = Math.abs(correlation);
-    if (abs >= 0.8) return t('veryStrong', 'Very Strong');
-    if (abs >= 0.6) return t('strong', 'Strong');
-    if (abs >= 0.4) return t('moderate', 'Moderate');
-    if (abs >= 0.2) return t('weak', 'Weak');
-    return t('veryWeak', 'Very Weak');
+    if (abs >= 0.8) return isArabic ? 'قوي جدًا' : t('veryStrong', 'Very Strong');
+    if (abs >= 0.6) return isArabic ? 'قوي' : t('strong', 'Strong');
+    if (abs >= 0.4) return isArabic ? 'متوسط' : t('moderate', 'Moderate');
+    if (abs >= 0.2) return isArabic ? 'ضعيف' : t('weak', 'Weak');
+    return isArabic ? 'ضعيف جدًا' : t('veryWeak', 'Very Weak');
   };
 
   const getCorrelationColor = (correlation) => {
@@ -55,11 +56,11 @@ const KPICorrelationMatrix = ({ correlations: correlationsProp }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-foreground">{t('kpiCorrelationMatrix', 'KPI Correlation Matrix')}</h3>
-          <p className="text-sm text-muted-foreground">{t('relationshipsBetweenItPerformanceAndBusinessOutcomes', 'Relationships between IT performance and business outcomes')}</p>
+          <p className="text-sm text-muted-foreground">{isArabic ? 'العلاقات بين أداء تقنية المعلومات ونتائج الأعمال' : t('relationshipsBetweenItPerformanceAndBusinessOutcomes', 'Relationships between IT performance and business outcomes')}</p>
         </div>
         <div className="flex items-center space-x-2">
           <Icon name="BarChart3" size={16} className="text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">{t('predictiveAnalytics', 'Predictive Analytics')}</span>
+          <span className="text-sm text-muted-foreground">{isArabic ? 'التحليلات التنبؤية' : t('predictiveAnalytics', 'Predictive Analytics')}</span>
         </div>
       </div>
 
@@ -87,7 +88,7 @@ const KPICorrelationMatrix = ({ correlations: correlationsProp }) => {
           </div>
           <div>
             <h4 className="font-semibold text-foreground">{currentData?.name}</h4>
-            <p className="text-sm text-muted-foreground">{t('impactAnalysisAndCorrelations', 'Impact analysis and correlations')}</p>
+            <p className="text-sm text-muted-foreground">{isArabic ? 'تحليل التأثير والارتباطات' : t('impactAnalysisAndCorrelations', 'Impact analysis and correlations')}</p>
           </div>
         </div>
       </div>
@@ -117,7 +118,7 @@ const KPICorrelationMatrix = ({ correlations: correlationsProp }) => {
                 <div className={`text-sm font-medium ${getCorrelationColor(item?.correlation)}`}>
                   {Math.abs(item?.correlation * 100)?.toFixed(0)}%
                 </div>
-                <div className="text-xs text-muted-foreground">{t('correlation', 'Correlation')}</div>
+                <div className="text-xs text-muted-foreground">{isArabic ? 'الارتباط' : t('correlation', 'Correlation')}</div>
               </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">{item?.impact}</p>
@@ -127,9 +128,9 @@ const KPICorrelationMatrix = ({ correlations: correlationsProp }) => {
 
       <div className="mt-6 pt-4 border-t border-border">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-medium text-foreground">{t('predictiveInsights', 'Predictive Insights')}</h4>
+          <h4 className="font-medium text-foreground">{isArabic ? 'الرؤى التنبؤية' : t('predictiveInsights', 'Predictive Insights')}</h4>
           <Button variant="ghost" size="sm" iconName="Brain" iconPosition="left" iconSize={16}>
-            {t('aiAnalysis', 'AI Analysis')}
+            {isArabic ? 'تحليل الذكاء الاصطناعي' : t('aiAnalysis', 'AI Analysis')}
           </Button>
         </div>
 
@@ -137,20 +138,24 @@ const KPICorrelationMatrix = ({ correlations: correlationsProp }) => {
           <div className="p-3 bg-primary/10 rounded-lg">
             <div className="flex items-center space-x-2 mb-2">
               <Icon name="TrendingUp" size={16} className="text-primary" />
-              <span className="text-sm font-medium text-primary">{t('optimizationOpportunity', 'Optimization Opportunity')}</span>
+              <span className="text-sm font-medium text-primary">{isArabic ? 'فرصة التحسين' : t('optimizationOpportunity', 'Optimization Opportunity')}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('firstCallResolutionImpact', 'Improving first call resolution by 10% could increase satisfaction by 7.8% and reduce costs by $12,000/month')}
+              {isArabic
+                ? 'تحسين الحل في أول اتصال بنسبة 10% قد يرفع الرضا بنسبة 7.8% ويخفض التكاليف بمقدار 12,000 دولار شهريًا'
+                : t('firstCallResolutionImpact', 'Improving first call resolution by 10% could increase satisfaction by 7.8% and reduce costs by $12,000/month')}
             </p>
           </div>
 
           <div className="p-3 bg-warning/10 rounded-lg">
             <div className="flex items-center space-x-2 mb-2">
               <Icon name="AlertTriangle" size={16} className="text-warning" />
-              <span className="text-sm font-medium text-warning">{t('riskAlert', 'Risk Alert')}</span>
+              <span className="text-sm font-medium text-warning">{isArabic ? 'تنبيه المخاطر' : t('riskAlert', 'Risk Alert')}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('businessImpactRisk', 'Current incident trend suggests 15% increase in business impact if not addressed within 2 weeks')}
+              {isArabic
+                ? 'يشير اتجاه الحوادث الحالي إلى زيادة 15% في تأثير الأعمال إذا لم تتم المعالجة خلال أسبوعين'
+                : t('businessImpactRisk', 'Current incident trend suggests 15% increase in business impact if not addressed within 2 weeks')}
             </p>
           </div>
         </div>

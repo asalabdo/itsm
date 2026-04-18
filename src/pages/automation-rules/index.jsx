@@ -29,6 +29,7 @@ const AutomationManagement = () => {
   const [errors, setErrors] = useState({});
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
 
   const targetOptions = [
     { value: 'Ticket', label: t('ticket', 'Ticket') },
@@ -136,13 +137,13 @@ const AutomationManagement = () => {
       <main className="px-4 md:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">{t('automationRules', 'Automation Rules')}</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">{isArabic ? 'قواعد الأتمتة' : t('automationRules', 'Automation Rules')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {t('automationRulesDescription', 'Manage backend automation rules and review recent execution logs.')}
+              {isArabic ? 'إدارة قواعد الأتمتة الخلفية ومراجعة سجلات التنفيذ الأخيرة.' : t('automationRulesDescription', 'Manage backend automation rules and review recent execution logs.')}
             </p>
           </div>
           <Button iconName="Plus" iconPosition="left" onClick={openCreate}>
-            {t('newRule', 'New Rule')}
+            {isArabic ? 'قاعدة جديدة' : t('newRule', 'New Rule')}
           </Button>
         </div>
 
@@ -150,8 +151,8 @@ const AutomationManagement = () => {
           <section className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">{t('rules', 'Rules')}</h2>
-                <p className="text-sm text-muted-foreground">{rules.length} {t('rulesLoaded', 'backend rules loaded')}</p>
+                <h2 className="text-lg font-semibold text-foreground">{isArabic ? 'القواعد' : t('rules', 'Rules')}</h2>
+                <p className="text-sm text-muted-foreground">{rules.length} {isArabic ? 'قواعد خلفية محمّلة' : t('rulesLoaded', 'backend rules loaded')}</p>
               </div>
               <Button variant="outline" size="sm" onClick={loadData}>
                 {t('refresh', 'Refresh')}
@@ -161,23 +162,23 @@ const AutomationManagement = () => {
             {loading ? (
               <div className="p-10 text-center text-muted-foreground">
                 <Icon name="Loader2" size={28} className="mx-auto mb-3 animate-spin" />
-                {t('loadingAutomationRules', 'Loading automation rules...')}
+                {isArabic ? 'جارٍ تحميل قواعد الأتمتة...' : t('loadingAutomationRules', 'Loading automation rules...')}
               </div>
             ) : rules.length === 0 ? (
               <div className="p-10 text-center">
                 <Icon name="Zap" size={40} className="mx-auto mb-3 text-muted-foreground" />
-                <p className="font-medium text-foreground">{t('noAutomationRulesYet', 'No automation rules yet')}</p>
-                <p className="text-sm text-muted-foreground mt-1">{t('createFirstRule', 'Create the first rule to connect the backend engine.')}</p>
+                <p className="font-medium text-foreground">{isArabic ? 'لا توجد قواعد أتمتة بعد' : t('noAutomationRulesYet', 'No automation rules yet')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{isArabic ? 'أنشئ أول قاعدة لربط محرك الخلفية.' : t('createFirstRule', 'Create the first rule to connect the backend engine.')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-muted/50 border-b border-border">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('rule', 'Rule')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('target', 'Target')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('trigger', 'Trigger')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{t('status', 'Status')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{isArabic ? 'القاعدة' : t('rule', 'Rule')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{isArabic ? 'الهدف' : t('target', 'Target')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{isArabic ? 'المشغل' : t('trigger', 'Trigger')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{isArabic ? 'الحالة' : t('status', 'Status')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -191,7 +192,7 @@ const AutomationManagement = () => {
                         <td className="px-4 py-3 text-sm text-foreground">{rule.triggerEvent || t('notAvailable', 'Not available')}</td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex px-2 py-1 text-xs rounded-full ${rule.isActive ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                            {rule.isActive ? t('active', 'Active') : t('inactive', 'Inactive')}
+                            {rule.isActive ? (isArabic ? 'نشطة' : t('active', 'Active')) : (isArabic ? 'غير نشطة' : t('inactive', 'Inactive'))}
                           </span>
                         </td>
                       </tr>
@@ -204,23 +205,23 @@ const AutomationManagement = () => {
 
           <aside className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">
             <div className="px-5 py-4 border-b border-border">
-              <h2 className="text-lg font-semibold text-foreground">{t('executionLogs', 'Execution Logs')}</h2>
-              <p className="text-sm text-muted-foreground">{t('recentBackendAutomation', 'Recent backend automation operations')}</p>
+              <h2 className="text-lg font-semibold text-foreground">{isArabic ? 'سجلات التنفيذ' : t('executionLogs', 'Execution Logs')}</h2>
+              <p className="text-sm text-muted-foreground">{isArabic ? 'عمليات الأتمتة الخلفية الأخيرة' : t('recentBackendAutomation', 'Recent backend automation operations')}</p>
             </div>
             <div className="p-5 space-y-3 max-h-[40rem] overflow-y-auto">
               {logs.length === 0 ? (
-                <div className="text-sm text-muted-foreground">{t('noExecutionLogs', 'The backend has not returned any execution logs yet.')}</div>
+                <div className="text-sm text-muted-foreground">{isArabic ? 'لم تُرجع الخلفية أي سجلات تنفيذ بعد.' : t('noExecutionLogs', 'The backend has not returned any execution logs yet.')}</div>
               ) : (
                 logs.map((log) => (
                   <div key={log.id} className="rounded-xl border border-border bg-muted/30 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="font-medium text-foreground">{log.ruleName}</div>
                       <span className={`text-xs px-2 py-1 rounded-full ${log.success ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
-                        {log.success ? t('success', 'Success') : t('failure', 'Failure')}
+                        {log.success ? (isArabic ? 'نجاح' : t('success', 'Success')) : (isArabic ? 'فشل' : t('failure', 'Failure'))}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{log.actionSummary || log.errorMessage || t('noDetailsAvailable', 'No details available.')}</p>
-                    <div className="mt-2 text-xs text-muted-foreground">{log.executedAt ? new Date(log.executedAt).toLocaleString() : t('unknownTime', 'Unknown time')}</div>
+                    <p className="mt-2 text-sm text-muted-foreground">{log.actionSummary || log.errorMessage || (isArabic ? 'لا توجد تفاصيل متاحة.' : t('noDetailsAvailable', 'No details available.'))}</p>
+                    <div className="mt-2 text-xs text-muted-foreground">{log.executedAt ? new Date(log.executedAt).toLocaleString(isArabic ? 'ar-SA' : 'en-US') : (isArabic ? 'وقت غير معروف' : t('unknownTime', 'Unknown time'))}</div>
                   </div>
                 ))
               )}
@@ -234,8 +235,8 @@ const AutomationManagement = () => {
           <form onSubmit={handleCreate} className="w-full max-w-3xl rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-foreground">{t('newAutomationRule', 'New Automation Rule')}</h2>
-                <p className="text-sm text-muted-foreground">{t('backendContractCompatible', 'Compatible with backend `CreateAutomationRuleDto` contract.')}</p>
+                <h2 className="text-xl font-semibold text-foreground">{isArabic ? 'قاعدة أتمتة جديدة' : t('newAutomationRule', 'New Automation Rule')}</h2>
+                <p className="text-sm text-muted-foreground">{isArabic ? 'متوافق مع عقد CreateAutomationRuleDto في الخلفية.' : t('backendContractCompatible', 'Compatible with backend `CreateAutomationRuleDto` contract.')}</p>
               </div>
               <Button variant="ghost" size="sm" type="button" onClick={() => setShowForm(false)}>
                 <Icon name="X" size={18} />

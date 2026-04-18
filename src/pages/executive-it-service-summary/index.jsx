@@ -18,6 +18,7 @@ import { getTranslation } from '../../services/i18n';
 const ExecutiveITServiceSummary = () => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [metrics, setMetrics] = useState([]);
@@ -66,7 +67,14 @@ const ExecutiveITServiceSummary = () => {
   }, [autoRefresh]);
 
   const primaryMetrics = metrics.map(m => ({
-    title: m.metricName,
+    title: isArabic
+      ? ({
+          'Cost per Ticket': 'تكلفة كل تذكرة',
+          'Employee Satisfaction': 'رضا الموظفين',
+          'IT Service Availability': 'توافر خدمات تقنية المعلومات',
+          'Business Impact Score': 'مؤشر تأثير الأعمال',
+        }[m.metricName] || m.metricName)
+      : m.metricName,
     value: String(m.value),
     unit: m.unit || "",
     trend: m.percentageChange >= 0 ? "up" : "down",
@@ -76,7 +84,14 @@ const ExecutiveITServiceSummary = () => {
     icon: m.metricName.includes("Availability") ? "Activity" : 
           m.metricName.includes("Satisfaction") ? "Heart" : 
           m.metricName.includes("Cost") ? "Banknote" : "TrendingUp",
-    description: `Current ${m.metricName} performance`
+    description: isArabic
+      ? `أداء ${({
+          'Cost per Ticket': 'تكلفة كل تذكرة',
+          'Employee Satisfaction': 'رضا الموظفين',
+          'IT Service Availability': 'توافر خدمات تقنية المعلومات',
+          'Business Impact Score': 'مؤشر تأثير الأعمال',
+        }[m.metricName] || m.metricName)} الحالي`
+      : `Current ${m.metricName} performance`
   }));
 
   // Fallback if no metrics returned
@@ -90,7 +105,7 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "99.5",
       status: "excellent",
       icon: "Activity",
-      description: t('overallSystemUptime', 'Overall system uptime across all services')
+      description: isArabic ? 'إجمالي زمن تشغيل الأنظمة عبر جميع الخدمات' : t('overallSystemUptime', 'Overall system uptime across all services')
     },
     {
       title: t('employeeSatisfaction', 'Employee Satisfaction'),
@@ -101,7 +116,7 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "4.0",
       status: "excellent",
       icon: "Heart",
-      description: t('averageUserSatisfaction', 'Average user satisfaction rating')
+      description: isArabic ? 'متوسط تقييم رضا المستخدمين' : t('averageUserSatisfaction', 'Average user satisfaction rating')
     },
     {
       title: t('costPerTicket', 'Cost per Ticket'),
@@ -112,7 +127,7 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "50",
       status: "good",
       icon: "Banknote",
-      description: t('averageCostToResolve', 'Average cost to resolve each ticket')
+      description: isArabic ? 'متوسط تكلفة معالجة كل تذكرة' : t('averageCostToResolve', 'Average cost to resolve each ticket')
     },
     {
       title: t('businessImpactScore', 'Business Impact Score'),
@@ -123,7 +138,7 @@ const ExecutiveITServiceSummary = () => {
       benchmark: "8.0",
       status: "excellent",
       icon: "TrendingUp",
-      description: t('successRate', 'IT contribution to business objectives')
+      description: isArabic ? 'مساهمة تقنية المعلومات في أهداف الأعمال' : t('successRate', 'IT contribution to business objectives')
     }
   ];
 
@@ -131,31 +146,37 @@ const ExecutiveITServiceSummary = () => {
     {
       id: 1,
       type: 'positive',
-      title: 'Ticket throughput is healthy',
-      description: `The platform is tracking ${summary?.totalTickets ?? 0} total tickets with ${summary?.resolvedTickets ?? 0} already resolved.`,
+      title: isArabic ? 'معدل مرور التذاكر جيد' : 'Ticket throughput is healthy',
+      description: isArabic
+        ? `المنصة تتتبع ${summary?.totalTickets ?? 0} تذكرة إجمالاً، تم حل ${summary?.resolvedTickets ?? 0} منها بالفعل.`
+        : `The platform is tracking ${summary?.totalTickets ?? 0} total tickets with ${summary?.resolvedTickets ?? 0} already resolved.`,
       impact: 'High',
-      action: 'Continue current resolution workflow',
-      timestamp: 'Just now',
+      action: isArabic ? 'استمر في سير العمل الحالي للحل' : 'Continue current resolution workflow',
+      timestamp: isArabic ? 'الآن' : 'Just now',
       icon: 'CheckCircle'
     },
     {
       id: 2,
       type: 'warning',
-      title: 'Service bottlenecks need attention',
-      description: `There are ${categoryMetrics.slice(0, 3).reduce((sum, item) => sum + Number(item.count || 0), 0)} tickets in the busiest categories.`,
+      title: isArabic ? 'تحتاج الاختناقات الخدمية إلى انتباه' : 'Service bottlenecks need attention',
+      description: isArabic
+        ? `يوجد ${categoryMetrics.slice(0, 3).reduce((sum, item) => sum + Number(item.count || 0), 0)} تذكرة في أكثر الفئات ازدحامًا.`
+        : `There are ${categoryMetrics.slice(0, 3).reduce((sum, item) => sum + Number(item.count || 0), 0)} tickets in the busiest categories.`,
       impact: 'Medium',
-      action: 'Prioritize the top three categories',
-      timestamp: 'Just now',
+      action: isArabic ? 'أعطِ الأولوية لأهم ثلاث فئات' : 'Prioritize the top three categories',
+      timestamp: isArabic ? 'الآن' : 'Just now',
       icon: 'AlertTriangle'
     },
     {
       id: 3,
       type: 'neutral',
-      title: 'Assets are stable',
-      description: `${summary?.activeAssets ?? 0} of ${summary?.totalAssets ?? 0} assets are active and being tracked from the backend.`,
+      title: isArabic ? 'الأصول مستقرة' : 'Assets are stable',
+      description: isArabic
+        ? `يوجد ${summary?.activeAssets ?? 0} من أصل ${summary?.totalAssets ?? 0} أصلًا نشطًا ويتم تتبعها من الخلفية.`
+        : `${summary?.activeAssets ?? 0} of ${summary?.totalAssets ?? 0} assets are active and being tracked from the backend.`,
       impact: 'Medium',
-      action: 'Review inactive assets',
-      timestamp: 'Just now',
+      action: isArabic ? 'راجع الأصول غير النشطة' : 'Review inactive assets',
+      timestamp: isArabic ? 'الآن' : 'Just now',
       icon: 'Activity'
     }
   ];
@@ -164,26 +185,34 @@ const ExecutiveITServiceSummary = () => {
     {
       id: 1,
       priority: 'high',
-      title: 'Focus on top ticket categories',
-      description: categoryMetrics.length > 0 ? `The busiest category is ${categoryMetrics[0].category} with ${categoryMetrics[0].count} tickets.` : 'Track category volume to reduce repeat incidents.',
-      timeline: '14 days',
-      impact: 'Reduce backlog pressure'
+      title: isArabic ? 'التركيز على أهم فئات التذاكر' : 'Focus on top ticket categories',
+      description: categoryMetrics.length > 0
+        ? (isArabic
+          ? `أكثر فئة ازدحامًا هي ${categoryMetrics[0].category} وبها ${categoryMetrics[0].count} تذاكر.`
+          : `The busiest category is ${categoryMetrics[0].category} with ${categoryMetrics[0].count} tickets.`)
+        : (isArabic ? 'تتبّع حجم الفئات لتقليل الحوادث المتكررة.' : 'Track category volume to reduce repeat incidents.'),
+      timeline: isArabic ? '14 يومًا' : '14 days',
+      impact: isArabic ? 'تقليل ضغط التراكم' : 'Reduce backlog pressure'
     },
     {
       id: 2,
       priority: 'medium',
-      title: 'Improve SLA monitoring',
-      description: `Current SLA compliance is ${summary?.recentMetrics?.[0]?.value ?? 0}${summary?.recentMetrics?.[0]?.unit || ''}.`,
-      timeline: '30 days',
-      impact: 'Better breach prevention'
+      title: isArabic ? 'تحسين مراقبة SLA' : 'Improve SLA monitoring',
+      description: isArabic
+        ? `امتثال SLA الحالي هو ${summary?.recentMetrics?.[0]?.value ?? 0}${summary?.recentMetrics?.[0]?.unit || ''}.`
+        : `Current SLA compliance is ${summary?.recentMetrics?.[0]?.value ?? 0}${summary?.recentMetrics?.[0]?.unit || ''}.`,
+      timeline: isArabic ? '30 يومًا' : '30 days',
+      impact: isArabic ? 'منع أفضل للخرق' : 'Better breach prevention'
     },
     {
       id: 3,
       priority: 'medium',
-      title: 'Keep asset records clean',
-      description: `Active asset coverage is ${summary?.activeAssets ?? 0}/${summary?.totalAssets ?? 0}, so stale records should be reviewed.`,
-      timeline: '30 days',
-      impact: 'More accurate inventory'
+      title: isArabic ? 'الحفاظ على نظافة سجل الأصول' : 'Keep asset records clean',
+      description: isArabic
+        ? `تغطية الأصول النشطة هي ${summary?.activeAssets ?? 0}/${summary?.totalAssets ?? 0}، لذا يجب مراجعة السجلات القديمة.`
+        : `Active asset coverage is ${summary?.activeAssets ?? 0}/${summary?.totalAssets ?? 0}, so stale records should be reviewed.`,
+      timeline: isArabic ? '30 يومًا' : '30 days',
+      impact: isArabic ? 'مخزون أدق' : 'More accurate inventory'
     }
   ];
 
@@ -223,7 +252,11 @@ const ExecutiveITServiceSummary = () => {
   };
 
   const handleExport = (format) => {
-    const blob = new Blob([`Executive IT Service Summary\nGenerated: ${new Date().toISOString()}\nFormat: ${format}`], { type: 'text/plain;charset=utf-8;' });
+    const blob = new Blob([
+      isArabic
+        ? `الملخص التنفيذي لخدمات تقنية المعلومات\nتم الإنشاء: ${new Date().toISOString()}\nالصيغة: ${format}`
+        : `Executive IT Service Summary\nGenerated: ${new Date().toISOString()}\nFormat: ${format}`
+    ], { type: 'text/plain;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;

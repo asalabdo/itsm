@@ -7,33 +7,34 @@ import { getTranslation } from '../../../services/i18n';
 const ChangeCalendar = ({ changes = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [viewMode, setViewMode] = useState('month'); // month, week
   const mappedChanges = useMemo(() => (changes || []).map(change => ({
     id: change?.changeNumber || `CHG-${change?.id}`,
-    title: change?.title || t('untitledChange', 'Untitled Change'),
-    type: change?.category || t('standard', 'Standard'),
-    status: change?.status || t('proposed', 'Proposed'),
-    priority: change?.priority || t('medium', 'Medium'),
-    environment: t('production', 'Production'),
+    title: change?.title || (isArabic ? 'تغيير بدون عنوان' : t('untitledChange', 'Untitled Change')),
+    type: change?.category || (isArabic ? 'اعتيادي' : t('standard', 'Standard')),
+    status: change?.status || (isArabic ? 'مقترح' : t('proposed', 'Proposed')),
+    priority: change?.priority || (isArabic ? 'متوسط' : t('medium', 'Medium')),
+    environment: isArabic ? 'الإنتاج' : t('production', 'Production'),
     startDate: change?.scheduledStartDate ? new Date(change.scheduledStartDate) : new Date(change?.createdAt || Date.now()),
     endDate: change?.scheduledEndDate ? new Date(change.scheduledEndDate) : new Date((new Date(change?.createdAt || Date.now())).getTime() + 4 * 60 * 60 * 1000),
-    assignee: change?.requestedBy?.username || change?.requestedBy?.firstName || t('unassigned', 'Unassigned'),
-    riskLevel: change?.riskLevel || t('low', 'Low'),
+    assignee: change?.requestedBy?.username || change?.requestedBy?.firstName || (isArabic ? 'غير مسند' : t('unassigned', 'Unassigned')),
+    riskLevel: change?.riskLevel || (isArabic ? 'منخفض' : t('low', 'Low')),
     isEmergency: change?.category === 'Emergency',
-    successRate: change?.status === 'Completed' ? t('success', 'Success') : null
+    successRate: change?.status === 'Completed' ? (isArabic ? 'ناجح' : t('success', 'Success')) : null
   })), [changes, t]);
 
   const getStatusColor = (status, successRate) => {
-    if (successRate === t('success', 'Success')) return 'bg-success text-success-foreground';
-    if (successRate === t('failed', 'Failed')) return 'bg-error text-error-foreground';
+    if (successRate === (isArabic ? 'ناجح' : t('success', 'Success'))) return 'bg-success text-success-foreground';
+    if (successRate === (isArabic ? 'فشل' : t('failed', 'Failed'))) return 'bg-error text-error-foreground';
     
     switch (status) {
-      case t('scheduled', 'Scheduled'): return 'bg-secondary text-secondary-foreground';
-      case t('inProgress', 'In Progress'): return 'bg-warning text-warning-foreground';
-      case t('approved', 'Approved'): return 'bg-accent text-accent-foreground';
-      case t('completed', 'Completed'): return 'bg-muted text-muted-foreground';
+      case (isArabic ? 'مجدول' : t('scheduled', 'Scheduled')): return 'bg-secondary text-secondary-foreground';
+      case (isArabic ? 'قيد التنفيذ' : t('inProgress', 'In Progress')): return 'bg-warning text-warning-foreground';
+      case (isArabic ? 'معتمد' : t('approved', 'Approved')): return 'bg-accent text-accent-foreground';
+      case (isArabic ? 'مكتمل' : t('completed', 'Completed')): return 'bg-muted text-muted-foreground';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -118,7 +119,7 @@ const ChangeCalendar = ({ changes = [] }) => {
                     {change?.title}
                   </div>
                 ))}
-                {dayChanges.length > 3 && <div className="text-xs text-muted-foreground">+{dayChanges.length - 3} {t('more', 'more')}</div>}
+                {dayChanges.length > 3 && <div className="text-xs text-muted-foreground">+{dayChanges.length - 3} {isArabic ? 'أخرى' : t('more', 'more')}</div>}
               </div>
             </button>
           );
@@ -187,7 +188,7 @@ const ChangeCalendar = ({ changes = [] }) => {
             ))}
             {dayChanges?.length > 2 && (
               <div className="text-xs text-muted-foreground">
-                +{dayChanges?.length - 2} {t('more', 'more')}
+                +{dayChanges?.length - 2} {isArabic ? 'أخرى' : t('more', 'more')}
               </div>
             )}
           </div>
@@ -203,7 +204,7 @@ const ChangeCalendar = ({ changes = [] }) => {
       {/* Calendar Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-4">
-          <h3 className="text-lg font-semibold text-foreground">{t('changeCalendar', 'Change Calendar')}</h3>
+          <h3 className="text-lg font-semibold text-foreground">{isArabic ? 'تقويم التغييرات' : t('changeCalendar', 'Change Calendar')}</h3>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -213,7 +214,7 @@ const ChangeCalendar = ({ changes = [] }) => {
               <Icon name="ChevronLeft" size={16} />
             </Button>
             <span className="text-sm font-medium min-w-[120px] text-center">
-              {currentDate?.toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}
+              {currentDate?.toLocaleDateString(isArabic ? 'ar-SA' : 'en-US', { month: 'long', year: 'numeric' })}
             </span>
             <Button
               variant="outline"
@@ -231,16 +232,16 @@ const ChangeCalendar = ({ changes = [] }) => {
             size="sm"
             onClick={() => setViewMode('month')}
           >
-            {t('month', 'Month')}
+            {isArabic ? 'شهر' : t('month', 'Month')}
           </Button>
           <Button
             variant={viewMode === 'week' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('week')}
           >
-            {t('week', 'Week')}
+            {isArabic ? 'أسبوع' : t('week', 'Week')}
           </Button>
-          <Button variant="ghost" size="sm" title={t('refreshCalendar', 'Refresh Calendar')}>
+          <Button variant="ghost" size="sm" title={isArabic ? 'تحديث التقويم' : t('refreshCalendar', 'Refresh Calendar')}>
             <Icon name="RefreshCw" size={16} />
           </Button>
         </div>
@@ -249,19 +250,19 @@ const ChangeCalendar = ({ changes = [] }) => {
       <div className="flex flex-wrap items-center gap-4 p-4 border-b border-border bg-muted/30">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-secondary rounded"></div>
-          <span className="text-xs text-muted-foreground">{t('scheduled', 'Scheduled')}</span>
+          <span className="text-xs text-muted-foreground">{isArabic ? 'مجدول' : t('scheduled', 'Scheduled')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-warning rounded"></div>
-          <span className="text-xs text-muted-foreground">{t('inProgress', 'In Progress')}</span>
+          <span className="text-xs text-muted-foreground">{isArabic ? 'قيد التنفيذ' : t('inProgress', 'In Progress')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-success rounded"></div>
-          <span className="text-xs text-muted-foreground">{t('successful', 'Successful')}</span>
+          <span className="text-xs text-muted-foreground">{isArabic ? 'ناجح' : t('successful', 'Successful')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-error rounded"></div>
-          <span className="text-xs text-muted-foreground">{t('failed', 'Failed')}</span>
+          <span className="text-xs text-muted-foreground">{isArabic ? 'فشل' : t('failed', 'Failed')}</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-error rounded animate-pulse ring-1 ring-error"></div>

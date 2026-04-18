@@ -16,6 +16,7 @@ import { downloadCsv } from '../../services/exportUtils';
 const ChangeManagementDashboard = () => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [activeFilters, setActiveFilters] = useState({});
@@ -144,7 +145,7 @@ const ChangeManagementDashboard = () => {
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Page Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className={`flex items-center justify-between mb-8 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
             <div>
               <h1 className="text-3xl font-semibold text-foreground font-heading">
                 {t('changeManagementDashboard', 'Change Management Dashboard')}
@@ -154,9 +155,9 @@ const ChangeManagementDashboard = () => {
               </p>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className={`flex items-center ${isArabic ? 'space-x-reverse' : ''} space-x-4`}>
               {/* View Mode Toggle */}
-              <div className="flex items-center space-x-1 bg-muted rounded-lg p-1">
+              <div className={`flex items-center ${isArabic ? 'space-x-reverse' : ''} space-x-1 bg-muted rounded-lg p-1`}>
                 {['overview', 'calendar', 'metrics', 'pipeline']?.map((mode) => (
                   <Button
                     key={mode}
@@ -164,8 +165,8 @@ const ChangeManagementDashboard = () => {
                     size="sm"
                     onClick={() => setViewMode(mode)}
                     className="capitalize"
-                  >
-                    <Icon name={getViewModeIcon(mode)} size={16} />
+                    >
+                      <Icon name={getViewModeIcon(mode)} size={16} />
                   <span className="ml-1 hidden sm:inline">
                     {mode === 'overview' ? t('overview', 'Overview') : 
                      mode === 'calendar' ? t('calendar', 'Calendar') : 
@@ -182,12 +183,12 @@ const ChangeManagementDashboard = () => {
                 size="sm"
                 onClick={handleRefresh}
                 disabled={refreshing}
-              >
-                <Icon 
-                  name="RefreshCw" 
-                  size={16} 
-                  className={refreshing ? 'animate-spin' : ''} 
-                />
+                >
+                  <Icon 
+                    name="RefreshCw" 
+                    size={16} 
+                    className={refreshing ? 'animate-spin' : ''} 
+                  />
                   <span className="ml-2 hidden sm:inline">
                   {refreshing ? t('refreshing', 'Refreshing...') : t('refresh', 'Refresh')}
                 </span>
@@ -195,7 +196,7 @@ const ChangeManagementDashboard = () => {
 
               {/* Last Refresh Indicator */}
               <div className="text-sm text-muted-foreground hidden md:block">
-                {t('lastRefresh', 'Last refresh')}: {lastRefresh?.toLocaleTimeString('en-US', { 
+                {t('lastRefresh', 'Last refresh')}: {lastRefresh?.toLocaleTimeString(isArabic ? 'ar-SA' : 'en-US', { 
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
@@ -257,7 +258,7 @@ const ChangeManagementDashboard = () => {
           )}
 
           {/* Emergency Alert Banner */}
-          <div className="fixed bottom-6 right-6 z-50">
+          <div className={`fixed bottom-6 z-50 ${isArabic ? 'left-6 right-auto' : 'right-6'}`}>
               <div className="bg-error text-error-foreground px-4 py-3 rounded-lg operations-shadow flex items-center space-x-3 max-w-sm">
                 <Icon name="AlertTriangle" size={20} className="animate-pulse" />
                 <div>

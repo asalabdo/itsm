@@ -7,7 +7,22 @@ import { getTranslation } from '../../../services/i18n';
 const ServiceHealthScorecard = () => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [categories, setCategories] = useState([]);
+
+  const categoryMap = {
+    access: 'الوصول',
+    alert: 'تنبيه',
+    email: 'البريد الإلكتروني',
+    hardware: 'الأجهزة',
+    incident: 'حادث',
+    network: 'الشبكة',
+    printing: 'الطباعة',
+    problem: 'مشكلة',
+    'service request': 'طلب خدمة',
+    software: 'البرمجيات',
+    'technical-support': 'الدعم الفني',
+  };
 
   useEffect(() => {
     apiClient.get('/reports/categories').then(r => setCategories(r.data || [])).catch(console.error);
@@ -76,12 +91,20 @@ const ServiceHealthScorecard = () => {
                   <Icon name={getStatusIcon(status)} size={20} className={getStatusColor(status)} />
                 </div>
                 <div>
-                  <h4 className="font-medium text-foreground">{cat.category}</h4>
-                  <p className="text-sm text-muted-foreground">{cat.count} {t('openTickets', 'open tickets')}</p>
+                  <h4 className="font-medium text-foreground">
+                    {isArabic ? (categoryMap[String(cat.category || '').toLowerCase()] || cat.category) : cat.category}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {cat.count} {isArabic ? 'تذكرة مفتوحة' : t('openTickets', 'open tickets')}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <span className={`text-sm font-medium capitalize ${getStatusColor(status)}`}>{status}</span>
+                <span className={`text-sm font-medium capitalize ${getStatusColor(status)}`}>
+                  {isArabic
+                    ? { excellent: 'ممتاز', good: 'جيد', warning: 'تحذير', critical: 'حرج' }[status] || status
+                    : status}
+                </span>
               </div>
             </div>
           );
@@ -91,10 +114,10 @@ const ServiceHealthScorecard = () => {
         )}
       </div>
       <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">{t('overallServiceHealth', 'Overall Service Health')}</span>
+        <span className="text-muted-foreground">{isArabic ? 'الصحة الإجمالية للخدمة' : t('overallServiceHealth', 'Overall Service Health')}</span>
         <div className="flex items-center space-x-2">
           <Icon name="CheckCircle" size={16} className="text-success" />
-          <span className="font-medium text-success">{healthPct}% {t('healthy', 'Healthy')}</span>
+          <span className="font-medium text-success">{healthPct}% {isArabic ? 'صحي' : t('healthy', 'Healthy')}</span>
         </div>
       </div>
     </div>

@@ -1,6 +1,22 @@
 import React from 'react';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const PriorityBadge = ({ priority }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
+  const getPriorityLabel = () => {
+    const priorityKey = priority?.toLowerCase();
+    const priorityTranslations = {
+      'urgent': t('priorityUrgent', 'Urgent'),
+      'high': t('priorityHigh', 'High'),
+      'medium': t('priorityMedium', 'Medium'),
+      'low': t('priorityLow', 'Low'),
+    };
+    return priorityTranslations[priorityKey] || priority;
+  };
+
   const getPriorityStyles = () => {
     switch (priority?.toLowerCase()) {
       case 'urgent':
@@ -18,7 +34,7 @@ const PriorityBadge = ({ priority }) => {
 
   return (
     <span className={`inline-flex items-center px-2 md:px-2.5 py-0.5 md:py-1 rounded-md text-xs md:text-sm font-medium border caption ${getPriorityStyles()}`}>
-      {priority}
+      {getPriorityLabel()}
     </span>
   );
 };

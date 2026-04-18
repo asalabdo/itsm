@@ -8,6 +8,7 @@ import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import DatePickerInput from '../../components/ui/DatePickerInput';
 import Select from '../../components/ui/Select';
 import CategorySelector from './components/CategorySelector';
 import EmployeeLookup from './components/EmployeeLookup';
@@ -284,9 +285,21 @@ const TicketCreation = () => {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length === 0) {
       setCurrentStep((prev) => Math.min(prev + 1, 3));
+      const form = document.querySelector('form');
+      if (form) {
+        const rect = form.getBoundingClientRect();
+        window.scrollTo({ top: rect.top + window.scrollY - 70, behavior: 'smooth' });
+      }
     }
   };
-  const previousStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
+  const previousStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+    const form = document.querySelector('form');
+    if (form) {
+      const rect = form.getBoundingClientRect();
+      window.scrollTo({ top: rect.top + window.scrollY - 70, behavior: 'smooth' });
+    }
+  };
 
   const handleReset = () => {
     setFormData(initialFormData);
@@ -645,7 +658,7 @@ const TicketCreation = () => {
                         {errors.description && <p className="text-sm text-error mt-2">{errors.description}</p>}
                         {templateHint && <p className="text-xs text-muted-foreground mt-2">{t('hint', 'Hint')}: {templateHint}</p>}
                       </div>
-                      <Input label={t('dueDate', 'Due Date')} type="date" value={formData.dueDate} onChange={(e) => setField('dueDate', e.target.value)} />
+                      <DatePickerInput label={t('dueDate', 'Due Date')} value={formData.dueDate} onChange={(value) => setField('dueDate', value)} />
                     </div>
                   ))}
 
@@ -721,8 +734,8 @@ const TicketCreation = () => {
                   ))}
 
                   <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                    {currentStep > 0 ? <Button type="button" variant="outline" size="lg" onClick={previousStep} iconName="ArrowLeft" iconPosition="left">{t('back', 'Back')}</Button> : <Button type="button" variant="outline" size="lg" onClick={handleReset} iconName="RotateCcw" iconPosition="left">{t('reset', 'Reset')}</Button>}
-                  {currentStep < 3 ? <Button type="button" variant="default" size="lg" onClick={nextStep} iconName="ArrowRight" iconPosition="right" className={isRtl ? 'sm:mr-auto' : 'sm:ml-auto'}>{t('next', 'Next')}</Button> : <Button type="submit" variant="default" size="lg" loading={isSubmitting} iconName="Send" iconPosition="right" className={isRtl ? 'sm:mr-auto' : 'sm:ml-auto'}>{isSubmitting ? t('creating', 'Creating...') : t('createTicket', 'Create Ticket')}</Button>}
+                    {currentStep > 0 ? <Button type="button" variant="outline" size="lg" onClick={previousStep} iconName="ArrowRight" iconPosition="right">{t('back', 'Back')}</Button> : <Button type="button" variant="outline" size="lg" onClick={handleReset} iconName="RotateCcw" iconPosition="left">{t('reset', 'Reset')}</Button>}
+                  {currentStep < 3 ? <Button type="button" variant="default" size="lg" onClick={nextStep} iconName="ArrowLeft" iconPosition="left" className={isRtl ? 'sm:mr-auto' : 'sm:ml-auto'}>{t('next', 'Next')}</Button> : <Button type="submit" variant="default" size="lg" loading={isSubmitting} iconName="Send" iconPosition="right" className={isRtl ? 'sm:mr-auto' : 'sm:ml-auto'}>{isSubmitting ? t('creating', 'Creating...') : t('createTicket', 'Create Ticket')}</Button>}
                 </div>
                 </form>
               </div>

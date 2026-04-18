@@ -4,6 +4,50 @@ import Header from './ui/Header';
 import Sidebar from './ui/Sidebar';
 import { useLanguage } from '../context/LanguageContext';
 
+const selfManagedHeaderPrefixes = [
+  '/',
+  '/agent-dashboard',
+  '/executive-it-service-summary',
+  '/it-operations-command-center',
+  '/advanced-analytics',
+  '/service-performance-analytics',
+  '/sla-policies',
+  '/ticket-sla',
+  '/priorities',
+  '/escalations',
+  '/asset-lifecycle-management',
+  '/change-management-dashboard',
+  '/service-request-management',
+  '/ticket-creation',
+  '/manager-dashboard',
+  '/customer-portal',
+  '/service-desk-blueprint',
+  '/monitoring-events',
+  '/reports-analytics',
+  '/ticket-details',
+  '/workflow-builder',
+  '/approval-queue-manager',
+  '/workflow-builder-studio',
+  '/ticket-workflow-crud',
+  '/ticket-management-center',
+  '/reporting-and-analytics-hub',
+  '/my-work',
+  '/asset-registry-and-tracking',
+  '/manage/assets',
+  '/change-management',
+  '/automation-rules',
+  '/service-catalog',
+  '/fulfillment-center',
+  '/ticket-chatbot',
+  '/user-management',
+  '/incident-management-workflow',
+  '/knowledge-base',
+  '/problems',
+  '/settings',
+  '/scenario-validation-center',
+  '/search',
+];
+
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [toast, setToast] = useState(null);
@@ -11,6 +55,10 @@ const Layout = ({ children }) => {
   const { isRtl } = useLanguage();
 
   const isLoginPage = pathname === '/login';
+  const usesSelfManagedHeader = selfManagedHeaderPrefixes.some((prefix) =>
+    prefix === '/' ? pathname === '/' : pathname.startsWith(prefix)
+  );
+  const showSharedHeader = !isLoginPage && !usesSelfManagedHeader;
 
   useEffect(() => {
     const handleToast = (event) => {
@@ -38,8 +86,8 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={isRtl ? 'rtl' : 'ltr'}>
-      <Header />
-      <div className="pt-16 flex min-h-screen items-start" dir={isRtl ? 'rtl' : 'ltr'}>
+      {showSharedHeader && <Header />}
+      <div className={`${showSharedHeader ? 'pt-16' : ''} flex min-h-screen items-start`} dir={isRtl ? 'rtl' : 'ltr'}>
         <Sidebar collapsed={!sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
         <main className="flex-1 min-w-0 p-6 max-w-full overflow-x-hidden">{children}</main>
       </div>

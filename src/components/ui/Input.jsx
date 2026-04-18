@@ -112,7 +112,7 @@ const Input = React.forwardRef(({
 
             <input
                 type={type}
-                dir={isRtl ? 'rtl' : 'ltr'}
+                dir={['date', 'datetime-local', 'time'].includes(type) ? 'ltr' : (isRtl ? 'rtl' : 'ltr')}
                 className={cn(
                     baseInputClasses,
                     error && "border-destructive focus-visible:ring-destructive text-left",

@@ -270,10 +270,10 @@ async Task SeedDataAsync(ApplicationDbContext context)
     if (!context.ServiceCatalogItems.Any())
     {
         context.ServiceCatalogItems.AddRange(
-            new ServiceCatalogItem { Name = "Laptop", Description = "High-performance laptop for developers and power users.", Category = "Hardware", Icon = "Laptop", RequiresApproval = true, DefaultSlaHours = 48, FormConfigJson = "[{\"label\": \"Reason for request\", \"type\": \"text\"}]", IsActive = true },
-            new ServiceCatalogItem { Name = "Adobe Creative Cloud", Description = "Access to full suite of Adobe applications.", Category = "Software", Icon = "FileCode", RequiresApproval = true, DefaultSlaHours = 24, FormConfigJson = "[{\"label\": \"Department\", \"type\": \"select\", \"options\": [\"Creative\", \"Marketing\", \"Product\"]}]", IsActive = true },
-            new ServiceCatalogItem { Name = "Guest Wi-Fi Access", Description = "Temporary internet access for visitors.", Category = "Access", Icon = "Wifi", RequiresApproval = false, DefaultSlaHours = 2, FormConfigJson = "[{\"label\": \"Visitor Name\", \"type\": \"text\"}, {\"label\": \"Expiry Date\", \"type\": \"date\"}]", IsActive = true },
-            new ServiceCatalogItem { Name = "VPN Access", Description = "Secure remote access to company internal network.", Category = "Access", Icon = "ShieldCheck", RequiresApproval = true, DefaultSlaHours = 8, FormConfigJson = "[{\"label\": \"Justification\", \"type\": \"text\"}]", IsActive = true }
+            new ServiceCatalogItem { Name = "Laptop", NameAr = "حاسوب محمول", Description = "High-performance laptop for developers and power users.", DescriptionAr = "حاسوب محمول عالي الأداء للمطورين والمستخدمين المتقدمين.", Category = "Hardware", CategoryAr = "أجهزة", Icon = "Laptop", RequiresApproval = true, DefaultSlaHours = 48, FormConfigJson = "[{\"label\": \"Reason for request\", \"type\": \"text\"}]", IsActive = true },
+            new ServiceCatalogItem { Name = "Adobe Creative Cloud", NameAr = "أدوبي كريتيف كلاود", Description = "Access to full suite of Adobe applications.", DescriptionAr = "الوصول إلى المجموعة الكاملة من تطبيقات أدوبي.", Category = "Software", CategoryAr = "برمجيات", Icon = "FileCode", RequiresApproval = true, DefaultSlaHours = 24, FormConfigJson = "[{\"label\": \"Department\", \"type\": \"select\", \"options\": [\"Creative\", \"Marketing\", \"Product\"]}]", IsActive = true },
+            new ServiceCatalogItem { Name = "Guest Wi-Fi Access", NameAr = "وصول Wi-Fi للزوار", Description = "Temporary internet access for visitors.", DescriptionAr = "وصول مؤقت إلى الإنترنت للزوار.", Category = "Access", CategoryAr = "وصول", Icon = "Wifi", RequiresApproval = false, DefaultSlaHours = 2, FormConfigJson = "[{\"label\": \"Visitor Name\", \"type\": \"text\"}, {\"label\": \"Expiry Date\", \"type\": \"date\"}]", IsActive = true },
+            new ServiceCatalogItem { Name = "VPN Access", NameAr = "وصول VPN", Description = "Secure remote access to company internal network.", DescriptionAr = "وصول آمن عن بُعد إلى الشبكة الداخلية للشركة.", Category = "Access", CategoryAr = "وصول", Icon = "ShieldCheck", RequiresApproval = true, DefaultSlaHours = 8, FormConfigJson = "[{\"label\": \"Justification\", \"type\": \"text\"}]", IsActive = true }
         );
         await context.SaveChangesAsync();
     }
@@ -1086,6 +1086,44 @@ async Task SeedDataAsync(ApplicationDbContext context)
 
         await context.SaveChangesAsync();
         Console.WriteLine($"Deactivated {hiddenCatalogItems.Count} hidden catalog item(s).");
+    }
+
+    // Update existing catalog items with Arabic translations
+    var existingItems = await context.ServiceCatalogItems.ToListAsync();
+    foreach (var item in existingItems)
+    {
+        bool needsUpdate = false;
+        if (string.IsNullOrEmpty(item.NameAr))
+        {
+            switch (item.Name?.ToLower())
+            {
+                case "laptop":
+                    item.NameAr = "حاسوب محمول";
+                    item.DescriptionAr = "حاسوب محمول عالي الأداء للمطورين والمستخدمين المتقدمين.";
+                    item.CategoryAr = "أجهزة";
+                    needsUpdate = true;
+                    break;
+                case "adobe creative cloud":
+                    item.NameAr = "أدوبي كريتيف كلاود";
+                    item.DescriptionAr = "الوصول إلى المجموعة الكاملة من تطبيقات أدوبي.";
+                    item.CategoryAr = "برمجيات";
+                    needsUpdate = true;
+                    break;
+                case "guest wi-fi access":
+                    item.NameAr = "وصول Wi-Fi للزوار";
+                    item.DescriptionAr = "وصول مؤقت إلى الإنترنت للزوار.";
+                    item.CategoryAr = "وصول";
+                    needsUpdate = true;
+                    break;
+                case "vpn access":
+                    item.NameAr = "وصول VPN";
+                    item.DescriptionAr = "وصول آمن عن بُعد إلى الشبكة الداخلية للشركة.";
+                    item.CategoryAr = "وصول";
+                    needsUpdate = true;
+                    break;
+            }
+        }
+        if (needsUpdate) await context.SaveChangesAsync();
     }
 
     Console.WriteLine("Database seeding completed successfully.");

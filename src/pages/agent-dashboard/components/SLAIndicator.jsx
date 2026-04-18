@@ -1,7 +1,12 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const SLAIndicator = ({ timeRemaining, breached }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
   const getIndicatorConfig = () => {
     if (breached) {
       return {
@@ -38,7 +43,7 @@ const SLAIndicator = ({ timeRemaining, breached }) => {
   return (
     <div className={`inline-flex items-center gap-1.5 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md text-xs md:text-sm font-medium border caption ${config?.bgClass} ${config?.textClass} ${config?.borderClass}`}>
       <Icon name={config?.icon} size={14} color={config?.color} />
-      <span className="whitespace-nowrap">{breached ? 'Breached' : timeRemaining}</span>
+      <span className="whitespace-nowrap">{breached ? t('slaBreached', 'Breached') : (timeRemaining || t('notAvailable', 'Not Available'))}</span>
     </div>
   );
 };

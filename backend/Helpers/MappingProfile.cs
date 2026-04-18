@@ -41,7 +41,8 @@ public class MappingProfile : Profile
         // Service Request mappings
         CreateMap<ServiceCatalogItem, ServiceCatalogItemDto>();
         CreateMap<ServiceRequest, ServiceRequestDto>()
-            .ForMember(dest => dest.CatalogItemName, opt => opt.MapFrom(src => src.CatalogItem != null ? src.CatalogItem.Name : "General"));
+            .ForMember(dest => dest.CatalogItemName, opt => opt.MapFrom(src => src.CatalogItem != null ? src.CatalogItem.Name : "General"))
+            .ForMember(dest => dest.CatalogItemNameAr, opt => opt.MapFrom(src => src.CatalogItem != null ? src.CatalogItem.NameAr : "عام"));
         CreateMap<ApprovalRequest, ApprovalRequestDto>()
             .ForMember(dest => dest.ApproverName, opt => opt.MapFrom(src => src.Approver != null ? src.Approver.Username : "System"));
         CreateMap<FulfillmentTask, FulfillmentTaskDto>()

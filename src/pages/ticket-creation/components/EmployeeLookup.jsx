@@ -254,7 +254,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                           key={employee?.id}
                           type="button"
                           onClick={() => handleEmployeeSelect(employee)}
-                          className={`w-full flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''} p-3 hover:bg-muted transition-all duration-300 ${isRtl ? 'text-right flex-row-reverse' : 'text-left'} rounded-lg mx-1`}
+                          className={`w-full flex items-center gap-3 p-3 hover:bg-muted transition-all duration-300 text-left rounded-lg mx-1`}
                           whileHover={{ x: isRtl ? -4 : 4 }}
                           whileTap={{ scale: 0.98 }}
                           variants={{
@@ -277,7 +277,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                               </motion.span>
                             </div>
                             <p className="text-xs text-muted-foreground truncate caption">
-                              {formatLocalizedValue(employee?.email) || 'N/A'}
+                              {formatLocalizedValue(employee?.email) || t('na', 'N/A')}
                             </p>
                             <p className="text-xs text-muted-foreground truncate caption">
                               {[formatLocalizedValue(employee?.department), formatLocalizedValue(employee?.jobTitle)].filter(Boolean).join(' • ') || t('noDepartment', 'No department')}
@@ -344,7 +344,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Mail" size={14} />
-                    {formatLocalizedValue(selectedEmployee?.email) || 'N/A'}
+                    {formatLocalizedValue(selectedEmployee?.email) || t('na', 'N/A')}
                   </motion.p>
                   <motion.p
                     className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}

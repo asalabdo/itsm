@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
@@ -11,6 +10,7 @@ import ChangeManagementDashboard from './pages/change-management-dashboard';
 import ServiceRequestManagement from './pages/service-request-management';
 import Layout from './components/Layout';
 import CRUDPage from './crud/CRUDPage';
+import ManageIndex from './pages/manage';
 import TicketCreation from './pages/ticket-creation';
 import AgentDashboard from './pages/agent-dashboard';
 import ManagerDashboard from './pages/manager-dashboard';
@@ -48,7 +48,6 @@ import KnowledgeBase from './pages/knowledge-base';
 import Problems from './pages/problems';
 import Settings from './pages/settings';
 import ScenarioValidationCenter from './pages/scenario-validation-center';
-import userService from './services/userService';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }) => {
@@ -80,6 +79,7 @@ const Routes = () => {
             <Route path="/asset-lifecycle-management" element={<ProtectedRoute><AssetLifecycleManagement /></ProtectedRoute>} />
             <Route path="/change-management-dashboard" element={<ProtectedRoute><ChangeManagementDashboard /></ProtectedRoute>} />
             <Route path="/service-request-management" element={<ProtectedRoute><ServiceRequestManagement /></ProtectedRoute>} />
+            <Route path="/manage" element={<ProtectedRoute><ManageIndex /></ProtectedRoute>} />
             <Route path="/manage/:entityKey/*" element={<ProtectedRoute><CRUDPage /></ProtectedRoute>} />
             <Route path="/ticket-creation" element={<ProtectedRoute><TicketCreation /></ProtectedRoute>} />
             <Route path="/agent-dashboard" element={<ProtectedRoute><AgentDashboard /></ProtectedRoute>} />
@@ -96,6 +96,7 @@ const Routes = () => {
             <Route path="/ticket-workflow-crud" element={<ProtectedRoute><TicketWorkflowCrud /></ProtectedRoute>} />
             <Route path="/ticket-management-center" element={<ProtectedRoute><TicketManagementCenter /></ProtectedRoute>} />
             <Route path="/reporting-and-analytics-hub" element={<ProtectedRoute><ReportingAndAnalyticsHub /></ProtectedRoute>} />
+            <Route path="/audit-trail-and-compliance-viewer" element={<ProtectedRoute><AuditTrailAndComplianceViewer /></ProtectedRoute>} />
             <Route path="/my-work" element={<ProtectedRoute><MyWorkDashboard /></ProtectedRoute>} />
             <Route path="/asset-registry-and-tracking" element={<ProtectedRoute><AssetRegistryAndTracking /></ProtectedRoute>} />
             <Route path="/manage/assets" element={<ProtectedRoute><ManageAssets /></ProtectedRoute>} />

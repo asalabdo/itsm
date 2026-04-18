@@ -66,13 +66,17 @@ const ServiceCatalogHub = () => {
     const query = searchQuery.trim().toLowerCase();
     const visibleCatalog = catalog.filter((item) => !isHiddenCatalogItem(item));
     if (!query) return visibleCatalog;
-    return visibleCatalog.filter((item) => [
-      item.name,
-      item.description,
-      item.category,
-    ].join(' ').toLowerCase().includes(query));
-  }, [catalog, searchQuery]);
-  const filteredCategories = [...new Set(filteredCatalog.map(item => item.category))];
+    return visibleCatalog.filter((item) => {
+      const name = language === 'ar' && item.nameAr ? item.nameAr : item.name;
+      const desc = language === 'ar' && item.descriptionAr ? item.descriptionAr : item.description;
+      const cat = language === 'ar' && item.categoryAr ? item.categoryAr : item.category;
+      return [name, desc, cat].join(' ').toLowerCase().includes(query);
+    });
+  }, [catalog, searchQuery, language]);
+  const filteredCategories = [...new Set(filteredCatalog.map(item => {
+    const cat = item.categoryAr && language === 'ar' ? item.categoryAr : item.category;
+    return cat;
+  }))];
 
   return (
     <>
@@ -125,7 +129,13 @@ const ServiceCatalogHub = () => {
                   {category}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredCatalog.filter(item => item.category === category).map(item => (
+                  {filteredCatalog.filter(item => {
+                    const cat = item.categoryAr && language === 'ar' ? item.categoryAr : item.category;
+                    return cat === category;
+                  }).map(item => {
+                    const localizedName = language === 'ar' && item.nameAr ? item.nameAr : item.name;
+                    const localizedDesc = language === 'ar' && item.descriptionAr ? item.descriptionAr : item.description;
+                    return (
                     <div 
                       key={item.id}
                       className="bg-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group"
@@ -136,8 +146,8 @@ const ServiceCatalogHub = () => {
                         </div>
                         <span className="text-xs font-bold text-muted-foreground">SLA: {item.defaultSlaHours}h</span>
                       </div>
-                      <h3 className="text-lg font-bold text-foreground">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{item.description}</p>
+                      <h3 className="text-lg font-bold text-foreground">{localizedName}</h3>
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{localizedDesc}</p>
                       <button 
                         onClick={() => setSelectedItem(item)}
                         className="mt-6 w-full py-2.5 bg-muted text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center gap-2"
@@ -146,18 +156,20 @@ const ServiceCatalogHub = () => {
                         {t('requestNow', 'Request Now')}
                       </button>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             ))
           )}
 
           {/* Request Modal */}
-          {selectedItem && (
+          {selectedItem && (() => {
+            const localizedName = language === 'ar' && selectedItem.nameAr ? selectedItem.nameAr : selectedItem.name;
+            return (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-xl font-bold">{t('newRequestTitle', 'New {serviceName} Request').replace('{serviceName}', selectedItem.name)}</h3>
+                  <h3 className="text-xl font-bold">{t('newRequestTitle', 'New {serviceName} Request').replace('{serviceName}', localizedName)}</h3>
                   <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-gray-100 rounded-full">
                     <Icon name="X" size={20} />
                   </button>
@@ -167,7 +179,7 @@ const ServiceCatalogHub = () => {
                   <div className="bg-blue-50 p-4 rounded-2xl flex items-start gap-4">
                     <Icon name="Info" size={20} className="text-blue-600 mt-1" />
                     <p className="text-sm text-blue-800 flex-1">
-                      {t('youAreRequesting', 'You are requesting')} <strong>{selectedItem.name}</strong>. {selectedItem.requiresApproval ? t('requiresManagerApproval', 'This request requires manager approval.') : t('willBeFulfilledImmediately', 'This request will be fulfilled immediately upon submission.')}
+                      {t('youAreRequesting', 'You are requesting')} <strong>{localizedName}</strong>. {selectedItem.requiresApproval ? t('requiresManagerApproval', 'This request requires manager approval.') : t('willBeFulfilledImmediately', 'This request will be fulfilled immediately upon submission.')}
                     </p>
                   </div>
 
@@ -199,7 +211,8 @@ const ServiceCatalogHub = () => {
                 </form>
               </div>
             </div>
-          )}
+            );
+          })()}
         </div>
       </main>
     </>

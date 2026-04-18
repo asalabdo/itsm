@@ -1,4 +1,4 @@
-﻿export const en = {
+export const en = {
 // Core navigation and common terms
     appName: 'ITSM System',
     tickets: 'Tickets',
@@ -486,6 +486,7 @@
     duplicateWarning: 'We found similar recent tickets. Reusing one can save a few steps.',
     untiledTicket: 'Untitled ticket',
     descriptionPlaceholder: 'What happened, who is affected, and what should happen next?',
+    selectDate: 'Select date',
     dueDate: 'Due Date',
     hint: 'Hint',
     selectImpact: 'Select Impact',
@@ -536,6 +537,15 @@
     pickServiceSla: 'Pick a service to see the SLA guidance.',
     module: 'Module',
     employee: 'Employee',
+    searchEmployeePlaceholder: 'Start typing to search for existing employees',
+    searchEmployeeDesc: 'Start typing to search for existing employees',
+    searchingEmployees: 'Searching employees...',
+    noEmployeesFound: 'No employees found',
+    tryDifferentSearchTerm: 'Try a different search term',
+    noDepartment: 'No department',
+    noPhone: 'No phone',
+    tickets: 'tickets',
+    na: 'N/A',
     title: 'Title',
     description: 'Description',
     editDetails: 'Edit details',
@@ -749,6 +759,7 @@
     ticketID: 'Ticket ID',
     subject: 'Subject',
     status: 'Status',
+    notAvailable: 'Not Available',
     lastUpdate: 'Last Update',
     estResolution: 'Est. Resolution',
     noTicketsFound: 'No tickets found',

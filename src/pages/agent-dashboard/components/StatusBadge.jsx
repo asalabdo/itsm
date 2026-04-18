@@ -1,10 +1,30 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const StatusBadge = ({ status }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
+  const getStatusLabel = () => {
+    const statusKey = status?.toLowerCase();
+    const statusTranslations = {
+      'open': t('statusOpen', 'Open'),
+      'new': t('statusNew', 'New'),
+      'in progress': t('statusInProgress', 'In Progress'),
+      'pending': t('statusPending', 'Pending'),
+      'pending customer': t('statusPendingCustomer', 'Pending Customer'),
+      'resolved': t('statusResolved', 'Resolved'),
+      'closed': t('statusClosed', 'Closed'),
+    };
+    return statusTranslations[statusKey] || status;
+  };
+
   const getStatusConfig = () => {
     switch (status?.toLowerCase()) {
       case 'open':
+      case 'new':
         return {
           icon: 'Circle',
           color: 'var(--color-primary)',
@@ -60,7 +80,7 @@ const StatusBadge = ({ status }) => {
   return (
     <span className={`inline-flex items-center gap-1.5 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md text-xs md:text-sm font-medium border caption ${config?.bgClass} ${config?.textClass} ${config?.borderClass}`}>
       <Icon name={config?.icon} size={14} color={config?.color} />
-      {status}
+      {getStatusLabel()}
     </span>
   );
 };

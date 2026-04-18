@@ -27,10 +27,12 @@ const BreadcrumbTrail = () => {
     '/priorities': { label: t('priorities', 'Priorities'), parent: '/manager-dashboard' },
     '/escalations': { label: t('escalations', 'Escalations'), parent: '/manager-dashboard' },
     '/ticket-workflow-crud': { label: t('ticketWorkflow', 'Ticket Workflow'), parent: '/workflow-builder-studio' },
+    '/audit-trail-and-compliance-viewer': { label: t('auditTrail', 'Audit Trail'), parent: '/manager-dashboard' },
     '/monitoring-events': { label: t('monitoringEvents', 'Monitoring Events'), parent: '/manager-dashboard' },
     '/problems': { label: t('problems', 'Problems'), parent: '/manager-dashboard' },
     '/knowledge-base': { label: t('knowledgeBase', 'Knowledge Base'), parent: '/customer-portal' },
     '/settings': { label: t('settings', 'Settings'), parent: null },
+    '/manage': { label: t('dataManagement', 'Data Management'), parent: null },
   };
 
   const generateBreadcrumbs = () => {

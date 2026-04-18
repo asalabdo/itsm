@@ -5,9 +5,13 @@ import Button from '../../../components/ui/Button';
 import PriorityBadge from './PriorityBadge';
 import StatusBadge from './StatusBadge';
 import SLAIndicator from './SLAIndicator';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TicketTableRow = ({ ticket, onStatusChange }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
 
   const handleViewDetails = () => {
     const ticketId = ticket?.backendId ?? ticket?.id;
@@ -38,7 +42,7 @@ const TicketTableRow = ({ ticket, onStatusChange }) => {
             {ticket?.unread && (
               <span className="inline-flex items-center gap-1 text-xs text-primary caption">
                 <Icon name="Circle" size={8} color="var(--color-primary)" />
-                New
+                {t('new', 'New')}
               </span>
             )}
           </div>

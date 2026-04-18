@@ -76,6 +76,8 @@ const Sidebar = ({ collapsed = false, onToggle }) => {
         { label: t('workflowBuilder', 'Workflow Builder'), path: '/workflow-builder-studio', icon: 'GitBranch' },
         { label: t('automationRules', 'Automation Rules'), path: '/automation-rules', icon: 'Cpu' },
         { label: t('approvalQueue', 'Approval Queue'), path: '/approval-queue-manager', icon: 'ClipboardCheck' },
+        { label: t('auditTrail', 'Audit Trail'), path: '/audit-trail-and-compliance-viewer', icon: 'ShieldAlert' },
+        { label: t('dataManagement', 'Data Management'), path: '/manage', icon: 'Database' },
         { label: t('userManagement', 'User Management'), path: '/user-management', icon: 'UserCircle' },
         { label: t('settings', 'Settings'), path: '/settings', icon: 'Settings' },
         { label: t('ticketChatbot', 'Ticket Chatbot'), path: '/ticket-chatbot', icon: 'Bot' },

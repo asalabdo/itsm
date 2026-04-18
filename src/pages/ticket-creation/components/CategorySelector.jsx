@@ -923,52 +923,44 @@ const CategorySelector = ({
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            <div
-              className="rounded-2xl border border-border bg-muted/20 px-4 py-3"
-              dir={isRtl ? 'rtl' : 'ltr'}
-            >
-              <div
-                className={`flex flex-wrap items-center gap-2 text-xs font-medium     }`}
-              >
-                <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                  {getModuleLabel(selectedModuleConfig) || t('department', 'Department')}
-                </span>
-
-                <Icon
-                  name={breadcrumbIcon}
-                  size={14}
-                  className="text-muted-foreground shrink-0"
-                />
-
-                <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
-                  {getCategoryLabel(selectedCategoryConfig) || t('category', 'Category')}
-                </span>
-
-                <Icon
-                  name={breadcrumbIcon}
-                  size={14}
-                  className="text-muted-foreground shrink-0"
-                />
-
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
-                  {getServiceLabel(selectedService)}
-                </span>
+            {selectedService ? (
+              <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+                  <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
+                    {getModuleLabel(selectedModuleConfig) || t('department', 'Department')}
+                  </span>
+                  <Icon name={breadcrumbIcon} size={14} className="text-muted-foreground shrink-0" />
+                  <span className="rounded-full bg-background px-3 py-1 text-muted-foreground">
+                    {getCategoryLabel(selectedCategoryConfig) || t('category', 'Category')}
+                  </span>
+                  <Icon name={breadcrumbIcon} size={14} className="text-muted-foreground shrink-0" />
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
+                    {getServiceLabel(selectedService)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onServiceSelect(null)}
+                    className="ml-2 text-muted-foreground hover:text-foreground"
+                  >
+                    <Icon name="X" size={14} />
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <ServiceSelector
-                category={selectedCategory}
-                categoryLabel={
-                  language === 'ar'
-                    ? selectedCategoryConfig?.nameAr || selectedCategoryConfig?.name || selectedCategory
-                    : selectedCategoryConfig?.name || selectedCategoryConfig?.nameAr || selectedCategory
-                }
-                selectedService={selectedService}
-                onServiceSelect={onServiceSelect}
-                onClose={undefined}
-              />
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <ServiceSelector
+                  category={selectedCategory}
+                  categoryLabel={
+                    language === 'ar'
+                      ? selectedCategoryConfig?.nameAr || selectedCategoryConfig?.name || selectedCategory
+                      : selectedCategoryConfig?.name || selectedCategoryConfig?.nameAr || selectedCategory
+                  }
+                  selectedService={selectedService}
+                  onServiceSelect={onServiceSelect}
+                  onClose={undefined}
+                />
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

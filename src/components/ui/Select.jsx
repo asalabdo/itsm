@@ -79,7 +79,7 @@ const renderOptions = (items, { onSelect, isSelected, multiple, isRtl }) => (
         if (isGroupOption(option)) {
             return (
                 <div key={`group-${String(option?.label || option?.value)}`} className="py-1">
-                    <div className={cn("px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground bg-muted/30", isRtl ? 'text-right' : 'text-left')}>
+                    <div className={cn("px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground bg-muted/30", 'text-left')}>
                         {option?.label}
                     </div>
                     <div>
@@ -100,12 +100,12 @@ const renderOptions = (items, { onSelect, isSelected, multiple, isRtl }) => (
                 onClick={() => !option?.disabled && onSelect(option)}
             >
                 <div className="min-w-0 flex-1">
-                    <div className={cn('truncate', isRtl ? 'text-right' : 'text-left')}>{option?.label}</div>
+                    <div className={cn('truncate', 'text-left')}>{option?.label}</div>
                     {option?.description && (
                         <div className={cn(
                             "mt-0.5 text-xs truncate",
                             isSelected(option?.value) ? "text-primary-foreground/80" : "text-muted-foreground",
-                            isRtl ? 'text-right' : 'text-left'
+                            'text-left'
                         )}>
                             {option.description}
                         </div>
@@ -159,7 +159,14 @@ const Select = React.forwardRef(({
 
     // Get selected option(s) for display
     const getSelectedDisplay = () => {
-        if (!value) return placeholder || t('selectOption', 'Select an option');
+        // Show placeholder when no value (undefined or empty string)
+        if (!value || value === '') return placeholder || t('selectOption', 'Select an option');
+        
+        // Handle 'all' value - show the first option's label 
+        if (value === 'all' && flatOptions?.length > 0) {
+            const allOption = flatOptions?.find(opt => opt?.value === 'all');
+            return allOption?.label || t('selectOptionDots', 'Select...');
+        }
 
         if (multiple) {
             const selectedOptions = flatOptions?.filter(opt => value?.includes(opt?.value));
@@ -213,21 +220,20 @@ const Select = React.forwardRef(({
         return value === optionValue;
     };
 
-    const hasValue = multiple ? value?.length > 0 : value !== undefined && value !== '';
+    const hasValue = multiple ? value?.length > 0 : (value !== undefined && value !== '' && value !== 'all');
 
     return (
-        <div className={cn("relative", className)} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={cn("relative", className)} >
             {label && (
                 <label
                     htmlFor={selectId}
-                    dir={isRtl ? 'rtl' : 'ltr'}
                     className={cn(
-                        `text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block ${isRtl ? 'text-right' : 'text-left'}`,
+                        `text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block `,
                         error ? "text-destructive" : "text-foreground"
                     )}
                 >
                     {label}
-                    {required && <span className={cn('text-destructive', isRtl ? 'mr-1' : 'ml-1')}>*</span>}
+                    {required && <span className={cn('text-destructive', 'ml-1 text-left')}>*</span>}
                 </label>
             )}
             <div className="relative">
@@ -236,7 +242,7 @@ const Select = React.forwardRef(({
                     id={selectId}
                     type="button"
                     className={cn(
-                        `flex h-10 w-full items-center justify-between rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isRtl ? 'flex-row-reverse' : ''}`,
+                        `flex h-10 w-full items-center justify-between rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`,
                         error && "border-destructive focus:ring-destructive",
                         !hasValue && "text-muted-foreground"
                     )}
@@ -246,7 +252,7 @@ const Select = React.forwardRef(({
                     aria-haspopup="listbox"
                     {...props}
                 >
-                    <span className={cn('truncate', isRtl ? 'text-right' : 'text-left')}>{getSelectedDisplay()}</span>
+                    <span className={cn('truncate', 'text-left')}>{getSelectedDisplay()}</span>
 
                     <div className="flex items-center gap-1">
                         {loading && (
@@ -280,7 +286,7 @@ const Select = React.forwardRef(({
                 >
                     <option value="">{t('selectDots', 'Select...')}</option>
                     {flatOptions?.map(option => (
-                        <option key={option?.value} className={isRtl ? 'text-right' : 'text-left'} value={option?.value}>
+                        <option key={option?.value} className={'text-left'} value={option?.value}>
                             {option?.label}
                         </option>
                     ))}
@@ -288,7 +294,7 @@ const Select = React.forwardRef(({
 
                 {/* Dropdown */}
                 {isOpen && (
-                    <div dir={isRtl ? 'rtl' : 'ltr'} className="absolute z-50 w-full mt-1 bg-popover text-popover-foreground border border-border rounded-md shadow-lg overflow-hidden">
+                    <div  className="absolute z-50 w-full mt-1 bg-popover text-popover-foreground border border-border rounded-md shadow-lg overflow-hidden text-left">
                         {searchable && (
                             <div className="p-2 border-b border-border">
                                 <div className="relative">
@@ -297,8 +303,8 @@ const Select = React.forwardRef(({
                                         placeholder={t('searchOptions', 'Search options...')}
                                         value={searchTerm}
                                         onChange={handleSearchChange}
-                                        dir={isRtl ? 'rtl' : 'ltr'}
-                                        className={isRtl ? 'pr-8 text-right' : 'pl-8 text-left'}
+                                        
+                                        className={'pl-8 text-left'}
                                     />
                                 </div>
                             </div>
@@ -322,12 +328,12 @@ const Select = React.forwardRef(({
                 )}
             </div>
             {description && !error && (
-                <p className={cn('text-sm text-muted-foreground mt-1', isRtl ? 'text-right' : 'text-left')}>
+                <p className={cn('text-sm text-muted-foreground mt-1', 'text-left')}>
                     {description}
                 </p>
             )}
             {error && (
-                <p className={cn('text-sm text-destructive mt-1', isRtl ? 'text-right' : 'text-left')}>
+                <p className={cn('text-sm text-destructive mt-1', 'text-left')}>
                     {error}
                 </p>
             )}

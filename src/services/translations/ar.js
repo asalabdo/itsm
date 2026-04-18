@@ -1,4 +1,4 @@
-﻿export const ar = {
+export const ar = {
 // Core navigation and common terms
     appName: 'نظام ITSM',
     tickets: 'التذاكر',
@@ -244,6 +244,8 @@
     slaAlert: 'تنبيه SLA',
     requestsOverdue: 'الطلبات المتأخرة',
     requestsApproachingDeadline: 'الطلبات التي تقترب من الموعد النهائي',
+    manageApprovals: 'إدارة الموافقات على طلبات الخدمة والمهام',
+    activeQueue: 'القائمة النشطة',
 
     // Filter Controls
     searchRequestsById: 'ابحث عن الطلبات حسب المعرف أو اسم الخدمة أو المطلب أو الوصف...',
@@ -1140,6 +1142,12 @@
     ticketNumberCol: 'رقم التذكرة',
     customerCol: 'العميل',
     subjectCol: 'الموضوع',
+    statusCol: 'الحالة',
+    priorityCol: 'الأولوية',
+    slaCol: 'SLA',
+    lastUpdatedCol: 'آخر تحديث',
+    actionsCol: 'الإجراءات',
+    new: 'جديد',
     
     // Ticket Details Page
     conversationHistory: 'سجل المحادثة',
@@ -1202,6 +1210,7 @@
     files: 'الملفات',
     incident: 'حادثة',
     statusOpen: 'مفتوح',
+    statusNew: 'جديد',
     statusInProgress: 'قيد التنفيذ',
     statusPending: 'قيد الانتظار',
     statusPendingCustomer: 'في انتظار العميل',
@@ -1215,6 +1224,7 @@
     priorityHigh: 'أولوية عالية',
     priorityUrgent: 'أولوية عاجلة',
     slaBreached: 'منتهك',
+    notAvailable: 'غير متوفر',
     slaOnTrack: 'في الموعد',
     requestDetails: 'تفاصيل الطلب',
     summary: 'ملخص',
@@ -1250,10 +1260,18 @@
     // Employee Lookup
     searchEmployeePlaceholder: 'ابدأ الكتابة للبحث عن الموظفين الحاليين',
     searchEmployeeDesc: 'ابدأ الكتابة للبحث عن الموظفين الحاليين',
+    searchingEmployees: 'جاري البحث عن الموظفين...',
+    noEmployeesFound: 'لم يتم العثور على موظفين',
+    tryDifferentSearchTerm: 'جرب مصطلح بحث مختلف',
+    noDepartment: 'لا يوجد قسم',
+    noPhone: 'لا يوجد هاتف',
+    tickets: 'تذاكر',
+    na: 'غ/م',
     
     // Ticket Creation Form
     titlePlaceholder: 'عنوان قصير وموجه للعمل',
     descriptionPlaceholder: 'ما الذي حدث، من المتأثر، وما الذي يجب أن يحدث بعد ذلك؟',
+    selectDate: 'اختر التاريخ',
     
     // Workflow Steps
     stepLabel: 'المرحلة',

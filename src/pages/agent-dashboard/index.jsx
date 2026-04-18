@@ -23,13 +23,12 @@ const AgentDashboard = () => {
   const [tickets, setTickets] = useState([]);
   const [allTickets, setAllTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const metricsData = [
+  const [metricsData, setMetricsData] = useState([
     { icon: 'Ticket', iconColor: 'var(--color-primary)', title: t('openTickets', 'Open Tickets'), value: '--', subtitle: t('loading', 'Loading...'), trend: '', trendDirection: null },
     { icon: 'Clock', iconColor: 'var(--color-warning)', title: t('avgResolution', 'Avg Resolution'), value: '--', subtitle: t('last7Days', 'Last 7 days'), trend: '', trendDirection: null },
     { icon: 'AlertTriangle', iconColor: 'var(--color-error)', title: t('pendingApprovals', 'Pending Approvals'), value: '--', subtitle: t('awaitingAction', 'Awaiting action'), trend: '', trendDirection: null },
     { icon: 'CheckCircle', iconColor: 'var(--color-success)', title: t('resolved', 'Resolved'), value: '--', subtitle: t('totalResolved', 'Total resolved'), trend: '', trendDirection: null }
-  ];
+  ]);
 
   const mapTicket = (ticket) => ({
     id: ticket.ticketNumber || String(ticket.id),
@@ -59,17 +58,24 @@ const AgentDashboard = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      console.log('Fetching dashboard data...');
+      
       const [ticketsRes, summaryRes] = await Promise.all([
         ticketsAPI.getAll(),
         dashboardAPI.getSummary()
       ]);
+
+      console.log('Tickets response:', ticketsRes);
+      console.log('Summary response:', summaryRes);
 
       const mapped = (ticketsRes?.data || []).map(mapTicket);
       setAllTickets(mapped);
       setTickets(mapped);
 
       const summary = summaryRes?.data;
-      if (summary && Object.keys(summary).length > 0) {
+      console.log('Summary data:', summary);
+      
+      if (summary && Object.keys(summary).length > 0 && summary.totalTickets !== undefined) {
         setMetricsData([
           { icon: 'Ticket', iconColor: 'var(--color-primary)', title: t('openTickets', 'Open Tickets'), value: String(summary.openTickets ?? 0), subtitle: `${summary.totalTickets ?? 0} ${t('total', 'Total')}`, trend: '', trendDirection: null },
           { icon: 'Clock', iconColor: 'var(--color-warning)', title: t('avgResolution', 'Avg Resolution'), value: summary.averageResolutionTime != null ? `${Number(summary.averageResolutionTime).toFixed(1)}h` : '0h', subtitle: t('last7Days', 'Last 7 days'), trend: '', trendDirection: null },
@@ -79,7 +85,14 @@ const AgentDashboard = () => {
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-      setMetricsData([]);
+      console.error('Error response:', err.response);
+      // Keep showing loading state instead of empty metrics
+      setMetricsData([
+        { icon: 'Ticket', iconColor: 'var(--color-primary)', title: t('openTickets', 'Open Tickets'), value: '--', subtitle: t('loading', 'Loading...'), trend: '', trendDirection: null },
+        { icon: 'Clock', iconColor: 'var(--color-warning)', title: t('avgResolution', 'Avg Resolution'), value: '--', subtitle: t('last7Days', 'Last 7 days'), trend: '', trendDirection: null },
+        { icon: 'AlertTriangle', iconColor: 'var(--color-error)', title: t('pendingApprovals', 'Pending Approvals'), value: '--', subtitle: t('awaitingAction', 'Awaiting action'), trend: '', trendDirection: null },
+        { icon: 'CheckCircle', iconColor: 'var(--color-success)', title: t('resolved', 'Resolved'), value: '--', subtitle: t('totalResolved', 'Total resolved'), trend: '', trendDirection: null }
+      ]);
     } finally {
       setLoading(false);
     }

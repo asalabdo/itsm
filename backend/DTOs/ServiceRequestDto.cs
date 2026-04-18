@@ -4,8 +4,11 @@ public class ServiceCatalogItemDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string NameAr { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string DescriptionAr { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
+    public string CategoryAr { get; set; } = string.Empty;
     public string Icon { get; set; } = string.Empty;
     public string FormConfigJson { get; set; } = "[]";
     public bool RequiresApproval { get; set; }
@@ -57,6 +60,7 @@ public class ServiceRequestDto
     public string Status { get; set; } = string.Empty;
     public string WorkflowStage { get; set; } = string.Empty;
     public string CatalogItemName { get; set; } = string.Empty;
+    public string CatalogItemNameAr { get; set; } = string.Empty;
     public int? CatalogItemId { get; set; }
     public int? RequestedById { get; set; }
     public int? AssignedToId { get; set; }

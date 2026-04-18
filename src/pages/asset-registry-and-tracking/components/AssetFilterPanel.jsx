@@ -4,8 +4,13 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  
   const [filters, setFilters] = useState({
     searchQuery: '',
     category: '',
@@ -17,34 +22,34 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
   });
 
   const categoryOptions = [
-    { value: '', label: 'كل الفئات' },
-    { value: 'computers', label: 'أجهزة الكمبيوتر والحواسيب المحمولة' },
-    { value: 'furniture', label: 'أثاث المكاتب' },
-    { value: 'equipment', label: 'معدات وآلات' },
-    { value: 'vehicles', label: 'مركبات ونقل' },
-    { value: 'software', label: 'تراخيص البرمجيات' },
-    { value: 'mobile', label: 'الأجهزة المحمولة' },
-    { value: 'networking', label: 'معدات الشبكات' }
+    { value: '', label: t('allCategories', 'All Categories') },
+    { value: 'computers', label: language === 'ar' ? 'أجهزة الكمبيوتر والحواسيب المحمولة' : 'Computers & Laptops' },
+    { value: 'furniture', label: language === 'ar' ? 'أثاث المكاتب' : 'Office Furniture' },
+    { value: 'equipment', label: language === 'ar' ? 'معدات وآلات' : 'Equipment & Machinery' },
+    { value: 'vehicles', label: language === 'ar' ? 'مركبات ونقل' : 'Vehicles' },
+    { value: 'software', label: language === 'ar' ? 'تراخيص البرمجيات' : 'Software Licenses' },
+    { value: 'mobile', label: language === 'ar' ? 'الأجهزة المحمولة' : 'Mobile Devices' },
+    { value: 'networking', label: language === 'ar' ? 'معدات الشبكات' : 'Networking Equipment' }
   ];
 
   const locationOptions = [
-    { value: '', label: 'كل المواقع' },
-    { value: 'hq-floor1', label: 'المقر - الطابق 1' },
-    { value: 'hq-floor2', label: 'المقر - الطابق 2' },
-    { value: 'hq-floor3', label: 'المقر - الطابق 3' },
-    { value: 'warehouse-a', label: 'المستودع A' },
-    { value: 'warehouse-b', label: 'المستودع B' },
-    { value: 'remote', label: 'عن بُعد/ميداني' },
-    { value: 'branch-ny', label: 'فرع نيويورك' },
-    { value: 'branch-la', label: 'فرع لوس أنجلوس' }
+    { value: '', label: t('allLocations', 'All Locations') },
+    { value: 'hq-floor1', label: language === 'ar' ? 'المقر - الطابق 1' : 'HQ - Floor 1' },
+    { value: 'hq-floor2', label: language === 'ar' ? 'المقر - الطابق 2' : 'HQ - Floor 2' },
+    { value: 'hq-floor3', label: language === 'ar' ? 'المقر - الطابق 3' : 'HQ - Floor 3' },
+    { value: 'warehouse-a', label: language === 'ar' ? 'المستودع A' : 'Warehouse A' },
+    { value: 'warehouse-b', label: language === 'ar' ? 'المستودع B' : 'Warehouse B' },
+    { value: 'remote', label: language === 'ar' ? 'عن بُعد/ميداني' : 'Remote/Field' },
+    { value: 'branch-ny', label: language === 'ar' ? 'فرع نيويورك' : 'NY Branch' },
+    { value: 'branch-la', label: language === 'ar' ? 'فرع لوس أنجلوس' : 'LA Branch' }
   ];
 
   const ownershipOptions = [
-    { value: '', label: 'كل أنواع الملكية' },
-    { value: 'owned', label: 'مملوك للشركة' },
-    { value: 'leased', label: 'مؤجر' },
-    { value: 'rented', label: 'مستأجر' },
-    { value: 'borrowed', label: 'مستعار' }
+    { value: '', label: t('allOwnershipTypes', 'All Ownership Types') },
+    { value: 'owned', label: language === 'ar' ? 'مملوك للشركة' : 'Company Owned' },
+    { value: 'leased', label: language === 'ar' ? 'مؤجر' : 'Leased' },
+    { value: 'rented', label: language === 'ar' ? 'مستأجر' : 'Rented' },
+    { value: 'borrowed', label: language === 'ar' ? 'مستعار' : 'Borrowed' }
   ];
 
   const statusTypes = [
@@ -126,7 +131,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         <div>
           <Input
             type="search"
-            placeholder="ابحث بالمعرف أو الاسم أو الرقم التسلسلي..."
+            placeholder={t('searchByIdNameSerial', 'Search by ID, name or serial...')}
             value={filters?.searchQuery}
             onChange={(e) => handleFilterChange('searchQuery', e?.target?.value)}
             className="w-full"
@@ -135,7 +140,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
 
         <div>
           <Select
-            label="الفئة"
+            label={t('category', 'Category')}
             options={categoryOptions}
             value={filters?.category}
             onChange={(value) => handleFilterChange('category', value)}
@@ -144,7 +149,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
 
         <div>
           <Select
-            label="الموقع"
+            label={t('location', 'Location')}
             options={locationOptions}
             value={filters?.location}
             onChange={(value) => handleFilterChange('location', value)}
@@ -154,7 +159,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
 
         <div>
           <Select
-            label="نوع الملكية"
+            label={t('ownershipType', 'Ownership Type')}
             options={ownershipOptions}
             value={filters?.ownershipType}
             onChange={(value) => handleFilterChange('ownershipType', value)}
@@ -162,7 +167,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-3 block">حالة الأصل</label>
+          <label className="text-sm font-medium mb-3 block">{t('assetStatus', 'Asset Status')}</label>
           <div className="space-y-2">
             {statusTypes?.map((status) => (
               <Checkbox
@@ -176,7 +181,7 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-3 block">حالة الصيانة</label>
+          <label className="text-sm font-medium mb-3 block">{t('maintenanceStatus', 'Maintenance Status')}</label>
           <div className="space-y-2">
             {maintenanceTypes?.map((maintenance) => (
               <Checkbox
@@ -190,17 +195,17 @@ const AssetFilterPanel = ({ onFilterChange, isCollapsed, onToggleCollapse }) => 
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-3 block">نطاق القيمة (ريال)</label>
+          <label className="text-sm font-medium mb-3 block">{t('valueRangeSAR', 'Value Range (SAR)')}</label>
           <div className="space-y-3">
             <Input
               type="number"
-              placeholder="القيمة الدنيا"
+              placeholder={t('minValue', 'Min Value')}
               value={filters?.valueRange?.min}
               onChange={(e) => handleFilterChange('valueRange', { ...filters?.valueRange, min: e?.target?.value })}
             />
             <Input
               type="number"
-              placeholder="القيمة العليا"
+              placeholder={t('maxValue', 'Max Value')}
               value={filters?.valueRange?.max}
               onChange={(e) => handleFilterChange('valueRange', { ...filters?.valueRange, max: e?.target?.value })}
             />

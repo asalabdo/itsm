@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import approvalService from '../../../services/approvalService';
 
 const ApprovalWorkflowCards = ({ expanded = false }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [approvals, setApprovals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
@@ -118,19 +123,19 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Approval Workflow</h2>
+          <h2 className="text-xl font-semibold text-foreground">{isArabic ? 'سير عمل الموافقات' : 'Approval Workflow'}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {approvals?.length} requests pending approval
+            {approvals?.length} {isArabic ? 'طلبًا بانتظار الموافقة' : 'requests pending approval'}
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
             <Icon name="Filter" size={16} />
-            <span className="ml-2">Filter</span>
+            <span className="ml-2">{isArabic ? 'تصفية' : 'Filter'}</span>
           </Button>
           <Button variant="outline" size="sm">
             <Icon name="Download" size={16} />
-            <span className="ml-2">Export</span>
+            <span className="ml-2">{isArabic ? 'تصدير' : 'Export'}</span>
           </Button>
         </div>
       </div>
@@ -178,17 +183,17 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
             {/* Request Details */}
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Requester:</span>
+                <span className="text-muted-foreground">{isArabic ? 'الطالب:' : 'Requester:'}</span>
                 <span className="font-medium text-foreground">
                   {approval?.requester} ({approval?.requesterDepartment})
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Cost:</span>
+                <span className="text-muted-foreground">{isArabic ? 'التكلفة:' : 'Cost:'}</span>
                 <span className="font-medium text-foreground">{approval?.cost}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Justification:</span>
+                <span className="text-muted-foreground">{isArabic ? 'المبرر:' : 'Justification:'}</span>
                 <span className="text-sm text-foreground line-clamp-1">{approval?.justification}</span>
               </div>
             </div>
@@ -197,10 +202,10 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">
-                  Stage {approval?.currentStage} of {approval?.totalStages}
+                  {isArabic ? 'المرحلة' : 'Stage'} {approval?.currentStage} {isArabic ? 'من' : 'of'} {approval?.totalStages}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  Progress: {Math.round((approval?.currentStage / approval?.totalStages) * 100)}%
+                  {isArabic ? 'التقدم:' : 'Progress:'} {Math.round((approval?.currentStage / approval?.totalStages) * 100)}%
                 </span>
               </div>
               
@@ -237,12 +242,12 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
                 {actionLoading?.[`${approval?.id}-approve`] ? (
                   <>
                     <div className="animate-spin w-3 h-3 border border-green-600 border-t-transparent rounded-full"></div>
-                    <span className="ml-2">Approving...</span>
+                    <span className="ml-2">{isArabic ? 'جارٍ الاعتماد...' : 'Approving...'}</span>
                   </>
                 ) : (
                   <>
                     <Icon name="Check" size={14} />
-                    <span className="ml-2">Approve</span>
+                    <span className="ml-2">{isArabic ? 'اعتماد' : 'Approve'}</span>
                   </>
                 )}
               </Button>
@@ -257,19 +262,19 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
                 {actionLoading?.[`${approval?.id}-reject`] ? (
                   <>
                     <div className="animate-spin w-3 h-3 border border-red-600 border-t-transparent rounded-full"></div>
-                    <span className="ml-2">Rejecting...</span>
+                    <span className="ml-2">{isArabic ? 'جارٍ الرفض...' : 'Rejecting...'}</span>
                   </>
                 ) : (
                   <>
                     <Icon name="X" size={14} />
-                    <span className="ml-2">Reject</span>
+                    <span className="ml-2">{isArabic ? 'رفض' : 'Reject'}</span>
                   </>
                 )}
               </Button>
               
               <Button variant="ghost" size="sm">
                 <Icon name="MessageSquare" size={14} />
-                <span className="ml-2">Comment</span>
+                <span className="ml-2">{isArabic ? 'تعليق' : 'Comment'}</span>
               </Button>
             </div>
           </div>
@@ -279,9 +284,9 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
       {approvals?.length === 0 && (
         <div className="text-center py-12">
           <Icon name="CheckSquare" size={48} className="text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">No pending approvals</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">{isArabic ? 'لا توجد موافقات معلقة' : 'No pending approvals'}</h3>
           <p className="text-muted-foreground">
-            All requests have been processed or are waiting for other approvers
+            {isArabic ? 'تمت معالجة جميع الطلبات أو أنها بانتظار موافقات أخرى' : 'All requests have been processed or are waiting for other approvers'}
           </p>
         </div>
       )}

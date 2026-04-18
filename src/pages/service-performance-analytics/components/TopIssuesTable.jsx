@@ -3,6 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { formatLocalizedValue } from '../../../services/displayValue';
 
 const TopIssuesTable = ({ tickets = [] }) => {
   const { language } = useLanguage();
@@ -12,17 +13,20 @@ const TopIssuesTable = ({ tickets = [] }) => {
 
   const issuesData = useMemo(() => {
     const groups = new Map();
+
     tickets.forEach((ticket) => {
-      const key = ticket?.subcategory || ticket?.category || 'General';
+      const rawCategory = ticket?.subcategory || ticket?.category || 'General';
+      const key = rawCategory;
       const existing = groups.get(key) || {
         id: key,
-        issue: ticket?.title || key,
-        category: ticket?.category || 'General',
+        issue: formatLocalizedValue(ticket?.titleAr || ticket?.title || key, language) || key,
+        category: formatLocalizedValue(ticket?.categoryAr || ticket?.category || 'General', language) || 'General',
         frequency: 0,
         totalHours: 0,
         impactScore: 0,
         trend: 'stable',
-        rootCause: ticket?.subcategory || ticket?.category || 'Unclassified'
+        rootCause: formatLocalizedValue(ticket?.subcategoryAr || ticket?.subcategory || ticket?.categoryAr || ticket?.category || 'Unclassified', language) || 'Unclassified',
+        impactKey: 'Low',
       };
 
       const created = new Date(ticket?.createdAt || Date.now());
@@ -38,20 +42,21 @@ const TopIssuesTable = ({ tickets = [] }) => {
     return Array.from(groups.values())
       .map((item) => {
         const avgHours = item.totalHours / Math.max(1, item.frequency);
-        const impact = item.impactScore >= 12 ? 'Critical' : item.impactScore >= 8 ? 'High' : item.impactScore >= 4 ? 'Medium' : 'Low';
+        const impactKey = item.impactScore >= 12 ? 'Critical' : item.impactScore >= 8 ? 'High' : item.impactScore >= 4 ? 'Medium' : 'Low';
         return {
           ...item,
           avgResolution: `${avgHours.toFixed(1)}h`,
-          impact,
-          trend: avgHours > 4 ? 'up' : avgHours < 1.5 ? 'down' : 'stable'
+          impactKey,
+          impact: t(impactKey.toLowerCase(), impactKey),
+          trend: avgHours > 4 ? 'up' : avgHours < 1.5 ? 'down' : 'stable',
         };
       })
       .sort((a, b) => b.frequency - a.frequency)
       .slice(0, 8);
-  }, [tickets]);
+  }, [tickets, language]);
 
-  const getImpactColor = (impact) => {
-    switch (impact) {
+  const getImpactColor = (impactKey) => {
+    switch (impactKey) {
       case 'Critical': return 'text-error bg-error/10';
       case 'High': return 'text-warning bg-warning/10';
       case 'Medium': return 'text-secondary bg-secondary/10';
@@ -64,7 +69,6 @@ const TopIssuesTable = ({ tickets = [] }) => {
     switch (trend) {
       case 'up': return 'TrendingUp';
       case 'down': return 'TrendingDown';
-      case 'stable': return 'Minus';
       default: return 'Minus';
     }
   };
@@ -73,7 +77,6 @@ const TopIssuesTable = ({ tickets = [] }) => {
     switch (trend) {
       case 'up': return 'text-error';
       case 'down': return 'text-success';
-      case 'stable': return 'text-muted-foreground';
       default: return 'text-muted-foreground';
     }
   };
@@ -87,18 +90,19 @@ const TopIssuesTable = ({ tickets = [] }) => {
     }
   };
 
-  const sortedData = [...issuesData]?.sort((a, b) => {
+  const sortedData = [...issuesData].sort((a, b) => {
     let aValue = a?.[sortBy];
     let bValue = b?.[sortBy];
 
     if (sortBy === 'frequency') {
-      aValue = parseInt(aValue);
-      bValue = parseInt(bValue);
+      aValue = parseInt(aValue, 10);
+      bValue = parseInt(bValue, 10);
     }
 
     if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1;
     }
+
     return aValue < bValue ? 1 : -1;
   });
 
@@ -115,6 +119,7 @@ const TopIssuesTable = ({ tickets = [] }) => {
           </Button>
         </div>
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-muted/50">
@@ -125,31 +130,21 @@ const TopIssuesTable = ({ tickets = [] }) => {
                   <Icon name="ArrowUpDown" size={14} />
                 </button>
               </th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                {t('serviceCategory', 'Category')}
-              </th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('serviceCategory', 'Category')}</th>
               <th className="text-left p-4 text-sm font-medium text-muted-foreground">
                 <button onClick={() => handleSort('frequency')} className="flex items-center space-x-1 hover:text-foreground">
                   <span>{t('frequency', 'Frequency')}</span>
                   <Icon name="ArrowUpDown" size={14} />
                 </button>
               </th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                {t('averageResolution', 'Avg Resolution')}
-              </th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                {t('impact', 'Impact')}
-              </th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                {t('trend', 'Trend')}
-              </th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                {t('rootCause', 'Root Cause')}
-              </th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('averageResolution', 'Avg Resolution')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('impact', 'Impact')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('trend', 'Trend')}</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">{t('rootCause', 'Root Cause')}</th>
             </tr>
           </thead>
           <tbody>
-            {sortedData?.map((issue, index) => (
+            {sortedData.map((issue, index) => (
               <tr key={issue?.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                 <td className="p-4">
                   <div className="flex items-center space-x-3">
@@ -167,14 +162,14 @@ const TopIssuesTable = ({ tickets = [] }) => {
                 <td className="p-4">
                   <div className="flex items-center space-x-2">
                     <span className="font-medium text-foreground">{issue?.frequency}</span>
-                    <span className="text-xs text-muted-foreground">{t('ticketsCount', 'incidents')}</span>
+                    <span className="text-xs text-muted-foreground">{t('ticketsCount', 'tickets')}</span>
                   </div>
                 </td>
                 <td className="p-4">
                   <span className="text-sm text-foreground">{issue?.avgResolution}</span>
                 </td>
                 <td className="p-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(issue?.impact)}`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(issue?.impactKey)}`}>
                     {issue?.impact}
                   </span>
                 </td>
@@ -189,6 +184,7 @@ const TopIssuesTable = ({ tickets = [] }) => {
           </tbody>
         </table>
       </div>
+
       <div className="p-4 border-t border-border bg-muted/20">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>{t('showingTopIssues', 'Showing top 8 issues from last 30 days')}</span>

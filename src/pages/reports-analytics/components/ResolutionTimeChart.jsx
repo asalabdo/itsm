@@ -1,13 +1,16 @@
-import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ResolutionTimeChart = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const data = [
-    { category: 'Technical', avgTime: 4.2, target: 6.0 },
-    { category: 'Billing', avgTime: 2.8, target: 4.0 },
-    { category: 'Sales', avgTime: 3.5, target: 5.0 },
-    { category: 'General', avgTime: 1.9, target: 3.0 },
-    { category: 'Account', avgTime: 3.1, target: 4.5 },
+    { category: t('technicalSupport', 'Technical'), avgTime: 4.2, target: 6.0 },
+    { category: t('billing', 'Billing'), avgTime: 2.8, target: 4.0 },
+    { category: t('sales', 'Sales'), avgTime: 3.5, target: 5.0 },
+    { category: t('generalInquiry', 'General'), avgTime: 1.9, target: 3.0 },
+    { category: t('accountManagement', 'Account'), avgTime: 3.1, target: 4.5 },
   ];
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -34,7 +37,7 @@ const ResolutionTimeChart = () => {
   };
 
   return (
-    <div className="w-full h-64 md:h-80 lg:h-96" aria-label="Average Resolution Time by Category">
+    <div className="w-full h-64 md:h-80 lg:h-96" aria-label={t('resolutionTimeByCategory', 'Average Resolution Time by Category')}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -46,7 +49,7 @@ const ResolutionTimeChart = () => {
           <YAxis
             stroke="var(--color-muted-foreground)"
             style={{ fontSize: '12px' }}
-            label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
+            label={{ value: t('hours', 'Hours'), angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
@@ -55,13 +58,13 @@ const ResolutionTimeChart = () => {
           />
           <Bar
             dataKey="avgTime"
-            name="Avg Resolution Time"
+            name={t('averageResolutionTime', 'Avg Resolution Time')}
             fill="var(--color-primary)"
             radius={[4, 4, 0, 0]}
           />
           <Bar
             dataKey="target"
-            name="Target Time"
+            name={t('targetTime', 'Target Time')}
             fill="var(--color-muted)"
             radius={[4, 4, 0, 0]}
           />

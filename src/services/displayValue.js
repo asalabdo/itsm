@@ -1,4 +1,41 @@
+import { getTranslation } from './i18n';
+
 const LANGUAGE_KEYS = ['preferredLanguage', 'language', 'lang'];
+
+const SYSTEM_LABEL_KEY_MAP = {
+  'critical': 'critical',
+  'critical incident': 'criticalIncident',
+  'major incident': 'majorIncident',
+  'minor incident': 'minorIncident',
+  'incident': 'incident',
+  'problem': 'problem',
+  'change': 'changeRequest',
+  'service request': 'serviceRequest',
+  'high': 'high',
+  'medium': 'medium',
+  'low': 'low',
+  'urgent': 'urgent',
+  'open': 'open',
+  'in progress': 'inProgress',
+  'assigned': 'assigned',
+  'pending': 'pending',
+  'resolved': 'resolved',
+  'closed': 'closed',
+  'unassigned': 'unassigned',
+  'requester': 'requester',
+  'agent': 'agent',
+  'customer': 'customer',
+};
+
+const translateSystemLabel = (value, preferredLanguage) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  const translationKey = SYSTEM_LABEL_KEY_MAP[normalized];
+  if (!translationKey) {
+    return '';
+  }
+
+  return getTranslation(preferredLanguage, translationKey, value);
+};
 
 export const getPreferredLanguage = () => {
   if (typeof window === 'undefined') {
@@ -41,6 +78,11 @@ export const formatLocalizedValue = (value, preferredLanguage = getPreferredLang
       }
     }
 
+    const translated = translateSystemLabel(stringValue, preferredLanguage);
+    if (translated) {
+      return translated;
+    }
+
     return stringValue;
   }
 
@@ -79,14 +121,21 @@ export const formatLocalizedValue = (value, preferredLanguage = getPreferredLang
     'fullName',
     'name',
     'displayName',
-    'userName',
-    'username',
-    'emailAddress',
-    'email',
+    'firstName',
+    'firstname',
+    'givenName',
+    'lastName',
+    'lastname',
+    'surname',
+    'familyName',
     'title',
     'label',
     'value',
     'roleName',
+    'userName',
+    'username',
+    'emailAddress',
+    'email',
   ];
 
   for (const key of preferredKeys) {
@@ -104,10 +153,14 @@ export const getLocalizedDisplayName = (source, preferredLanguage = getPreferred
     source?.fullName ||
       source?.name ||
       source?.displayName ||
-      source?.userName ||
-      source?.username ||
+      [
+        formatLocalizedValue(source?.firstName || source?.firstname || source?.givenName, preferredLanguage),
+        formatLocalizedValue(source?.lastName || source?.lastname || source?.surname || source?.familyName, preferredLanguage),
+      ].filter(Boolean).join(' ').trim() ||
       source?.emailAddress ||
-      source?.email,
+      source?.email ||
+      source?.userName ||
+      source?.username,
     preferredLanguage
   ) ||
   (() => {

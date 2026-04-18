@@ -4,6 +4,8 @@ import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const scenarioGroups = [
   {
@@ -123,8 +125,84 @@ const scenarioGroups = [
   }
 ];
 
+const scenarioGroupLabels = {
+  'Security And Access': 'securityAndAccess',
+  'Ticket Management': 'ticketManagement',
+  'Service Requests': 'serviceRequestsLabel',
+  'Asset Management': 'assetManagement',
+  'Change Management': 'changeManagementLabel',
+  'Approval Workflow': 'approvalWorkflow',
+  'Workflow Engine': 'workflowEngine',
+  'Automation Rules': 'automationRules',
+  'Audit And Reporting': 'auditAndReporting',
+  'Security And Reliability': 'securityAndReliability',
+  'Database Validation': 'databaseValidation',
+  'Real World Operations': 'realWorldOperations',
+};
+
+const scenarioTranslations = {
+  1: { ar: { name: 'تعطيل المستخدم', expected: 'لا يمكن للمستخدمين غير النشطين تسجيل الدخول أو إنشاء التذاكر.' } },
+  5: { ar: { name: 'إنشاء تذكرة', expected: 'يتم إنشاء السجل برقم التذكرة والحالة مفتوحة وتاريخ الإنشاء والطالب.' } },
+  6: { ar: { name: 'توليد رقم التذكرة تلقائيًا', expected: 'يقوم النظام بإنشاء أرقام بالشكل TCK-000001.' } },
+  7: { ar: { name: 'تعيين تذكرة', expected: 'يتم تحديث AssignedToId وتسجيل النشاط.' } },
+  8: { ar: { name: 'إضافة تعليق على التذكرة', expected: 'يتم إدراج صف في TicketComments.' } },
+  9: { ar: { name: 'إرفاق ملف', expected: 'يتم إدراج صف في TicketAttachments.' } },
+  10: { ar: { name: 'حل التذكرة', expected: 'يتم تعبئة ResolvedAt وResolutionNotes.' } },
+  11: { ar: { name: 'تجاوز SLA', expected: 'تصبح حالة SLA متجاوزة عند التأخير.' } },
+  12: { ar: { name: 'إعادة فتح التذكرة', expected: 'يمكن إعادة فتح التذاكر المحلولة إلى Open.' } },
+  13: { ar: { name: 'إنشاء طلب خدمة', expected: 'يتم إنشاء السجل في ServiceRequests.' } },
+  14: { ar: { name: 'تعيين الطلب', expected: 'يتم تحديث AssignedToId.' } },
+  15: { ar: { name: 'إكمال الطلب', expected: 'يتم تعبئة CompletionDate.' } },
+  16: { ar: { name: 'الساعات المقدرة مقابل الفعلية', expected: 'تظل ActualHours متوافقة مع EstimatedHours.' } },
+  17: { ar: { name: 'إنشاء أصل', expected: 'يتم إنشاء سجل في Assets.' } },
+  18: { ar: { name: 'تعيين الأصل لمستخدم', expected: 'يتم تحديث OwnerId وإنشاء سجل AssetHistories.' } },
+  19: { ar: { name: 'تغيير حالة الأصل', expected: 'يتم إنشاء سجل AssetHistories.' } },
+  20: { ar: { name: 'إخراج الأصل من الخدمة', expected: 'يتم تعبئة DecommissionDate وتصبح الحالة Retired.' } },
+  21: { ar: { name: 'إنشاء طلب تغيير', expected: 'يتم إنشاء سجل في ChangeRequests.' } },
+  22: { ar: { name: 'اعتماد التغيير', expected: 'يتم تعبئة ApprovedById وتصبح الحالة Approved.' } },
+  23: { ar: { name: 'جدولة التغيير', expected: 'يتم ضبط ScheduledStartDate.' } },
+  24: { ar: { name: 'رفض التغيير', expected: 'تصبح الحالة Rejected.' } },
+  25: { ar: { name: 'تغيير طارئ', expected: 'تصبح RiskLevel عالية.' } },
+  26: { ar: { name: 'إرسال طلب موافقة', expected: 'يتم إنشاء صف ApprovalItems.' } },
+  27: { ar: { name: 'اعتماد عنصر', expected: 'تصبح الحالة Approved ويتم تعبئة ResolvedAt.' } },
+  28: { ar: { name: 'رفض عنصر', expected: 'تصبح الحالة Rejected.' } },
+  29: { ar: { name: 'تشغيل سير عمل', expected: 'يتم إنشاء صف WorkflowInstances.' } },
+  30: { ar: { name: 'تنفيذ خطوة في سير العمل', expected: 'يتم إنشاء صف WorkflowInstanceSteps.' } },
+  31: { ar: { name: 'إكمال سير العمل', expected: 'يتم تعبئة CompletedAt.' } },
+  32: { ar: { name: 'التعيين التلقائي للتذكرة', expected: 'يتم إنشاء سجلات تنفيذ القاعدة.' } },
+  33: { ar: { name: 'أتمتة فاشلة', expected: 'تكون Success false ويتم تعبئة ErrorMessage.' } },
+  34: { ar: { name: 'تحديث تذكرة', expected: 'يتم إنشاء صف AuditLogs.' } },
+  35: { ar: { name: 'حذف أصل', expected: 'يتم إنشاء سجل تدقيق.' } },
+  36: { ar: { name: 'توليد مقاييس لوحة التحكم', expected: 'يتم إدراج صف DashboardMetrics.' } },
+  37: { ar: { name: 'حساب اتجاه الأداء', expected: 'يتم حساب قيم الاتجاه صعودًا أو هبوطًا.' } },
+  38: { ar: { name: 'وصول غير مصرّح به', expected: 'لا يمكن للمستخدمين عرض تذاكر الأقسام الأخرى.' } },
+  39: { ar: { name: 'اختبار حقن SQL', expected: 'يتم رفض المدخلات غير الآمنة وتنقيتها.' } },
+  40: { ar: { name: 'انتهاء مهلة الجلسة', expected: 'يتم تسجيل خروج المستخدمين بعد عدم النشاط.' } },
+  41: { ar: { name: 'إنشاء 10,000 تذكرة', expected: 'يبقى النظام مستجيبًا.' } },
+  42: { ar: { name: 'مستخدمون متزامنون', expected: 'يمكن لـ 100 مستخدم إنشاء التذاكر في الوقت نفسه.' } },
+  43: { ar: { name: 'رفع مرفق كبير', expected: 'يتم قبول رفع ملف بحجم 100MB.' } },
+  44: { ar: { name: 'تذكرة -> موافقة -> سير عمل', expected: 'يمكن لإنشاء التذكرة تشغيل الموافقات وسير العمل.' } },
+  45: { ar: { name: 'ربط تذكرة بأصل', expected: 'يمكن للتذكرة الإشارة إلى AssetId.' } },
+  46: { ar: { name: 'طلب تغيير -> سير عمل', expected: 'يتم تشغيل سير العمل تلقائيًا.' } },
+  47: { ar: { name: 'حقول مطلوبة مفقودة', expected: 'تظهر أخطاء التحقق قبل الإرسال.' } },
+  48: { ar: { name: 'صيغة بريد غير صحيحة', expected: 'يتم رفض عناوين البريد غير الصالحة.' } },
+  49: { ar: { name: 'تاريخ استحقاق سابق', expected: 'يحذر النظام المستخدم.' } },
+  50: { ar: { name: 'استعادة بعد تعطل النظام', expected: 'لا يحدث فقدان للبيانات عند الاستعادة.' } },
+  51: { ar: { name: 'التحقق من المفتاح الخارجي', expected: 'يتطلب TicketComments TicketId صالحًا.' } },
+  52: { ar: { name: 'حذف متسلسل', expected: 'حذف التذكرة يزيل التعليقات والأنشطة والمرفقات المرتبطة.' } },
+  53: { ar: { name: 'سلامة البيانات', expected: 'لا تبقى سجلات يتيمة.' } },
+  54: { ar: { name: 'تذكرة VIP', expected: 'تحصل الأولوية الحرجة على تعيين فوري وSLA قصير.' } },
+  55: { ar: { name: 'حادث كبير', expected: 'ترتبط عدة تذاكر ويُفعّل سير عمل الحادث.' } },
+  56: { ar: { name: 'استيراد دفعة كبيرة من التذاكر', expected: 'تظل عمليات الاستيراد الكبيرة سريعة الاستجابة.' } },
+  57: { ar: { name: 'تصعيد SLA', expected: 'يتم إشعار المدير قبل تجاوز SLA.' } },
+  58: { ar: { name: 'إعادة إسناد التذكرة', expected: 'يتم تسجيل نشاط إعادة الإسناد.' } },
+};
+
 const ScenarioValidationCenter = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [query, setQuery] = useState('');
 
   const flatScenarios = useMemo(() => scenarioGroups.flatMap((group) =>
@@ -154,6 +232,19 @@ const ScenarioValidationCenter = () => {
     return { total, withPages, backendOnly };
   }, [flatScenarios]);
 
+  const localizeGroupTitle = (title) => {
+    const key = scenarioGroupLabels[title];
+    return key ? t(key, title) : title;
+  };
+
+  const localizeScenarioName = (scenario) => {
+    return isArabic ? (scenarioTranslations[scenario.id]?.ar?.name || scenario.name) : scenario.name;
+  };
+
+  const localizeScenarioExpected = (scenario) => {
+    return isArabic ? (scenarioTranslations[scenario.id]?.ar?.expected || scenario.expected) : scenario.expected;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -162,10 +253,12 @@ const ScenarioValidationCenter = () => {
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2">
-              Scenario Validation Center
+              {isArabic ? 'مركز التحقق من السيناريو' : 'Scenario Validation Center'}
             </h1>
             <p className="text-sm md:text-base text-muted-foreground">
-              Central checklist for the ITSM scenarios, with direct links to existing pages and backend-only validation items.
+              {isArabic
+                ? 'قائمة تحقق مركزية لسيناريوهات ITSM، مع روابط مباشرة للصفحات الموجودة وعناصر التحقق الموجودة في الخلفية فقط.'
+                : 'Central checklist for the ITSM scenarios, with direct links to existing pages and backend-only validation items.'}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -174,40 +267,40 @@ const ScenarioValidationCenter = () => {
               onClick={() => navigate('/user-management')}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
             >
-              Open Core Pages
+              {isArabic ? 'فتح الصفحات الأساسية' : 'Open Core Pages'}
             </button>
             <button
               type="button"
               onClick={() => navigate('/ticket-management-center')}
               className="px-4 py-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors text-sm font-medium"
             >
-              Ticket Center
+              {isArabic ? 'مركز التذاكر' : 'Ticket Center'}
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-            <div className="text-sm text-muted-foreground">Total Scenarios</div>
+            <div className="text-sm text-muted-foreground">{isArabic ? 'إجمالي السيناريوهات' : 'Total Scenarios'}</div>
             <div className="text-3xl font-semibold text-foreground mt-2">{summary.total}</div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-            <div className="text-sm text-muted-foreground">Mapped To Pages</div>
+            <div className="text-sm text-muted-foreground">{isArabic ? 'مربوط بالصفحات' : 'Mapped To Pages'}</div>
             <div className="text-3xl font-semibold text-success mt-2">{summary.withPages}</div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
-            <div className="text-sm text-muted-foreground">Backend Only</div>
+            <div className="text-sm text-muted-foreground">{isArabic ? 'الخلفية فقط' : 'Backend Only'}</div>
             <div className="text-3xl font-semibold text-warning mt-2">{summary.backendOnly}</div>
           </div>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-4 md:p-5 shadow-elevation-1">
-          <label className="block text-sm font-medium text-foreground mb-2">Search scenarios</label>
+          <label className="block text-sm font-medium text-foreground mb-2">{isArabic ? 'ابحث في السيناريوهات' : 'Search scenarios'}</label>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by scenario number, name, module, or expected result..."
+            placeholder={isArabic ? 'ابحث برقم السيناريو أو الاسم أو الوحدة أو النتيجة المتوقعة...' : 'Search by scenario number, name, module, or expected result...'}
             className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -217,8 +310,8 @@ const ScenarioValidationCenter = () => {
             <section key={group.title} className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">
               <div className="px-5 py-4 border-b border-border flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">{group.title}</h2>
-                  <p className="text-sm text-muted-foreground">{group.scenarios.length} scenarios</p>
+                  <h2 className="text-lg font-semibold text-foreground">{localizeGroupTitle(group.title)}</h2>
+                  <p className="text-sm text-muted-foreground">{group.scenarios.length} {isArabic ? 'سيناريوهات' : 'scenarios'}</p>
                 </div>
                 <Icon name="ClipboardCheck" size={20} className="text-muted-foreground" />
               </div>
@@ -229,20 +322,20 @@ const ScenarioValidationCenter = () => {
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                          Scenario {scenario.id}
+                          {isArabic ? 'السيناريو' : 'Scenario'} {scenario.id}
                         </div>
-                        <h3 className="text-base font-semibold text-foreground mt-1">{scenario.name}</h3>
+                        <h3 className="text-base font-semibold text-foreground mt-1">{localizeScenarioName(scenario)}</h3>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full ${scenario.page ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
-                        {scenario.page ? 'Page exists' : 'Backend only'}
+                        {scenario.page ? (isArabic ? 'الصفحة موجودة' : 'Page exists') : (isArabic ? 'الخلفية فقط' : 'Backend only')}
                       </span>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-4">{scenario.expected}</p>
+                    <p className="text-sm text-muted-foreground mb-4">{localizeScenarioExpected(scenario)}</p>
 
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">Module:</span> {scenario.group}
+                        <span className="font-medium text-foreground">{isArabic ? 'الوحدة:' : 'Module:'}</span> {localizeGroupTitle(scenario.group)}
                       </div>
                       {scenario.page ? (
                         <Button
@@ -250,10 +343,10 @@ const ScenarioValidationCenter = () => {
                           size="sm"
                           onClick={() => navigate(scenario.page)}
                         >
-                          Open Page
+                          {isArabic ? 'فتح الصفحة' : 'Open Page'}
                         </Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">No dedicated screen required</span>
+                        <span className="text-xs text-muted-foreground">{isArabic ? 'لا توجد شاشة مخصصة مطلوبة' : 'No dedicated screen required'}</span>
                       )}
                     </div>
                   </div>

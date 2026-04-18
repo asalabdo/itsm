@@ -1,8 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import { ticketsAPI } from '../../../services/api';
 
 const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assignmentGroupOptions = [] }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,10 +40,10 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
   const [callerInfo, setCallerInfo] = useState(null);
 
   const steps = [
-    { id: 1, title: 'Basic Information', icon: 'FileText' },
-    { id: 2, title: 'Classification', icon: 'Tag' },
-    { id: 3, title: 'Assignment', icon: 'Users' },
-    { id: 4, title: 'Review & Create', icon: 'CheckCircle' }
+    { id: 1, title: isArabic ? 'المعلومات الأساسية' : 'Basic Information', icon: 'FileText' },
+    { id: 2, title: isArabic ? 'التصنيف' : 'Classification', icon: 'Tag' },
+    { id: 3, title: isArabic ? 'التعيين' : 'Assignment', icon: 'Users' },
+    { id: 4, title: isArabic ? 'مراجعة وإنشاء' : 'Review & Create', icon: 'CheckCircle' }
   ];
 
   const categoryItems = useMemo(() => categoryOptions || [], [categoryOptions]);
@@ -51,11 +56,11 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
     if (field === 'reportedBy' && value?.includes('@')) {
       // Simulate caller lookup
       setCallerInfo({
-        name: 'John Smith',
-        department: 'Finance',
-        location: 'Building A, Floor 2',
+        name: isArabic ? 'جون سميث' : 'John Smith',
+        department: isArabic ? 'المالية' : 'Finance',
+        location: isArabic ? 'المبنى A، الطابق 2' : 'Building A, Floor 2',
         phone: '+1 555-0123',
-        manager: 'Jane Doe'
+        manager: isArabic ? 'جين دو' : 'Jane Doe'
       });
     }
   };
@@ -66,7 +71,7 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
       const urgencyLevel = formData?.urgency === 'High' ? 3 : formData?.urgency === 'Medium' ? 2 : 1;
       const priority = Math.max(impactLevel, urgencyLevel);
       
-      return priority === 3 ? 'Critical' : priority === 2 ? 'High' : 'Medium';
+      return priority === 3 ? (isArabic ? 'حرج' : 'Critical') : priority === 2 ? (isArabic ? 'عالي' : 'High') : (isArabic ? 'متوسط' : 'Medium');
     }
     return '';
   };
@@ -126,7 +131,7 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
       onIncidentCreated(response.data);
     } catch (err) {
       console.error('Failed to create incident:', err);
-      alert('Failed to create incident. Please try again.');
+      alert(isArabic ? 'فشل إنشاء البلاغ. حاول مرة أخرى.' : 'Failed to create incident. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -190,38 +195,38 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
         <div className="p-6">
           {currentStep === 1 && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-foreground">Basic Incident Information</h3>
+              <h3 className="text-lg font-semibold text-foreground">{isArabic ? 'معلومات البلاغ الأساسية' : 'Basic Incident Information'}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Incident Title *
+                    {isArabic ? 'عنوان البلاغ' : 'Incident Title'} *
                   </label>
                   <input
                     type="text"
                     value={formData?.title}
                     onChange={(e) => handleInputChange('title', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
-                    placeholder="Brief description of the issue"
+                    placeholder={isArabic ? 'وصف موجز للمشكلة' : 'Brief description of the issue'}
                   />
                 </div>
                 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Detailed Description *
+                    {isArabic ? 'الوصف التفصيلي' : 'Detailed Description'} *
                   </label>
                   <textarea
                     value={formData?.description}
                     onChange={(e) => handleInputChange('description', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
                     rows={4}
-                    placeholder="Provide detailed information about the incident, including steps to reproduce, error messages, etc."
+                    placeholder={isArabic ? 'قدّم معلومات تفصيلية عن البلاغ، بما في ذلك خطوات إعادة الإنتاج ورسائل الخطأ...' : 'Provide detailed information about the incident, including steps to reproduce, error messages, etc.'}
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Reported By *
+                    {isArabic ? 'تم الإبلاغ بواسطة' : 'Reported By'} *
                   </label>
                   <input
                     type="email"
@@ -234,14 +239,14 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Contact Information
+                    {isArabic ? 'معلومات الاتصال' : 'Contact Information'}
                   </label>
                   <input
                     type="tel"
                     value={formData?.contactInfo}
                     onChange={(e) => handleInputChange('contactInfo', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
-                    placeholder="Phone number or alternative contact"
+                    placeholder={isArabic ? 'رقم الهاتف أو وسيلة تواصل بديلة' : 'Phone number or alternative contact'}
                   />
                 </div>
               </div>
@@ -249,22 +254,22 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
               {/* Auto-populated caller info */}
               {callerInfo && (
                 <div className="bg-success/10 border border-success/20 rounded-lg p-4">
-                  <h4 className="font-medium text-foreground mb-3">Caller Information (Auto-populated)</h4>
+                  <h4 className="font-medium text-foreground mb-3">{isArabic ? 'معلومات المُبلّغ (تمت تعبئتها تلقائيًا)' : 'Caller Information (Auto-populated)'}</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Name:</span>
+                      <span className="text-muted-foreground">{isArabic ? 'الاسم:' : 'Name:'}</span>
                       <p className="font-medium text-foreground">{callerInfo?.name}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Department:</span>
+                      <span className="text-muted-foreground">{isArabic ? 'القسم:' : 'Department:'}</span>
                       <p className="font-medium text-foreground">{callerInfo?.department}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Location:</span>
+                      <span className="text-muted-foreground">{isArabic ? 'الموقع:' : 'Location:'}</span>
                       <p className="font-medium text-foreground">{callerInfo?.location}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Phone:</span>
+                      <span className="text-muted-foreground">{isArabic ? 'الهاتف:' : 'Phone:'}</span>
                       <p className="font-medium text-foreground">{callerInfo?.phone}</p>
                     </div>
                   </div>
@@ -275,12 +280,12 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
 
           {currentStep === 2 && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-foreground">Incident Classification</h3>
+              <h3 className="text-lg font-semibold text-foreground">{isArabic ? 'تصنيف البلاغ' : 'Incident Classification'}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Category *
+                    {isArabic ? 'الفئة' : 'Category'} *
                   </label>
                   {categoryItems?.length > 0 ? (
                     <select
@@ -288,7 +293,7 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
                       onChange={(e) => handleInputChange('category', e?.target?.value)}
                       className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
                     >
-                      <option value="">Select Category</option>
+                      <option value="">{isArabic ? 'اختر الفئة' : 'Select Category'}</option>
                       {categoryItems?.map(cat => (
                         <option key={cat?.value} value={cat?.label}>{cat?.label}</option>
                       ))}
@@ -299,83 +304,83 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
                       value={formData?.category}
                       onChange={(e) => handleInputChange('category', e?.target?.value)}
                       className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
-                      placeholder="Enter category from live incident data"
+                      placeholder={isArabic ? 'أدخل الفئة من بيانات البلاغ الحية' : 'Enter category from live incident data'}
                     />
                   )}
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Subcategory
+                    {isArabic ? 'الفئة الفرعية' : 'Subcategory'}
                   </label>
                   <input
                     type="text"
                     value={formData?.subcategory}
                     onChange={(e) => handleInputChange('subcategory', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
-                    placeholder="Enter subcategory"
+                    placeholder={isArabic ? 'أدخل الفئة الفرعية' : 'Enter subcategory'}
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Impact *
+                    {isArabic ? 'الأثر' : 'Impact'} *
                   </label>
                   <select
                     value={formData?.impact}
                     onChange={(e) => handleInputChange('impact', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
                   >
-                    <option value="">Select Impact</option>
-                    <option value="High">High - Affects large number of users/critical business</option>
-                    <option value="Medium">Medium - Affects moderate number of users</option>
-                    <option value="Low">Low - Affects few users or non-critical systems</option>
+                    <option value="">{isArabic ? 'اختر الأثر' : 'Select Impact'}</option>
+                    <option value="High">{isArabic ? 'عالٍ - يؤثر على عدد كبير من المستخدمين/الأعمال الحرجة' : 'High - Affects large number of users/critical business'}</option>
+                    <option value="Medium">{isArabic ? 'متوسط - يؤثر على عدد متوسط من المستخدمين' : 'Medium - Affects moderate number of users'}</option>
+                    <option value="Low">{isArabic ? 'منخفض - يؤثر على عدد قليل من المستخدمين أو الأنظمة غير الحرجة' : 'Low - Affects few users or non-critical systems'}</option>
                   </select>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Urgency *
+                    {isArabic ? 'الاستعجال' : 'Urgency'} *
                   </label>
                   <select
                     value={formData?.urgency}
                     onChange={(e) => handleInputChange('urgency', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
                   >
-                    <option value="">Select Urgency</option>
-                    <option value="High">High - Needs immediate attention</option>
-                    <option value="Medium">Medium - Can wait but needs prompt attention</option>
-                    <option value="Low">Low - Can be addressed during normal business hours</option>
+                    <option value="">{isArabic ? 'اختر الاستعجال' : 'Select Urgency'}</option>
+                    <option value="High">{isArabic ? 'عالٍ - يحتاج إلى اهتمام فوري' : 'High - Needs immediate attention'}</option>
+                    <option value="Medium">{isArabic ? 'متوسط - يمكن الانتظار لكنه يحتاج إلى اهتمام سريع' : 'Medium - Can wait but needs prompt attention'}</option>
+                    <option value="Low">{isArabic ? 'منخفض - يمكن التعامل معه خلال ساعات العمل' : 'Low - Can be addressed during normal business hours'}</option>
                   </select>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Severity
+                    {isArabic ? 'الخطورة' : 'Severity'}
                   </label>
                   <select
                     value={formData?.severity}
                     onChange={(e) => handleInputChange('severity', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
                   >
-                    <option value="">Select Severity</option>
-                    <option value="Critical">Critical - System down or major functionality unavailable</option>
-                    <option value="High">High - Significant functionality impaired</option>
-                    <option value="Medium">Medium - Minor functionality affected</option>
-                    <option value="Low">Low - Cosmetic or minor enhancement</option>
+                    <option value="">{isArabic ? 'اختر الخطورة' : 'Select Severity'}</option>
+                    <option value="Critical">{isArabic ? 'حرج - النظام متوقف أو الوظائف الرئيسية غير متاحة' : 'Critical - System down or major functionality unavailable'}</option>
+                    <option value="High">{isArabic ? 'عالٍ - تضرر كبير في الوظائف' : 'High - Significant functionality impaired'}</option>
+                    <option value="Medium">{isArabic ? 'متوسط - تأثرت وظائف بسيطة' : 'Medium - Minor functionality affected'}</option>
+                    <option value="Low">{isArabic ? 'منخفض - تحسين تجميلي أو بسيط' : 'Low - Cosmetic or minor enhancement'}</option>
                   </select>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Calculated Priority
+                    {isArabic ? 'الأولوية المحسوبة' : 'Calculated Priority'}
                   </label>
                   <div className="p-3 bg-muted/30 border border-border rounded-lg">
                     <span className={`font-medium ${
                       calculatePriority() === 'P1' ? 'text-error' :
                       calculatePriority() === 'P2'? 'text-warning' : 'text-foreground'
                     }`}>
-                      {calculatePriority() || 'Select Impact & Urgency'}
+                      {calculatePriority() || (isArabic ? 'اختر الأثر والاستعجال' : 'Select Impact & Urgency')}
                     </span>
                   </div>
                 </div>
@@ -385,12 +390,12 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
 
           {currentStep === 3 && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-foreground">Assignment & SLA</h3>
+              <h3 className="text-lg font-semibold text-foreground">{isArabic ? 'التعيين و SLA' : 'Assignment & SLA'}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Assignment Group *
+                    {isArabic ? 'مجموعة التعيين' : 'Assignment Group'} *
                   </label>
                   {assignmentGroupItems?.length > 0 ? (
                     <select
@@ -398,7 +403,7 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
                       onChange={(e) => handleInputChange('assignmentGroup', e?.target?.value)}
                       className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
                     >
-                      <option value="">Select Assignment Group</option>
+                      <option value="">{isArabic ? 'اختر مجموعة التعيين' : 'Select Assignment Group'}</option>
                       {assignmentGroupItems?.map(group => (
                         <option key={group?.value} value={group?.label}>{group?.label}</option>
                       ))}
@@ -409,47 +414,47 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
                       value={formData?.assignmentGroup}
                       onChange={(e) => handleInputChange('assignmentGroup', e?.target?.value)}
                       className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
-                      placeholder="Enter assignment group from live data"
+                      placeholder={isArabic ? 'أدخل مجموعة التعيين من البيانات الحية' : 'Enter assignment group from live data'}
                     />
                   )}
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Assigned To
+                    {isArabic ? 'مُسند إلى' : 'Assigned To'}
                   </label>
                   <input
                     type="text"
                     value={formData?.assignedTo}
                     onChange={(e) => handleInputChange('assignedTo', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
-                    placeholder="Specific technician (optional)"
+                    placeholder={isArabic ? 'فني محدد (اختياري)' : 'Specific technician (optional)'}
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Location
+                    {isArabic ? 'الموقع' : 'Location'}
                   </label>
                   <input
                     type="text"
                     value={formData?.location}
                     onChange={(e) => handleInputChange('location', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
-                    placeholder="Physical location if relevant"
+                    placeholder={isArabic ? 'الموقع الفعلي إذا كان ذا صلة' : 'Physical location if relevant'}
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Business Justification
+                    {isArabic ? 'المبرر التجاري' : 'Business Justification'}
                   </label>
                   <textarea
                     value={formData?.businessJustification}
                     onChange={(e) => handleInputChange('businessJustification', e?.target?.value)}
                     className="w-full p-3 bg-background border border-border rounded-lg text-foreground"
                     rows={3}
-                    placeholder="Business impact and justification for priority"
+                    placeholder={isArabic ? 'الأثر التجاري والمبرر للأولوية' : 'Business impact and justification for priority'}
                   />
                 </div>
               </div>
@@ -457,16 +462,16 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
               {/* SLA Information */}
               {formData?.priority && (
                 <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                  <h4 className="font-medium text-foreground mb-2">SLA Targets</h4>
+                  <h4 className="font-medium text-foreground mb-2">{isArabic ? 'أهداف SLA' : 'SLA Targets'}</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Response Time:</span>
+                      <span className="text-muted-foreground">{isArabic ? 'زمن الاستجابة:' : 'Response Time:'}</span>
                       <p className="font-medium text-foreground">
                         {getSLATarget(formData?.priority)?.response}
                       </p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Resolution Time:</span>
+                      <span className="text-muted-foreground">{isArabic ? 'زمن الحل:' : 'Resolution Time:'}</span>
                       <p className="font-medium text-foreground">
                         {getSLATarget(formData?.priority)?.resolution}
                       </p>
@@ -479,42 +484,42 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
 
           {currentStep === 4 && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-foreground">Review & Create Incident</h3>
+              <h3 className="text-lg font-semibold text-foreground">{isArabic ? 'مراجعة وإنشاء البلاغ' : 'Review & Create Incident'}</h3>
               
               <div className="bg-muted/30 rounded-lg p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                   <div>
-                    <h4 className="font-semibold text-foreground mb-3">Basic Information</h4>
+                    <h4 className="font-semibold text-foreground mb-3">{isArabic ? 'المعلومات الأساسية' : 'Basic Information'}</h4>
                     <div className="space-y-2">
-                      <p><span className="text-muted-foreground">Title:</span> {formData?.title}</p>
-                      <p><span className="text-muted-foreground">Reported By:</span> {formData?.reportedBy}</p>
-                      <p><span className="text-muted-foreground">Description:</span> {formData?.description?.substring(0, 100)}...</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'العنوان:' : 'Title:'}</span> {formData?.title}</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'تم الإبلاغ بواسطة:' : 'Reported By:'}</span> {formData?.reportedBy}</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'الوصف:' : 'Description:'}</span> {formData?.description?.substring(0, 100)}...</p>
                     </div>
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold text-foreground mb-3">Classification</h4>
+                    <h4 className="font-semibold text-foreground mb-3">{isArabic ? 'التصنيف' : 'Classification'}</h4>
                     <div className="space-y-2">
-                      <p><span className="text-muted-foreground">Category:</span> {formData?.category}</p>
-                      <p><span className="text-muted-foreground">Priority:</span> <span className="font-semibold text-primary">{formData?.priority}</span></p>
-                      <p><span className="text-muted-foreground">Severity:</span> {formData?.severity}</p>
-                      <p><span className="text-muted-foreground">Impact:</span> {formData?.impact}</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'الفئة:' : 'Category:'}</span> {formData?.category}</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'الأولوية:' : 'Priority:'}</span> <span className="font-semibold text-primary">{formData?.priority}</span></p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'الخطورة:' : 'Severity:'}</span> {formData?.severity}</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'الأثر:' : 'Impact:'}</span> {formData?.impact}</p>
                     </div>
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold text-foreground mb-3">Assignment</h4>
+                    <h4 className="font-semibold text-foreground mb-3">{isArabic ? 'التعيين' : 'Assignment'}</h4>
                     <div className="space-y-2">
-                      <p><span className="text-muted-foreground">Group:</span> {formData?.assignmentGroup}</p>
-                      {formData?.assignedTo && <p><span className="text-muted-foreground">Assigned To:</span> {formData?.assignedTo}</p>}
+                      <p><span className="text-muted-foreground">{isArabic ? 'المجموعة:' : 'Group:'}</span> {formData?.assignmentGroup}</p>
+                      {formData?.assignedTo && <p><span className="text-muted-foreground">{isArabic ? 'مُسند إلى:' : 'Assigned To:'}</span> {formData?.assignedTo}</p>}
                     </div>
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold text-foreground mb-3">SLA Targets</h4>
+                    <h4 className="font-semibold text-foreground mb-3">{isArabic ? 'أهداف SLA' : 'SLA Targets'}</h4>
                     <div className="space-y-2">
-                      <p><span className="text-muted-foreground">Response:</span> {getSLATarget(formData?.priority)?.response}</p>
-                      <p><span className="text-muted-foreground">Resolution:</span> {getSLATarget(formData?.priority)?.resolution}</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'الاستجابة:' : 'Response:'}</span> {getSLATarget(formData?.priority)?.response}</p>
+                      <p><span className="text-muted-foreground">{isArabic ? 'الحل:' : 'Resolution:'}</span> {getSLATarget(formData?.priority)?.resolution}</p>
                     </div>
                   </div>
                 </div>
@@ -530,7 +535,7 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
             disabled={currentStep === 1}
             className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            {isArabic ? 'السابق' : 'Previous'}
           </button>
           
           <div className="flex space-x-2">
@@ -540,7 +545,7 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
                 disabled={!isStepValid(currentStep)}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next
+                {isArabic ? 'التالي' : 'Next'}
               </button>
             ) : (
             <button
@@ -554,9 +559,9 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Creating...
+                    {isArabic ? 'جارٍ الإنشاء...' : 'Creating...'}
                   </>
-                ) : 'Create Incident'}
+                ) : (isArabic ? 'إنشاء بلاغ' : 'Create Incident')}
               </button>
             )}
           </div>

@@ -10,6 +10,7 @@ import TrendAnalysisChart from './components/TrendAnalysisChart';
 import DepartmentPerformance from './components/DepartmentPerformance';
 import KeyInsightsSummary from './components/KeyInsightsSummary';
 import KPICorrelationMatrix from './components/KPICorrelationMatrix';
+import ManageEngineExecutiveSummary from './components/ManageEngineExecutiveSummary';
 import { dashboardAPI, reportsAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -340,6 +341,8 @@ const ExecutiveITServiceSummary = () => {
                 <MetricCard key={index} {...metric} />
               ))}
             </div>
+
+            <ManageEngineExecutiveSummary />
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">

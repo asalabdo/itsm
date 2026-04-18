@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import { dashboardAPI } from '../../../services/api';
 
 const PerformanceMetrics = ({ expanded = false }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [metrics, setMetrics] = useState({});
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
@@ -38,26 +43,26 @@ const PerformanceMetrics = ({ expanded = false }) => {
   }, [timeRange]);
 
   const timeRangeOptions = [
-    { value: '7d', label: 'Last 7 days' },
-    { value: '30d', label: 'Last 30 days' },
-    { value: '90d', label: 'Last 90 days' },
-    { value: '12m', label: 'Last 12 months' }
+    { value: '7d', label: isArabic ? 'آخر 7 أيام' : 'Last 7 days' },
+    { value: '30d', label: isArabic ? 'آخر 30 يومًا' : 'Last 30 days' },
+    { value: '90d', label: isArabic ? 'آخر 90 يومًا' : 'Last 90 days' },
+    { value: '12m', label: isArabic ? 'آخر 12 شهرًا' : 'Last 12 months' }
   ];
 
   const formatTooltip = (value, name) => {
-    if (name === 'avgTime') return [`${value} days`, 'Avg. Time'];
-    if (name === 'completion') return [`${value}%`, 'Completion Rate'];
-    if (name === 'score') return [`${value}/5`, 'Satisfaction'];
+    if (name === 'avgTime') return [`${value} ${isArabic ? 'أيام' : 'days'}`, isArabic ? 'متوسط الوقت' : 'Avg. Time'];
+    if (name === 'completion') return [`${value}%`, isArabic ? 'معدل الإكمال' : 'Completion Rate'];
+    if (name === 'score') return [`${value}/5`, isArabic ? 'الرضا' : 'Satisfaction'];
     return [value, name];
   };
 
   const handleExport = () => {
     const rows = [
-      ['Service Request Performance Metrics', new Date().toISOString()],
-      ['Total Requests', metrics?.summary?.totalRequests ?? 0],
-      ['Completion Rate', metrics?.summary?.completionRate ?? 0],
-      ['Avg. Fulfillment Days', metrics?.summary?.avgFulfillmentTime ?? 0],
-      ['Customer Satisfaction', metrics?.summary?.customerSatisfaction ?? 0],
+      [isArabic ? 'مقاييس أداء طلبات الخدمة' : 'Service Request Performance Metrics', new Date().toISOString()],
+      [isArabic ? 'إجمالي الطلبات' : 'Total Requests', metrics?.summary?.totalRequests ?? 0],
+      [isArabic ? 'معدل الإكمال' : 'Completion Rate', metrics?.summary?.completionRate ?? 0],
+      [isArabic ? 'متوسط أيام الإنجاز' : 'Avg. Fulfillment Days', metrics?.summary?.avgFulfillmentTime ?? 0],
+      [isArabic ? 'رضا الموظفين' : 'Employee Satisfaction', metrics?.summary?.customerSatisfaction ?? 0],
     ];
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -94,9 +99,9 @@ const PerformanceMetrics = ({ expanded = false }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Performance Metrics</h2>
+          <h2 className="text-xl font-semibold text-foreground">{isArabic ? 'مقاييس الأداء' : 'Performance Metrics'}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Service delivery analytics and KPI tracking
+            {isArabic ? 'تحليلات تقديم الخدمة وتتبع مؤشرات الأداء' : 'Service delivery analytics and KPI tracking'}
           </p>
         </div>
         
@@ -114,7 +119,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
           </select>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Icon name="Download" size={16} />
-            <span className="ml-2">Export</span>
+            <span className="ml-2">{isArabic ? 'تصدير' : 'Export'}</span>
           </Button>
         </div>
       </div>
@@ -123,7 +128,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
         <div className="bg-background border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Requests</p>
+              <p className="text-sm text-muted-foreground">{isArabic ? 'إجمالي الطلبات' : 'Total Requests'}</p>
               <p className="text-2xl font-semibold text-foreground">
                 {metrics?.summary?.totalRequests?.toLocaleString()}
               </p>
@@ -141,7 +146,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
         <div className="bg-background border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Completion Rate</p>
+              <p className="text-sm text-muted-foreground">{isArabic ? 'معدل الإكمال' : 'Completion Rate'}</p>
               <p className="text-2xl font-semibold text-foreground">
                 {metrics?.summary?.completionRate}%
               </p>
@@ -159,7 +164,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
         <div className="bg-background border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Avg. Fulfillment</p>
+              <p className="text-sm text-muted-foreground">{isArabic ? 'متوسط الإنجاز' : 'Avg. Fulfillment'}</p>
               <p className="text-2xl font-semibold text-foreground">
                 {metrics?.summary?.avgFulfillmentTime} days
               </p>
@@ -177,7 +182,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
         <div className="bg-background border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Employee Satisfaction</p>
+              <p className="text-sm text-muted-foreground">{isArabic ? 'رضا الموظفين' : 'Employee Satisfaction'}</p>
               <p className="text-2xl font-semibold text-foreground">
                 {metrics?.summary?.customerSatisfaction}/5
               </p>
@@ -196,7 +201,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
       <div className={`grid grid-cols-1 ${expanded ? 'lg:grid-cols-2' : 'lg:grid-cols-2'} gap-6`}>
         {/* Fulfillment Trends */}
         <div className="bg-background border border-border rounded-lg p-4">
-          <h3 className="font-medium text-foreground mb-4">Fulfillment Trends</h3>
+          <h3 className="font-medium text-foreground mb-4">{isArabic ? 'اتجاهات الإنجاز' : 'Fulfillment Trends'}</h3>
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={metrics?.fulfillmentTrends}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />

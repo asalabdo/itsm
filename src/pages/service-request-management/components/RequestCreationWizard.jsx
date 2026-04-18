@@ -4,10 +4,15 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 import serviceRequestService from '../../../services/serviceRequestService';
 
 const RequestCreationWizard = ({ onClose }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedService, setSelectedService] = useState(null);
   const [formData, setFormData] = useState({ requestTitle: '' });
@@ -105,7 +110,7 @@ const RequestCreationWizard = ({ onClose }) => {
 
   const handleSubmit = async () => {
     if (!selectedService) {
-      setErrorMessage('Please select a service before submitting your request.');
+      setErrorMessage(isArabic ? 'يرجى اختيار خدمة قبل إرسال الطلب.' : 'Please select a service before submitting your request.');
       return;
     }
 
@@ -118,13 +123,15 @@ const RequestCreationWizard = ({ onClose }) => {
 
     if (!String(formData?.requestTitle || '').trim()) {
       setCurrentStep(2);
-      setErrorMessage('Request title is required.');
+      setErrorMessage(isArabic ? 'عنوان الطلب مطلوب.' : 'Request title is required.');
       return;
     }
 
     if (missingFields.length > 0) {
       setCurrentStep(2);
-      setErrorMessage(`Please complete all required fields: ${missingFields.map((field) => field?.label).join(', ')}.`);
+      setErrorMessage(isArabic
+        ? `يرجى استكمال الحقول المطلوبة: ${missingFields.map((field) => field?.label).join(', ')}.`
+        : `Please complete all required fields: ${missingFields.map((field) => field?.label).join(', ')}.`);
       return;
     }
 
@@ -132,8 +139,8 @@ const RequestCreationWizard = ({ onClose }) => {
     setErrorMessage('');
     try {
       const requestPayload = {
-        title: formData?.requestTitle?.trim() || `${selectedService?.name || 'Service'} request`,
-        description: `${selectedService?.name || 'Service request'} submitted from the catalog wizard.`,
+        title: formData?.requestTitle?.trim() || `${selectedService?.name || 'Service'} ${isArabic ? 'طلب' : 'request'}`,
+        description: `${selectedService?.name || (isArabic ? 'طلب خدمة' : 'Service request')} ${isArabic ? 'تم إرساله من معالج الفهرس.' : 'submitted from the catalog wizard.'}`,
         catalogItemId: Number(selectedService?.id),
         priority: formData?.priority || formData?.urgency || 'Medium',
         customDataJson: JSON.stringify(formData),
@@ -145,7 +152,7 @@ const RequestCreationWizard = ({ onClose }) => {
       setCurrentStep(4);
     } catch (error) {
       console.error('Failed to submit request:', error);
-      setErrorMessage(error?.response?.data?.message || error?.message || 'Failed to submit request. Please try again.');
+      setErrorMessage(error?.response?.data?.message || error?.message || (isArabic ? 'فشل إرسال الطلب. حاول مرة أخرى.' : 'Failed to submit request. Please try again.'));
       setCurrentStep(3);
     } finally {
       setLoading(false);
@@ -174,9 +181,9 @@ const RequestCreationWizard = ({ onClose }) => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-foreground mb-2">Select a Service</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">{isArabic ? 'اختر خدمة' : 'Select a Service'}</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                Choose the service you'd like to request from our catalog
+                {isArabic ? 'اختر الخدمة التي تريد طلبها من الفهرس' : "Choose the service you'd like to request from our catalog"}
               </p>
             </div>
             
@@ -203,9 +210,9 @@ const RequestCreationWizard = ({ onClose }) => {
               )) : (
                 <div className="col-span-full rounded-lg border border-dashed border-border bg-muted/20 p-6 text-center">
                   <Icon name="Package" size={24} className="mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm font-medium text-foreground">No service catalog items found</p>
+                  <p className="text-sm font-medium text-foreground">{isArabic ? 'لم يتم العثور على عناصر في الفهرس' : 'No service catalog items found'}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Add active catalog items in the backend to enable request submission.
+                    {isArabic ? 'أضف عناصر فهرس نشطة في الخلفية لتفعيل إرسال الطلبات.' : 'Add active catalog items in the backend to enable request submission.'}
                   </p>
                 </div>
               )}
@@ -217,22 +224,22 @@ const RequestCreationWizard = ({ onClose }) => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-foreground mb-2">Request Details</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">{isArabic ? 'تفاصيل الطلب' : 'Request Details'}</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                Fill out the required information for your {selectedService?.name} request
+                {isArabic ? `أكمل المعلومات المطلوبة لطلب ${selectedService?.name || ''}` : `Fill out the required information for your ${selectedService?.name} request`}
               </p>
             </div>
 
             <div className="space-y-4 max-h-96 overflow-y-auto">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Request Title <span className="text-red-500 ml-1">*</span>
+                  {isArabic ? 'عنوان الطلب' : 'Request Title'} <span className="text-red-500 ml-1">*</span>
                 </label>
                 <Input
                   type="text"
                   value={formData?.requestTitle || ''}
                   onChange={(e) => handleInputChange('requestTitle', e?.target?.value)}
-                  placeholder={`Enter ${selectedService?.name || 'service'} request title`}
+                  placeholder={isArabic ? `أدخل عنوان طلب ${selectedService?.name || 'الخدمة'}` : `Enter ${selectedService?.name || 'service'} request title`}
                   required
                 />
               </div>
@@ -302,9 +309,9 @@ const RequestCreationWizard = ({ onClose }) => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-foreground mb-2">Review Request</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">{isArabic ? 'مراجعة الطلب' : 'Review Request'}</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                Please review your request details before submission
+                {isArabic ? 'يرجى مراجعة تفاصيل الطلب قبل الإرسال' : 'Please review your request details before submission'}
               </p>
             </div>
 
@@ -319,7 +326,7 @@ const RequestCreationWizard = ({ onClose }) => {
 
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Request Title:</span>
+                  <span className="text-sm text-muted-foreground">{isArabic ? 'عنوان الطلب:' : 'Request Title:'}</span>
                   <span className="text-sm font-medium text-foreground">
                     {formData?.requestTitle || `${selectedService?.name} request`}
                   </span>
@@ -357,9 +364,9 @@ const RequestCreationWizard = ({ onClose }) => {
             {loading ? (
               <div>
                 <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <h3 className="text-lg font-medium text-foreground mb-2">Submitting Request</h3>
+                <h3 className="text-lg font-medium text-foreground mb-2">{isArabic ? 'جارٍ إرسال الطلب' : 'Submitting Request'}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Please wait while we process your request...
+                  {isArabic ? 'يرجى الانتظار أثناء معالجة طلبك...' : 'Please wait while we process your request...'}
                 </p>
               </div>
             ) : (
@@ -367,12 +374,12 @@ const RequestCreationWizard = ({ onClose }) => {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Icon name="Check" size={32} className="text-green-600" />
                 </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">Request Submitted Successfully</h3>
+                <h3 className="text-lg font-medium text-foreground mb-2">{isArabic ? 'تم إرسال الطلب بنجاح' : 'Request Submitted Successfully'}</h3>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Your request has been submitted and assigned ID: {submittedRequest?.requestNumber || submittedRequest?.RequestNumber || `REQ-${Date.now()?.toString()?.slice(-6)}`}
+                  {isArabic ? 'تم إرسال طلبك وتم تعيين المعرف:' : 'Your request has been submitted and assigned ID:'} {submittedRequest?.requestNumber || submittedRequest?.RequestNumber || `REQ-${Date.now()?.toString()?.slice(-6)}`}
                 </p>
                 <div className="bg-muted rounded-lg p-4 mb-6">
-                  <h4 className="font-medium text-foreground mb-2">What happens next?</h4>
+                  <h4 className="font-medium text-foreground mb-2">{isArabic ? 'ما الخطوة التالية؟' : 'What happens next?'}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>1. Your request will be reviewed by the appropriate team</li>
                     <li>2. You'll receive an email confirmation within 15 minutes</li>
@@ -386,14 +393,14 @@ const RequestCreationWizard = ({ onClose }) => {
                     onClick={() => navigate(`/service-request-management?view=requests${submittedRequest?.requestNumber ? `&request=${encodeURIComponent(submittedRequest.requestNumber)}` : ''}`)}
                   >
                     <Icon name="List" size={16} />
-                    <span className="ml-1">Track Request</span>
+                    <span className="ml-1">{isArabic ? 'تتبع الطلب' : 'Track Request'}</span>
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => navigate(submittedRequest?.requestNumber ? `/fulfillment-center?request=${encodeURIComponent(submittedRequest.requestNumber)}` : '/fulfillment-center')}
                   >
                     <Icon name="ArrowRight" size={16} />
-                    <span className="ml-1">Open Fulfillment Center</span>
+                    <span className="ml-1">{isArabic ? 'فتح مركز التنفيذ' : 'Open Fulfillment Center'}</span>
                   </Button>
                 </div>
               </div>
@@ -411,9 +418,9 @@ const RequestCreationWizard = ({ onClose }) => {
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-border">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Create New Request</h2>
+          <h2 className="text-xl font-semibold text-foreground">{isArabic ? 'إنشاء طلب جديد' : 'Create New Request'}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Step {currentStep} of {totalSteps}
+            {isArabic ? 'الخطوة' : 'Step'} {currentStep} {isArabic ? 'من' : 'of'} {totalSteps}
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose}>

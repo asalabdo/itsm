@@ -1,7 +1,10 @@
-import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const SLAPerformanceChart = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const data = [
     { month: 'Jul', met: 92, breached: 8, target: 95 },
     { month: 'Aug', met: 88, breached: 12, target: 95 },
@@ -35,7 +38,7 @@ const SLAPerformanceChart = () => {
   };
 
   return (
-    <div className="w-full h-64 md:h-80 lg:h-96" aria-label="SLA Performance Trend">
+    <div className="w-full h-64 md:h-80 lg:h-96" aria-label={t('slaPerformance', 'SLA Performance Trend')}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -47,7 +50,7 @@ const SLAPerformanceChart = () => {
           <YAxis
             stroke="var(--color-muted-foreground)"
             style={{ fontSize: '12px' }}
-            label={{ value: 'Percentage', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
+            label={{ value: t('percentage', 'Percentage'), angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
@@ -56,21 +59,21 @@ const SLAPerformanceChart = () => {
           />
           <Bar
             dataKey="met"
-            name="SLA Met"
+            name={t('slaMet', 'SLA Met')}
             fill="var(--color-success)"
             radius={[4, 4, 0, 0]}
             stackId="a"
           />
           <Bar
             dataKey="breached"
-            name="SLA Breached"
+            name={t('slaBreached', 'SLA Breached')}
             fill="var(--color-error)"
             radius={[4, 4, 0, 0]}
             stackId="a"
           />
           <Bar
             dataKey="target"
-            name="Target"
+            name={t('target', 'Target')}
             fill="var(--color-muted)"
             radius={[4, 4, 0, 0]}
           />

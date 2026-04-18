@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
@@ -16,6 +16,7 @@ import { getTranslation } from '../../services/i18n';
 const ManagerDashboard = () => {
   const { language, isRtl } = useLanguage();
   const t = useMemo(() => (key, fallback) => getTranslation(language, key, fallback), [language]);
+  const locale = String(language || 'en').toLowerCase().startsWith('ar') ? 'ar-EG' : 'en-US';
   const [dateRange, setDateRange] = useState('month');
   const [, setMetrics] = useState([]);
   const [teamData, setTeamData] = useState([]);
@@ -69,27 +70,22 @@ const ManagerDashboard = () => {
         setTeamData(mappedTeam);
 
         const criticalTickets = tickets.filter(t => (t.priority === 'Critical' || t.priority === 'High') && t.status !== 'Resolved');
-        const slaAlertsList = criticalTickets.slice(0, 5).map((t, i) => ({
+        const slaAlertsList = criticalTickets.slice(0, 5).map((ticket, i) => ({
           id: i + 1,
-          ticketId: t.ticketNumber || String(t.id),
-          title: t.title || 'Unknown',
-          description: (t.description || '').slice(0, 80),
-          severity: t.priority?.toLowerCase() === 'critical' ? 'critical' : 'high',
-          timeRemaining: t.dueDate ? (() => {
-            const diff = new Date(t.dueDate) - new Date();
-            if (diff < 0) return `Overdue by ${Math.floor(-diff / 60000)} min`;
-            const h = Math.floor(diff / 3600000);
-            return h > 0 ? `${h}h remaining` : `${Math.floor(diff / 60000)} min remaining`;
-          })() : 'N/A',
-          assignedTo: t.assignedToName || 'Unassigned',
-          slaDeadline: t.dueDate ? new Date(t.dueDate).toLocaleString() : 'N/A',
-          category: t.category || 'General'
+          ticketId: ticket.ticketNumber || String(ticket.id),
+          title: ticket.title || 'Unknown',
+          description: (ticket.description || '').slice(0, 80),
+          severity: ticket.priority?.toLowerCase() === 'critical' ? 'critical' : 'high',
+          timeRemaining: formatTimeRemaining(ticket.dueDate),
+          assignedTo: ticket.assignedToName || t('unassigned', 'Unassigned'),
+          slaDeadline: ticket.dueDate ? new Date(ticket.dueDate).toLocaleString() : 'N/A',
+          category: translateCategory(ticket.category)
         }));
         
         setSlaAlerts(slaAlertsList);
 
         const groupedByDay = tickets.reduce((acc, ticket) => {
-          const key = new Date(ticket.createdAt || Date.now()).toLocaleDateString('en-US', { weekday: 'short' });
+          const key = new Date(ticket.createdAt || Date.now()).toLocaleDateString(locale, { weekday: 'short' });
           if (!acc[key]) {
             acc[key] = { name: key, tickets: 0, resolved: 0, sla: 0 };
           }
@@ -115,7 +111,7 @@ const ManagerDashboard = () => {
       }
     };
     fetchData();
-  }, [t]);
+  }, [t, locale, formatTimeRemaining, translateCategory]);
 
   const rangeToDays = (range) => {
     switch (range) {
@@ -129,6 +125,35 @@ const ManagerDashboard = () => {
     }
   };
 
+  const translateCategory = useCallback((category) => {
+    const normalized = String(category || 'General').toLowerCase().replace(/[\s_-]+/g, '');
+    const categoryMap = {
+      technicalsupport: t('technicalSupport', 'Technical Support'),
+      software: t('software', 'Software'),
+      alert: t('alert', 'Alert'),
+      incident: t('incident', 'Incident'),
+      access: t('access', 'Access'),
+      servicerequest: t('serviceRequest', 'Service Request'),
+      network: t('network', 'Network'),
+      problem: t('problem', 'Problem'),
+      email: t('email', 'Email'),
+      hardware: t('hardware', 'Hardware'),
+      printing: t('printing', 'Printing'),
+      general: t('generalInquiry', 'General Inquiry'),
+    };
+    return categoryMap[normalized] || category || t('generalInquiry', 'General Inquiry');
+  }, [t]);
+
+  const formatTimeRemaining = useCallback((dueDate) => {
+    if (!dueDate) return 'N/A';
+    const diff = new Date(dueDate) - new Date();
+    if (diff < 0) return `${t('overdueBy', 'Overdue by')} ${Math.floor(-diff / 60000)} ${t('minutesShort', 'min')}`;
+    const hours = Math.floor(diff / 3600000);
+    return hours > 0
+      ? `${hours}${t('hoursShort', 'h')} ${t('remaining', 'remaining')}`
+      : `${Math.floor(diff / 60000)} ${t('minutesShort', 'min')} ${t('remaining', 'remaining')}`;
+  }, [t]);
+
   const filteredTickets = useMemo(() => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - rangeToDays(dateRange));
@@ -140,7 +165,7 @@ const ManagerDashboard = () => {
 
   const filteredChartData = useMemo(() => {
     const groupedByDay = filteredTickets.reduce((acc, ticket) => {
-      const key = new Date(ticket.createdAt || Date.now()).toLocaleDateString('en-US', { weekday: 'short' });
+      const key = new Date(ticket.createdAt || Date.now()).toLocaleDateString(locale, { weekday: 'short' });
       if (!acc[key]) {
         acc[key] = { name: key, tickets: 0, resolved: 0, sla: 0 };
       }
@@ -150,7 +175,7 @@ const ManagerDashboard = () => {
       return acc;
     }, {});
     return Object.values(groupedByDay);
-  }, [filteredTickets]);
+  }, [filteredTickets, locale]);
 
   const visibleMetrics = useMemo(() => {
     const totalTickets = filteredTickets.length;
@@ -187,23 +212,18 @@ const ManagerDashboard = () => {
     return filteredTickets
       .filter((t) => (t.priority === 'Critical' || t.priority === 'High') && t.status !== 'Resolved')
       .slice(0, 5)
-      .map((t, i) => ({
+      .map((ticket, i) => ({
         id: i + 1,
-        ticketId: t.ticketNumber || String(t.id),
-        title: t.title || 'Unknown',
-        description: (t.description || '').slice(0, 80),
-        severity: t.priority?.toLowerCase() === 'critical' ? 'critical' : 'high',
-        timeRemaining: t.dueDate ? (() => {
-          const diff = new Date(t.dueDate) - new Date();
-          if (diff < 0) return `Overdue by ${Math.floor(-diff / 60000)} min`;
-          const h = Math.floor(diff / 3600000);
-          return h > 0 ? `${h}h remaining` : `${Math.floor(diff / 60000)} min remaining`;
-        })() : 'N/A',
-        assignedTo: t.assignedToName || 'Unassigned',
-        slaDeadline: t.dueDate ? new Date(t.dueDate).toLocaleString() : 'N/A',
-        category: t.category || 'General'
+        ticketId: ticket.ticketNumber || String(ticket.id),
+        title: ticket.title || 'Unknown',
+        description: (ticket.description || '').slice(0, 80),
+        severity: ticket.priority?.toLowerCase() === 'critical' ? 'critical' : 'high',
+        timeRemaining: formatTimeRemaining(ticket.dueDate),
+        assignedTo: ticket.assignedToName || t('unassigned', 'Unassigned'),
+        slaDeadline: ticket.dueDate ? new Date(ticket.dueDate).toLocaleString() : 'N/A',
+        category: translateCategory(ticket.category)
       }));
-  }, [filteredTickets]);
+  }, [filteredTickets, t, formatTimeRemaining, translateCategory]);
 
   const handleExportReport = () => {
     downloadCsv(
@@ -218,7 +238,7 @@ const ManagerDashboard = () => {
         ticket.createdAt || ''
       ])),
       `manager-dashboard-${dateRange}-${new Date().toISOString().slice(0, 10)}.csv`,
-      ['Ticket ID', 'Title', 'Requester', 'Assignee', 'Status', 'Priority', 'Department', 'Created At']
+      [t('ticketId', 'Ticket ID'), t('title', 'Title'), t('requester', 'Requester'), t('assignee', 'Assignee'), t('status', 'Status'), t('priority', 'Priority'), t('department', 'Department'), t('createdAt', 'Created At')]
     );
   };
 
@@ -256,7 +276,7 @@ const ManagerDashboard = () => {
               onClick={handleExportReport}
             >
               <Icon name="Download" size={18} />
-              <span className="hidden md:inline">{t('export', 'Export Report')}</span>
+              <span className="hidden md:inline">{t('exportReport', 'Export Report')}</span>
             </button>
           </div>
         </div>
@@ -291,7 +311,11 @@ const ManagerDashboard = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(
-              filteredTickets.reduce((acc, t) => { acc[t.category || 'General'] = (acc[t.category || 'General'] || 0) + 1; return acc; }, {})
+              filteredTickets.reduce((acc, ticket) => {
+                const category = translateCategory(ticket.category);
+                acc[category] = (acc[category] || 0) + 1;
+                return acc;
+              }, {})
             ).map(([name, count], index) => (
               <div key={index} className="p-4 bg-background border border-border rounded-lg">
                 <div className="flex items-center gap-3 mb-3">

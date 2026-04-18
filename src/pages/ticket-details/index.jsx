@@ -18,6 +18,7 @@ import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
 import { ticketsAPI } from '../../services/api';
 import { markBackendReady } from '../../services/backendAvailability';
 import { resolveWorkflowPresentationForTicket } from '../../services/workflowStages';
+import { getLocalizedDisplayName } from '../../services/displayValue';
 
 const getCurrentUserId = () => {
   try {
@@ -45,7 +46,7 @@ const mapConversationMessages = (ticket, t) => {
     ? [{
         id: `ticket-${ticket.id}-initial`,
         type: 'customer',
-        sender: ticket?.requestedBy?.username || ticket?.requestedBy?.firstName || t('requester', 'Requester'),
+        sender: getLocalizedDisplayName(ticket?.requestedBy) || t('requester', 'Requester'),
         timestamp: formatTicketDate(ticket?.createdAt).time,
         content: ticket.description,
       }]
@@ -56,7 +57,7 @@ const mapConversationMessages = (ticket, t) => {
     .map((comment) => ({
       id: comment?.id,
       type: comment?.user?.role === 'EndUser' ? 'customer' : 'agent',
-      sender: comment?.user?.username || comment?.user?.name || t('agent', 'Agent'),
+      sender: getLocalizedDisplayName(comment?.user) || t('agent', 'Agent'),
       timestamp: formatTicketDate(comment?.createdAt).time,
       content: comment?.comment,
     }));
@@ -71,11 +72,11 @@ const mapInternalNotes = (ticket, t) => {
     .filter((comment) => comment?.comment?.startsWith('[Internal]'))
     .map((comment) => ({
       id: comment?.id,
-      author: comment?.user?.username || comment?.user?.name || t('agent', 'Agent'),
+      author: getLocalizedDisplayName(comment?.user) || t('agent', 'Agent'),
       timestamp: formatTicketDate(comment?.createdAt).time,
       content: comment?.comment.replace(/^\[Internal\]\s*/, ''),
       avatar: null,
-      avatarAlt: comment?.user?.username || t('agent', 'Agent'),
+      avatarAlt: getLocalizedDisplayName(comment?.user) || t('agent', 'Agent'),
     }));
 };
 
@@ -94,7 +95,7 @@ const mapAuditTrail = (ticket) => {
     return {
       id: activity?.id,
       type,
-      user: activity?.user?.username || activity?.user?.name || 'System',
+      user: getLocalizedDisplayName(activity?.user) || 'System',
       action: activity?.action,
       timestamp: formatTicketDate(activity?.timestamp).time,
       details: [activity?.oldValue, activity?.newValue].filter(Boolean).join(' → ') || undefined,
@@ -141,7 +142,7 @@ const parseTimeTracking = (ticket, t) => {
       totalSeconds += Number.isFinite(durationSeconds) ? durationSeconds : 0;
       sessions.unshift({
         id: activity?.id,
-        agent: activity?.user?.fullName || activity?.user?.username || t('agent', 'Agent'),
+        agent: getLocalizedDisplayName(activity?.user) || t('agent', 'Agent'),
         date: (parseUtcTimestamp(activity?.timestamp) ?? new Date()).toLocaleString(),
         duration: Number.isFinite(durationSeconds) ? durationSeconds : 0,
       });
@@ -152,7 +153,7 @@ const parseTimeTracking = (ticket, t) => {
   const currentSessionStartedAt = parseUtcTimestamp(pendingStart?.timestamp);
   const activeSession = currentSessionStartedAt ? {
     id: pendingStart?.id,
-    agent: pendingStart?.user?.fullName || pendingStart?.user?.username || t('agent', 'Agent'),
+    agent: getLocalizedDisplayName(pendingStart?.user) || t('agent', 'Agent'),
     date: currentSessionStartedAt.toLocaleString(),
     duration: Math.max(0, Math.floor((Date.now() - currentSessionStartedAt.getTime()) / 1000)),
   } : null;

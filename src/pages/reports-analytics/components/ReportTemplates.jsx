@@ -1,56 +1,59 @@
-import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ReportTemplates = ({ onGenerateReport }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const templates = [
     {
       id: 1,
-      name: "Monthly Performance Summary",
-      description: "Comprehensive overview of ticket metrics, resolution times, and team performance for the month",
+      name: t('monthlyPerformanceSummary', 'Monthly Performance Summary'),
+      description: t('monthlyPerformanceSummaryDesc', 'Comprehensive overview of ticket metrics, resolution times, and team performance for the month'),
       icon: "FileText",
       iconColor: "var(--color-primary)",
-      frequency: "Monthly",
+      frequency: t('monthly', 'Monthly'),
     },
     {
       id: 2,
-      name: "SLA Compliance Report",
-      description: "Detailed analysis of SLA adherence, breach incidents, and response time metrics",
+      name: t('slaComplianceReport', 'SLA Compliance Report'),
+      description: t('slaComplianceReportDesc', 'Detailed analysis of SLA adherence, breach incidents, and response time metrics'),
       icon: "Clock",
       iconColor: "var(--color-warning)",
-      frequency: "Weekly",
+      frequency: t('weekly', 'Weekly'),
     },
     {
       id: 3,
-      name: "Workload Distribution Analysis",
-      description: "Agent workload comparison, ticket assignment patterns, and capacity utilization",
+      name: t('workloadDistributionAnalysis', 'Workload Distribution Analysis'),
+      description: t('workloadDistributionAnalysisDesc', 'Agent workload comparison, ticket assignment patterns, and capacity utilization'),
       icon: "Users",
       iconColor: "var(--color-success)",
-      frequency: "Bi-weekly",
+      frequency: t('biWeekly', 'Bi-weekly'),
     },
     {
       id: 4,
-      name: "Employee Satisfaction Report",
-      description: "CSAT scores, feedback analysis, and customer sentiment trends over time",
+      name: t('employeeSatisfactionReport', 'Employee Satisfaction Report'),
+      description: t('employeeSatisfactionReportDesc', 'CSAT scores, feedback analysis, and customer sentiment trends over time'),
       icon: "Star",
       iconColor: "var(--color-accent)",
-      frequency: "Monthly",
+      frequency: t('monthly', 'Monthly'),
     },
     {
       id: 5,
-      name: "Ticket Category Breakdown",
-      description: "Distribution of tickets by category, department, and priority levels",
+      name: t('ticketCategoryBreakdown', 'Ticket Category Breakdown'),
+      description: t('ticketCategoryBreakdownDesc', 'Distribution of tickets by category, department, and priority levels'),
       icon: "PieChart",
       iconColor: "var(--color-secondary)",
-      frequency: "Weekly",
+      frequency: t('weekly', 'Weekly'),
     },
     {
       id: 6,
-      name: "Resolution Time Analytics",
-      description: "Average resolution times, first response metrics, and efficiency trends",
+      name: t('resolutionTimeAnalytics', 'Resolution Time Analytics'),
+      description: t('resolutionTimeAnalyticsDesc', 'Average resolution times, first response metrics, and efficiency trends'),
       icon: "Timer",
       iconColor: "var(--color-error)",
-      frequency: "Daily",
+      frequency: t('daily', 'Daily'),
     },
   ];
 
@@ -59,9 +62,9 @@ const ReportTemplates = ({ onGenerateReport }) => {
       <div className="p-4 md:p-6 border-b border-border">
         <div className="flex items-center gap-2 mb-2">
           <Icon name="FileStack" size={20} color="var(--color-primary)" />
-          <h3 className="text-lg md:text-xl font-semibold text-foreground">Report Templates</h3>
+          <h3 className="text-lg md:text-xl font-semibold text-foreground">{t('reportTemplates', 'Report Templates')}</h3>
         </div>
-        <p className="text-sm text-muted-foreground caption">Pre-built reports for common analytics needs</p>
+        <p className="text-sm text-muted-foreground caption">{t('preBuiltReports', 'Pre-built reports for common analytics needs')}</p>
       </div>
       <div className="p-4 md:p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -95,7 +98,7 @@ const ReportTemplates = ({ onGenerateReport }) => {
                   iconName="Download"
                   onClick={() => onGenerateReport(template)}
                 >
-                  Generate
+                  {t('generate', 'Generate')}
                 </Button>
               </div>
             </div>

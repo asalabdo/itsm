@@ -1,9 +1,10 @@
-import React from 'react';
 import Icon from '../../../components/AppIcon';
 import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const MetricCard = ({ title, value, change, changeType, icon, iconColor, trend }) => {
-  const { isRtl } = useLanguage();
+  const { language, isRtl } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   
   const getChangeColor = () => {
     if (changeType === 'positive') return 'text-success';
@@ -33,7 +34,7 @@ const MetricCard = ({ title, value, change, changeType, icon, iconColor, trend }
           <Icon name={getChangeIcon()} size={16} />
           <span className="text-sm font-medium data-text">{change}</span>
         </div>
-        <span className="text-sm text-muted-foreground caption">vs last month</span>
+        <span className="text-sm text-muted-foreground caption">{t('vsLastMonth', 'vs last month')}</span>
       </div>
       {trend && (
         <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border">

@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import apiClient from '../../../services/apiClient';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const AgentPerformanceTable = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [agents, setAgents] = useState([]);
   const [sortField, setSortField] = useState('resolvedTickets');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -26,19 +30,19 @@ const AgentPerformanceTable = () => {
     : sortDirection === 'asc' ? <Icon name="ChevronUp" size={16} className="text-primary" /> : <Icon name="ChevronDown" size={16} className="text-primary" />;
 
   const cols = [
-    { key: 'technicianName', label: 'Agent' },
-    { key: 'assignedTickets', label: 'Assigned' },
-    { key: 'resolvedTickets', label: 'Resolved' },
-    { key: 'pendingTickets', label: 'Pending' },
-    { key: 'avgResolutionHours', label: 'Avg Time' },
-    { key: 'slaComplianceRate', label: 'SLA %' },
+    { key: 'technicianName', label: t('agent', 'Agent') },
+    { key: 'assignedTickets', label: t('assigned', 'Assigned') },
+    { key: 'resolvedTickets', label: t('resolved', 'Resolved') },
+    { key: 'pendingTickets', label: t('pending', 'Pending') },
+    { key: 'avgResolutionHours', label: t('avgTime', 'Avg Time') },
+    { key: 'slaComplianceRate', label: t('slaPercent', 'SLA %') },
   ];
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-elevation-1 overflow-hidden">
       <div className="p-4 md:p-6 border-b border-border flex items-center gap-2">
         <Icon name="Users" size={20} color="var(--color-primary)" />
-        <h3 className="text-lg md:text-xl font-semibold text-foreground">Agent Performance</h3>
+        <h3 className="text-lg md:text-xl font-semibold text-foreground">{t('agentPerformance', 'Agent Performance')}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -65,7 +69,7 @@ const AgentPerformanceTable = () => {
               </tr>
             ))}
             {sorted.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">No data available</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">{t('noDataAvailable', 'No data available')}</td></tr>
             )}
           </tbody>
         </table>

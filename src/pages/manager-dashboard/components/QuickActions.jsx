@@ -12,7 +12,7 @@ const QuickActions = () => {
     {
       id: 1,
       title: t('viewReports', 'View Reports'),
-      description: 'تحليلات ورؤى تفصيلية',
+      description: t('viewReportsDescription', 'Detailed analytics and insights'),
       icon: 'FileText',
       color: 'var(--color-primary)',
       path: '/reports-analytics',
@@ -20,7 +20,7 @@ const QuickActions = () => {
     {
       id: 2,
       title: t('createTicket', 'Create Ticket'),
-      description: 'فتح طلب دعم جديد',
+      description: t('createTicketDescription', 'Open a new support request'),
       icon: 'Plus',
       color: 'var(--color-success)',
       path: '/ticket-creation',
@@ -28,7 +28,7 @@ const QuickActions = () => {
     {
       id: 3,
       title: t('teamDashboard', 'Team Dashboard'),
-      description: 'مراقبة نشاط الفريق',
+      description: t('teamDashboardDescription', 'Monitor team activity'),
       icon: 'Users',
       color: 'var(--color-warning)',
       path: '/agent-dashboard',
@@ -36,7 +36,7 @@ const QuickActions = () => {
     {
       id: 4,
       title: t('employeePortalQuick', 'Employee Portal'),
-      description: 'عرض طلبات الموظفين',
+      description: t('employeePortalQuickDescription', 'View employee requests'),
       icon: 'UserCircle',
       color: 'var(--color-accent)',
       path: '/customer-portal',
@@ -45,7 +45,9 @@ const QuickActions = () => {
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-4 md:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('quickActions', 'Quick Actions')}</h2>
+      <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>
+        {t('quickActions', 'Quick Actions')}
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
         {actions?.map((action) => (
           <button
@@ -63,7 +65,7 @@ const QuickActions = () => {
               <h3 className={`text-sm md:text-base font-medium text-foreground mb-0.5 ${isRtl ? 'text-right' : 'text-left'}`}>{action?.title}</h3>
               <p className={`text-xs md:text-sm text-muted-foreground caption ${isRtl ? 'text-right' : 'text-left'}`}>{action?.description}</p>
             </div>
-            <Icon name={isRtl ? "ChevronLeft" : "ChevronRight"} size={18} color="var(--color-muted-foreground)" className="flex-shrink-0" />
+            <Icon name={isRtl ? 'ChevronLeft' : 'ChevronRight'} size={18} color="var(--color-muted-foreground)" className="flex-shrink-0" />
           </button>
         ))}
       </div>

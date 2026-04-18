@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [draggedTicket, setDraggedTicket] = useState(null);
   const [assignedTickets, setAssignedTickets] = useState(pendingTickets);
@@ -12,32 +16,32 @@ const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
   }, [pendingTickets]);
 
   const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'critical': return 'bg-error/10 text-error';
-      case 'high': return 'bg-warning/10 text-warning';
-      case 'medium': return 'bg-primary/10 text-primary';
-      case 'low': return 'bg-success/10 text-success';
-      default: return 'bg-muted text-muted-foreground';
+    switch (String(priority || '').toLowerCase()) {
+      case 'critical':
+        return 'bg-error/10 text-error';
+      case 'high':
+        return 'bg-warning/10 text-warning';
+      case 'medium':
+        return 'bg-primary/10 text-primary';
+      case 'low':
+        return 'bg-success/10 text-success';
+      default:
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   const getWorkloadStatus = (workload) => {
-    if (workload >= 80) return { label: 'Overloaded', color: 'text-error' };
-    if (workload >= 60) return { label: 'Busy', color: 'text-warning' };
-    return { label: 'Available', color: 'text-success' };
+    if (workload >= 80) return { label: t('overloaded', 'Overloaded'), color: 'text-error' };
+    if (workload >= 60) return { label: t('busy', 'Busy'), color: 'text-warning' };
+    return { label: t('available', 'Available'), color: 'text-success' };
   };
 
-  const handleDragStart = (ticket) => {
-    setDraggedTicket(ticket);
-  };
-
-  const handleDragOver = (e) => {
-    e?.preventDefault();
-  };
+  const handleDragStart = (ticket) => setDraggedTicket(ticket);
+  const handleDragOver = (e) => e?.preventDefault();
 
   const handleDrop = (agentId) => {
     if (draggedTicket) {
-      setAssignedTickets(prev => prev.filter(ticket => ticket?.id !== draggedTicket?.id));
+      setAssignedTickets((prev) => prev.filter((ticket) => ticket?.id !== draggedTicket?.id));
       setSelectedAgent(agentId);
       setDraggedTicket(null);
     }
@@ -46,22 +50,21 @@ const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
   const handleAutoBalance = () => {
     const targetAgent = [...(agents || [])].sort((a, b) => (a?.workload || 0) - (b?.workload || 0))[0];
     if (!targetAgent || assignedTickets.length === 0) return;
-
     setSelectedAgent(targetAgent?.id);
-    setAssignedTickets(prev => prev.slice(1));
+    setAssignedTickets((prev) => prev.slice(1));
   };
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-elevation-1">
       <div className="p-4 md:p-6 border-b border-border">
-        <h2 className="text-lg md:text-xl font-semibold text-foreground">Workload Balancer</h2>
-        <p className="text-sm text-muted-foreground mt-1 caption">Drag tickets to assign or reassign to agents</p>
+        <h2 className="text-lg md:text-xl font-semibold text-foreground">{t('workloadBalancer', 'Workload Balancer')}</h2>
+        <p className="text-sm text-muted-foreground mt-1 caption">{t('dragTicketsToAssignOrReassignToAgents', 'Drag tickets to assign or reassign to agents')}</p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 p-4 md:p-6">
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Icon name="Inbox" size={18} />
-            Unassigned Tickets ({assignedTickets?.length})
+            {t('unassignedTickets', 'Unassigned Tickets')} ({assignedTickets?.length})
           </h3>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {assignedTickets?.map((ticket) => (
@@ -77,7 +80,7 @@ const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
                     <span className="text-sm font-medium text-foreground data-text">{ticket?.id}</span>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium caption ${getPriorityColor(ticket?.priority)}`}>
-                    {ticket?.priority}
+                    {t(String(ticket?.priority || '').toLowerCase(), ticket?.priority)}
                   </span>
                 </div>
                 <p className="text-sm text-foreground mb-2">{ticket?.title}</p>
@@ -93,7 +96,7 @@ const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Icon name="Users" size={18} />
-            Team Members
+            {t('teamMembers', 'Team Members')}
           </h3>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {agents?.map((agent) => {
@@ -103,17 +106,11 @@ const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
                   key={agent?.id}
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(agent?.id)}
-                  className={`p-3 bg-background border-2 border-dashed rounded-lg transition-smooth ${
-                    selectedAgent === agent?.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                  }`}
+                  className={`p-3 bg-background border-2 border-dashed rounded-lg transition-smooth ${selectedAgent === agent?.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                   onClick={() => setSelectedAgent(agent?.id)}
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <Image 
-                      src={agent?.avatar} 
-                      alt={agent?.avatarAlt}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
+                    <Image src={agent?.avatar} alt={agent?.avatarAlt} className="w-10 h-10 rounded-full object-cover" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{agent?.name}</p>
                       <p className={`text-xs font-medium caption ${status?.color}`}>{status?.label}</p>
@@ -122,10 +119,8 @@ const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
-                      <div 
-                        className={`h-full transition-smooth ${
-                          agent?.workload >= 80 ? 'bg-error' : agent?.workload >= 60 ? 'bg-warning' : 'bg-success'
-                        }`}
+                      <div
+                        className={`h-full transition-smooth ${agent?.workload >= 80 ? 'bg-error' : agent?.workload >= 60 ? 'bg-warning' : 'bg-success'}`}
                         style={{ width: `${agent?.workload}%` }}
                       />
                     </div>
@@ -141,14 +136,14 @@ const WorkloadBalancer = ({ agents, pendingTickets = [] }) => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground caption">
             <Icon name="Info" size={14} className="inline mr-1" />
-            Drag tickets from left panel to assign to team members
+            {t('dragTicketsHint', 'Drag tickets from left panel to assign to team members')}
           </p>
           <button
             type="button"
             onClick={handleAutoBalance}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-smooth"
           >
-            Auto-Balance Workload
+            {t('autoBalanceWorkload', 'Auto-Balance Workload')}
           </button>
         </div>
       </div>

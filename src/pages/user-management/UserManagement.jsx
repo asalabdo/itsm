@@ -281,6 +281,8 @@ const roleOptions = [
 ];
 
 const UserManagement = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -294,7 +296,7 @@ const UserManagement = () => {
   const [sessionInfo, setSessionInfo] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [sessionError, setSessionError] = useState('');
-  const roleOptions = [
+  const localizedRoleOptions = [
     { value: 'all', label: t('allRoles', 'All Roles') },
     { value: 'EndUser', label: t('endUser', 'End User') },
     { value: 'Technician', label: t('technician', 'Technician') },
@@ -545,7 +547,7 @@ const UserManagement = () => {
               className="sm:w-72"
             />
             <Select
-              options={roleOptions}
+              options={localizedRoleOptions}
               value={roleFilter}
               onChange={setRoleFilter}
               className="sm:w-48"

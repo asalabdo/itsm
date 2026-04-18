@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
@@ -101,7 +101,7 @@ const servicesByCategory = {
     { "id": "ts-blue-screen", "nameEn": "Blue Screen / System Crash", "nameAr": "الشاشة الزرقاء / تعطل النظام" },
     { "id": "ts-monitor-issue", "nameEn": "Monitor Issue", "nameAr": "مشكلة في الشاشة" },
     { "id": "ts-printer-issue", "nameEn": "Printer Issue", "nameAr": "مشكلة في الطابعة" },
-    { "id": "ts-keyboard-mouse", "nameEn": "Keyboard / Mouse Issue", "nameAr": "مشكلة في لوحة المفاتيح أو الفأرة" },
+    { "id": "ts-keyboard-mouse-issue", "nameEn": "Keyboard / Mouse Issue", "nameAr": "مشكلة في لوحة المفاتيح أو الفأرة" },
     { "id": "ts-network-connection", "nameEn": "Network Connection Issue", "nameAr": "مشكلة في الاتصال بالشبكة" },
     { "id": "ts-internet-access", "nameEn": "Internet Access Issue", "nameAr": "مشكلة في الوصول للإنترنت" },
     { "id": "ts-email-issue", "nameEn": "Email Issue", "nameAr": "مشكلة في البريد الإلكتروني" },
@@ -171,21 +171,6 @@ const servicesByCategory = {
     { "id": "ehr-other", "nameEn": "Other", "nameAr": "أخرى" }
   ],
   "erp-other": [
-    { "id": "erp-finance", "nameEn": "Finance Module Issue", "nameAr": "مشكلة في وحدة المالية" },
-    { "id": "erp-procurement", "nameEn": "Procurement Module Issue", "nameAr": "مشكلة في وحدة المشتريات" },
-    { "id": "erp-inventory", "nameEn": "Inventory Module Issue", "nameAr": "مشكلة في وحدة المخزون" },
-    { "id": "erp-sales", "nameEn": "Sales Module Issue", "nameAr": "مشكلة في وحدة المبيعات" },
-    { "id": "erp-projects", "nameEn": "Projects Module Issue", "nameAr": "مشكلة في وحدة المشاريع" },
-    { "id": "erp-new-user", "nameEn": "New ERP User Account", "nameAr": "إنشاء حساب مستخدم في النظام" },
-    { "id": "erp-role-change", "nameEn": "Change ERP Role or Permissions", "nameAr": "تغيير دور أو صلاحيات النظام" },
-    { "id": "erp-data-correction", "nameEn": "Data Entry Correction", "nameAr": "تصحيح إدخال البيانات" },
-    { "id": "erp-report", "nameEn": "Custom Report Request", "nameAr": "طلب تقرير مخصص" },
-    { "id": "erp-workflow", "nameEn": "Workflow Approval Issue", "nameAr": "مشكلة في مسار الاعتماد" },
-    { "id": "erp-integration", "nameEn": "System Integration Issue", "nameAr": "مشكلة في تكامل الأنظمة" },
-    { "id": "erp-training", "nameEn": "ERP Training Request", "nameAr": "طلب تدريب على النظام" },
-    { "id": "erp-other", "nameEn": "Other", "nameAr": "أخرى" }
-  ],
-"erp-other": [
     { "id": "erp-finance", "nameEn": "Finance Module Issue", "nameAr": "مشكلة في وحدة المالية" },
     { "id": "erp-procurement", "nameEn": "Procurement Module Issue", "nameAr": "مشكلة في وحدة المشتريات" },
     { "id": "erp-inventory", "nameEn": "Inventory Module Issue", "nameAr": "مشكلة في وحدة المخزون" },
@@ -319,7 +304,7 @@ const serviceArabicOverrides = {
   'ts-recording': 'طلب تسجيل صوتي',
   'ts-new-device': 'طلب جهاز جديد',
   'ts-monitor': 'طلب شاشة',
-  'ts-keyboard-mouse': 'طلب لوحة مفاتيح أو فأرة أو ملحقات',
+  'ts-keyboard-mouse': 'Keyboard / Mouse / Accessories',
   'ts-other-support': 'أخرى',
 
   // Generic
@@ -407,7 +392,7 @@ const serviceArabicOverrides = {
   'ts-blue-screen': 'الشاشة الزرقاء / تعطل النظام',
   'ts-monitor-issue': 'مشكلة في الشاشة',
   'ts-printer-issue': 'مشكلة في الطابعة',
-  'ts-keyboard-mouse': 'مشكلة في لوحة المفاتيح أو الفأرة',
+  'ts-keyboard-mouse-issue': 'Keyboard / Mouse Issue',
   'ts-network-connection': 'مشكلة في الاتصال بالشبكة',
   'ts-internet-access': 'مشكلة في الوصول للإنترنت',
   'ts-email-issue': 'مشكلة في البريد الإلكتروني',
@@ -468,9 +453,6 @@ const serviceArabicOverrides = {
   'ms-car-services': 'خدمات السيارات',
   'ms-meeting-room': 'طلب غرفة اجتماع',
   'ms-other': 'أخرى',
-
-  // Service catalog small misc
-  'sl-other': 'أخرى',
   'other': 'أخرى'
 };
 
@@ -605,3 +587,4 @@ Object.keys(servicesByCategory).forEach((cat) => {
 };
 
 export default ServiceSelector;
+

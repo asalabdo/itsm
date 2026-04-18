@@ -5,6 +5,7 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import WorkflowStatusStrip from '../../../components/ui/WorkflowStatusStrip';
 import { resolveWorkflowPresentationForTicket } from '../../../services/workflowStages';
+import { formatLocalizedValue, getLocalizedDisplayName } from '../../../services/displayValue';
 
 const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('details');
@@ -23,40 +24,40 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
   } : null;
 
   const statusOptions = [
-    { value: 'open', label: 'Open' },
-    { value: 'in-progress', label: 'In Progress' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'resolved', label: 'Resolved' },
-    { value: 'closed', label: 'Closed' }
+    { value: 'open', label: formatLocalizedValue('Open') },
+    { value: 'in-progress', label: formatLocalizedValue('In Progress') },
+    { value: 'pending', label: formatLocalizedValue('Pending') },
+    { value: 'resolved', label: formatLocalizedValue('Resolved') },
+    { value: 'closed', label: formatLocalizedValue('Closed') }
   ];
 
   const priorityOptions = [
-    { value: 'critical', label: 'Critical' },
-    { value: 'high', label: 'High' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'low', label: 'Low' }
+    { value: 'critical', label: formatLocalizedValue('Critical') },
+    { value: 'high', label: formatLocalizedValue('High') },
+    { value: 'medium', label: formatLocalizedValue('Medium') },
+    { value: 'low', label: formatLocalizedValue('Low') }
   ];
 
   const assigneeOptions = [
-    { value: ticket?.assignedToId ? String(ticket.assignedToId) : 'unassigned', label: ticket?.assignee || 'Unassigned' },
-    { value: 'unassigned', label: 'Unassigned' }
+    { value: ticket?.assignedToId ? String(ticket.assignedToId) : 'unassigned', label: getLocalizedDisplayName(ticket?.assignedTo) || formatLocalizedValue(ticket?.assignee) || formatLocalizedValue('Unassigned') },
+    { value: 'unassigned', label: formatLocalizedValue('Unassigned') }
   ];
 
   const activityHistory = [
     {
       id: 1,
       type: 'created',
-      user: ticket?.requester || 'Unknown requester',
-      userInitials: String(ticket?.requester || 'U').split(' ').map((part) => part?.[0]).filter(Boolean).join('').slice(0, 2).toUpperCase(),
-      action: 'created this ticket',
+      user: getLocalizedDisplayName(ticket?.requestedBy) || ticket?.requester || formatLocalizedValue('Requester'),
+      userInitials: String(getLocalizedDisplayName(ticket?.requestedBy) || ticket?.requester || 'U').split(' ').map((part) => part?.[0]).filter(Boolean).join('').slice(0, 2).toUpperCase(),
+      action: formatLocalizedValue('Created'),
       timestamp: ticket?.createdAt ? new Date(ticket.createdAt).toLocaleString() : 'N/A'
     },
     {
       id: 2,
       type: 'status',
-      user: ticket?.assignee || 'Unassigned',
-      userInitials: String(ticket?.assignee || 'U').split(' ').map((part) => part?.[0]).filter(Boolean).join('').slice(0, 2).toUpperCase(),
-      action: `current status is ${ticket?.statusLabel || ticket?.status || 'Open'}`,
+      user: getLocalizedDisplayName(ticket?.assignedTo) || ticket?.assignee || formatLocalizedValue('Unassigned'),
+      userInitials: String(getLocalizedDisplayName(ticket?.assignedTo) || ticket?.assignee || 'U').split(' ').map((part) => part?.[0]).filter(Boolean).join('').slice(0, 2).toUpperCase(),
+      action: `${formatLocalizedValue('Current') || 'Current'} ${formatLocalizedValue('status') || 'status'} ${formatLocalizedValue('is') || 'is'} ${formatLocalizedValue(ticket?.statusLabel || ticket?.status || 'Open')}`,
       timestamp: ticket?.slaDeadline || 'N/A'
     }
   ];
@@ -128,7 +129,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
         } flex flex-col`}
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="font-semibold text-base">Ticket Details</h2>
+          <h2 className="font-semibold text-base">{formatLocalizedValue('Ticket Details')}</h2>
           <button
             onClick={onClose}
             className="lg:hidden p-1 rounded hover:bg-muted transition-smooth"
@@ -145,7 +146,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                 activeTab === 'details' ?'text-primary border-b-2 border-primary' :'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Details
+              {formatLocalizedValue('Details')}
             </button>
             <button
               onClick={() => setActiveTab('activity')}
@@ -153,7 +154,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                 activeTab === 'activity' ?'text-primary border-b-2 border-primary' :'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Activity
+              {formatLocalizedValue('Activity')}
             </button>
           </div>
         </div>
@@ -162,11 +163,11 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
           {activeTab === 'details' && (
             <div className="space-y-6">
               <WorkflowStatusStrip
-                title="Ticket Workflow"
-                subtitle="Follow the current routing path for this ticket from intake to close."
+                title={formatLocalizedValue('Ticket Workflow')}
+                subtitle={formatLocalizedValue('Follow the current routing path for this ticket from intake to close.')}
                 service={workflowService}
                 organization={workflowOrganization}
-                mode="Drawer view"
+                mode={formatLocalizedValue('Drawer view')}
                 lastAction={workflowLastAction}
                 activeStep={workflowActiveStep}
                 steps={workflowSteps.length > 0 ? workflowSteps : undefined}
@@ -184,36 +185,36 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold mb-3">{ticket?.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {ticket?.description || 'No description provided for this ticket.'}
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  {ticket?.description || formatLocalizedValue('No description provided for this ticket.')}
                 </p>
               </div>
 
               <div className="space-y-4">
-                <Select
-                  label="Status"
+                  <Select
+                  label={formatLocalizedValue('Status')}
                   options={statusOptions}
                   value={ticket?.status}
                   onChange={() => {}}
                 />
 
-                <Select
-                  label="Priority"
+                  <Select
+                  label={formatLocalizedValue('Priority')}
                   options={priorityOptions}
                   value={ticket?.priority}
                   onChange={() => {}}
                 />
 
-                <Select
-                  label="Assignee"
+                  <Select
+                  label={formatLocalizedValue('Assignee')}
                   options={assigneeOptions}
                   value={ticket?.assignedToId ? String(ticket.assignedToId) : 'unassigned'}
                   onChange={() => {}}
-                  placeholder="Select assignee"
+                  placeholder={formatLocalizedValue('Select assignee')}
                 />
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Department</label>
+                  <label className="block text-sm font-medium mb-2">{formatLocalizedValue('Department')}</label>
           <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-md">
             <Icon name="Building" size={16} />
             <span className="text-sm">{ticket?.department || 'Unassigned'}</span>
@@ -221,7 +222,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
         </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">SLA Status</label>
+                  <label className="block text-sm font-medium mb-2">{formatLocalizedValue('SLA Status')}</label>
                   <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-md">
                     <Icon name="Clock" size={16} className={
                       ticket?.slaHours < 0 ? 'text-error' :
@@ -231,9 +232,9 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                       ticket?.slaHours < 0 ? 'text-error' :
                       ticket?.slaHours < 4 ? 'text-warning': 'text-success'
                     }`}>
-                      {ticket?.slaHours < 0 ? `${Math.abs(ticket?.slaHours)}h overdue` :
-                       ticket?.slaHours < 24 ? `${ticket?.slaHours}h remaining` :
-                       `${Math.floor(ticket?.slaHours / 24)}d remaining`}
+                      {ticket?.slaHours < 0 ? `${Math.abs(ticket?.slaHours)}h ${formatLocalizedValue('overdue') || 'overdue'}` :
+                       ticket?.slaHours < 24 ? `${ticket?.slaHours}h ${formatLocalizedValue('remaining') || 'remaining'}` :
+                       `${Math.floor(ticket?.slaHours / 24)}d ${formatLocalizedValue('remaining') || 'remaining'}`}
                     </span>
                   </div>
                 </div>
@@ -248,7 +249,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm font-semibold text-foreground">Linked Asset</p>
+                        <p className="text-sm font-semibold text-foreground">{formatLocalizedValue('Linked Asset')}</p>
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
                           {linkedAsset?.status}
                         </span>
@@ -257,7 +258,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                       <p className="text-xs text-muted-foreground mt-1">{linkedAsset?.description}</p>
                       <div className="mt-3 space-y-2">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">Serial Number</span>
+                          <span className="text-muted-foreground">{formatLocalizedValue('Serial Number')}</span>
                           <span className="text-foreground font-medium">{linkedAsset?.serialNumber}</span>
                         </div>
                         <div className="flex items-center justify-between text-xs">

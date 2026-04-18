@@ -25,6 +25,24 @@ const StatCard = ({ title, value, subtitle, icon, color }) => {
 const AdvancedAnalyticsHub = () => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  
+  const translateCategory = (category) => {
+    const categoryMap = {
+      'technical-support': t('categoryTechnicalSupport', 'technical-support'),
+      'Software': t('categorySoftware', 'Software'),
+      'Alert': t('categoryAlert', 'Alert'),
+      'Incident': t('categoryIncident', 'Incident'),
+      'Access': t('categoryAccess', 'Access'),
+      'Service Request': t('categoryServiceRequest', 'Service Request'),
+      'Network': t('categoryNetwork', 'Network'),
+      'Problem': t('categoryProblem', 'Problem'),
+      'Email': t('categoryEmail', 'Email'),
+      'Hardware': t('categoryHardware', 'Hardware'),
+      'Printing': t('categoryPrinting', 'Printing'),
+    };
+    return categoryMap[category] || category;
+  };
+  
   const [summary, setSummary] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);

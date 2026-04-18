@@ -6,11 +6,7 @@ const postTicketActionWithFallback = async (id, action, payload, fallbackPatch) 
     return await apiClient.post(`/tickets/${id}/${action}`, payload);
   } catch (error) {
     if (fallbackPatch) {
-      try {
-        return await apiClient.put(`/tickets/${id}`, fallbackPatch);
-      } catch (fallbackError) {
-        throw fallbackError;
-      }
+      return apiClient.put(`/tickets/${id}`, fallbackPatch);
     }
     throw error;
   }
@@ -212,9 +208,14 @@ export const monitoringAPI = {
 export const manageEngineAPI = {
   syncIncidents: () => apiClient.post('/manageengine/sync'),
   testConnection: () => apiClient.post('/manageengine/test-connection'),
+  getSettings: () => apiClient.get('/manageengine/settings'),
+  updateSettings: (data) => apiClient.put('/manageengine/settings', data),
   getIncidents: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return apiClient.get(`/manageengine/incidents${queryString ? `?${queryString}` : ''}`);
   },
+  getCatalog: (params = {}) => apiClient.get('/manageengine/catalog', { params }),
+  getOperations: (params = {}) => apiClient.get('/manageengine/operations', { params }),
+  getUnified: (params = {}) => apiClient.get('/manageengine/unified', { params }),
   getSyncStatus: () => apiClient.get('/manageengine/sync-status'),
 };

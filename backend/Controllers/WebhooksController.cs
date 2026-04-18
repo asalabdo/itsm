@@ -27,9 +27,13 @@ namespace ITSMBackend.Controllers
         {
             try
             {
-                // Validate webhook signature if configured
+                if (payload == null)
+                {
+                    return BadRequest(new { error = "Payload is required" });
+                }
+
                 var signature = Request.Headers["X-ManageEngine-Signature"].FirstOrDefault();
-                var requestBody = await new StreamReader(Request.Body).ReadToEndAsync();
+                var requestBody = System.Text.Json.JsonSerializer.Serialize(payload);
 
                 var isValidSignature = await _manageEngineService.ValidateWebhookSignatureAsync(signature, requestBody);
                 if (!isValidSignature)
@@ -67,26 +71,26 @@ namespace ITSMBackend.Controllers
             }
         }
 
-        private async Task ProcessIncidentUpdateAsync(ManageEngineIncident incident)
+        private async Task ProcessIncidentUpdateAsync(ManageEngineIncident? incident)
         {
-            if (incident == null) return;
+            if (incident == null || string.IsNullOrWhiteSpace(incident.Id)) return;
 
             // Find existing ticket by external ID
-            var existingTicket = await _ticketService.GetTicketByExternalIdAsync(incident.Id, "ManageEngine");
+            var existingTicket = await _ticketService.GetTicketByExternalIdAsync(incident.Id, "ManageEngine-ServiceDesk");
 
             if (existingTicket == null)
             {
                 // Create new ticket
                 var ticket = new Ticket
                 {
-                    Title = incident.Title,
-                    Description = incident.Description,
-                    Priority = incident.Priority,
-                    Status = incident.Status,
-                    Category = incident.Category,
-                    Subcategory = incident.Subcategory,
+                    Title = incident.Title ?? $"ManageEngine Incident {incident.Id}",
+                    Description = incident.Description ?? string.Empty,
+                    Priority = MapManageEnginePriority(incident.Priority),
+                    Status = MapManageEngineStatus(incident.Status),
+                    Category = incident.Category ?? "Service Request",
+                    Subcategory = incident.Subcategory ?? string.Empty,
                     ExternalId = incident.Id,
-                    ExternalSystem = "ManageEngine",
+                    ExternalSystem = "ManageEngine-ServiceDesk",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -107,11 +111,11 @@ namespace ITSMBackend.Controllers
             }
         }
 
-        private async Task ProcessIncidentClosureAsync(ManageEngineIncident incident)
+        private async Task ProcessIncidentClosureAsync(ManageEngineIncident? incident)
         {
-            if (incident == null) return;
+            if (incident == null || string.IsNullOrWhiteSpace(incident.Id)) return;
 
-            var existingTicket = await _ticketService.GetTicketByExternalIdAsync(incident.Id, "ManageEngine");
+            var existingTicket = await _ticketService.GetTicketByExternalIdAsync(incident.Id, "ManageEngine-ServiceDesk");
 
             if (existingTicket != null)
             {
@@ -123,7 +127,7 @@ namespace ITSMBackend.Controllers
             }
         }
 
-        private string MapManageEngineStatus(string meStatus)
+        private string MapManageEngineStatus(string? meStatus)
         {
             return meStatus?.ToLower() switch
             {
@@ -135,7 +139,7 @@ namespace ITSMBackend.Controllers
             };
         }
 
-        private string MapManageEnginePriority(string mePriority)
+        private string MapManageEnginePriority(string? mePriority)
         {
             return mePriority?.ToLower() switch
             {
@@ -150,8 +154,8 @@ namespace ITSMBackend.Controllers
 
     public class ManageEngineWebhookPayload
     {
-        public string EventType { get; set; }
-        public ManageEngineIncident Incident { get; set; }
+        public string? EventType { get; set; }
+        public ManageEngineIncident? Incident { get; set; }
         public DateTime Timestamp { get; set; }
     }
 }

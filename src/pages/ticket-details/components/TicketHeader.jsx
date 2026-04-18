@@ -1,6 +1,6 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
-import { formatLocalizedValue } from '../../../services/displayValue';
+import { formatLocalizedValue, getLocalizedDisplayName } from '../../../services/displayValue';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -15,21 +15,12 @@ const TicketHeader = ({ ticket }) => {
       ? `${ticket.slaRemainingMinutes} ${t('minRemaining', 'min remaining')}`
       : ticket?.slaStatus
   );
-  const assignedName = formatLocalizedValue(
-    ticket?.assignedTo?.fullName ||
-      ticket?.assignedTo?.name ||
-      ticket?.assignedTo?.displayName ||
-      ticket?.assignedTo?.username ||
-      ticket?.assignedTo?.userName ||
-      t('unassigned', 'Unassigned'),
-    'en'
-  );
+  const assignedName = getLocalizedDisplayName(ticket?.assignedTo) || t('unassigned', 'Unassigned');
   const assignedRole = formatLocalizedValue(
     ticket?.assignedTo?.role ||
       ticket?.assignedTo?.jobTitle ||
       ticket?.assignedTo?.department ||
-      '',
-    'en'
+      ''
   );
 
   const getPriorityColor = (priority) => {
@@ -150,7 +141,7 @@ const TicketHeader = ({ ticket }) => {
           <div className="flex-1 min-w-0">
             <p className="text-xs md:text-sm text-muted-foreground mb-1">{t('customer', 'Customer')}</p>
             <p className="text-sm md:text-base font-medium text-foreground truncate">
-              {customer?.name || customer?.username || t('unassigned', 'Unassigned')}
+              {getLocalizedDisplayName(customer) || t('unassigned', 'Unassigned')}
             </p>
             <p className="text-xs md:text-sm text-muted-foreground truncate">
               {customer?.email || customer?.role || ''}

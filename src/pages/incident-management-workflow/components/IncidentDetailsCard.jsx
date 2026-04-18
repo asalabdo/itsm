@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { ticketsAPI } from '../../../services/api';
+import { formatLocalizedValue, getLocalizedDisplayName } from '../../../services/displayValue';
 
 const getCurrentUserId = () => {
   try {
@@ -19,8 +20,18 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
   const [editData, setEditData] = useState({ ...incident });
   const [showEscalation, setShowEscalation] = useState(false);
 
-  const statusOptions = ['Open', 'In Progress', 'Resolved', 'Closed'];
-  const priorityOptions = ['Critical', 'High', 'Medium', 'Low'];
+  const statusOptions = [
+    { value: 'Open', label: formatLocalizedValue('Open') },
+    { value: 'In Progress', label: formatLocalizedValue('In Progress') },
+    { value: 'Resolved', label: formatLocalizedValue('Resolved') },
+    { value: 'Closed', label: formatLocalizedValue('Closed') },
+  ];
+  const priorityOptions = [
+    { value: 'Critical', label: formatLocalizedValue('Critical') },
+    { value: 'High', label: formatLocalizedValue('High') },
+    { value: 'Medium', label: formatLocalizedValue('Medium') },
+    { value: 'Low', label: formatLocalizedValue('Low') },
+  ];
 
   const getSeverityColor = (priority) => {
     switch (priority?.toLowerCase()) {
@@ -45,7 +56,7 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
   };
 
   const calculateSLAStatus = () => {
-    if (!incident.slaDueDate) return { status: 'none', text: 'No SLA', color: 'text-muted-foreground' };
+    if (!incident.slaDueDate) return { status: 'none', text: formatLocalizedValue('No SLA'), color: 'text-muted-foreground' };
     const now = new Date();
     const deadline = new Date(incident.slaDueDate);
     const diff = deadline.getTime() - now.getTime();
@@ -53,13 +64,13 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     
     if (diff < 0) {
-      return { status: 'breach', text: 'SLA Breached', color: 'text-error' };
+      return { status: 'breach', text: formatLocalizedValue('SLA Breached'), color: 'text-error' };
     } else if (hours < 1) {
-      return { status: 'critical', text: `${minutes}m remaining`, color: 'text-error' };
+      return { status: 'critical', text: `${minutes}m ${formatLocalizedValue('remaining') || 'remaining'}`, color: 'text-error' };
     } else if (hours < 4) {
-      return { status: 'warning', text: `${hours}h ${minutes}m remaining`, color: 'text-warning' };
+      return { status: 'warning', text: `${hours}h ${minutes}m ${formatLocalizedValue('remaining') || 'remaining'}`, color: 'text-warning' };
     } else {
-      return { status: 'good', text: `${hours}h ${minutes}m remaining`, color: 'text-foreground' };
+      return { status: 'good', text: `${hours}h ${minutes}m ${formatLocalizedValue('remaining') || 'remaining'}`, color: 'text-foreground' };
     }
   };
 
@@ -71,7 +82,7 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
       if (onUpdate) onUpdate(response.data);
     } catch (err) {
       console.error('Failed to update incident:', err);
-      alert('Failed to update incident.');
+      alert(formatLocalizedValue('Failed to update incident.') || 'Failed to update incident.');
     } finally {
       setIsUpdating(false);
     }
@@ -87,7 +98,7 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
       if (onUpdate) onUpdate(response?.data || incident);
     } catch (err) {
       console.error(`Failed to escalate incident ${incident?.ticketNumber}:`, err);
-      alert('Failed to escalate incident.');
+      alert(formatLocalizedValue('Failed to escalate incident.') || 'Failed to escalate incident.');
     }
   };
 
@@ -103,10 +114,10 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
             </h2>
             <div className="flex items-center space-x-3">
               <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityColor(incident?.priority)}`}>
-                {incident?.priority} Priority
+              {formatLocalizedValue(incident?.priority)} {formatLocalizedValue('Priority')}
               </span>
               <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(incident?.status)}`}>
-                {incident?.status}
+                {formatLocalizedValue(incident?.status)}
               </span>
             </div>
           </div>
@@ -116,7 +127,7 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
               <Icon name="Clock" size={16} className="inline mr-1" />
               <span className="font-medium">{slaStatus?.text}</span>
               <p className="text-xs text-muted-foreground mt-1">
-                SLA Deadline: {incident.slaDueDate ? new Date(incident.slaDueDate).toLocaleString() : 'N/A'}
+                {formatLocalizedValue('SLA Deadline')}: {incident.slaDueDate ? new Date(incident.slaDueDate).toLocaleString() : 'N/A'}
               </p>
             </div>
             
@@ -124,14 +135,14 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
               <button
                 onClick={() => setIsEditing(!isEditing)}
                 className="p-2 hover:bg-muted rounded-lg transition-colors"
-                title="Edit Incident"
+                title={formatLocalizedValue('Edit Incident')}
               >
                 <Icon name="Edit" size={16} className="text-muted-foreground" />
               </button>
               <button
                 onClick={() => setShowEscalation(true)}
                 className="p-2 hover:bg-muted rounded-lg transition-colors"
-                title="Escalate Incident"
+                title={formatLocalizedValue('Escalate Incident')}
               >
                 <Icon name="ArrowUp" size={16} className="text-muted-foreground" />
               </button>
@@ -144,33 +155,33 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Status</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{formatLocalizedValue('Status')}</label>
                 <select
                   value={editData?.status}
                   onChange={(e) => setEditData(prev => ({ ...prev, status: e?.target?.value }))}
                   className="w-full p-2 bg-background border border-border rounded text-foreground"
                 >
-                  {statusOptions?.map(status => (
-                    <option key={status} value={status}>{status}</option>
+                  {statusOptions?.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Priority</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{formatLocalizedValue('Priority')}</label>
                 <select
                   value={editData?.priority}
                   onChange={(e) => setEditData(prev => ({ ...prev, priority: e?.target?.value }))}
                   className="w-full p-2 bg-background border border-border rounded text-foreground"
                 >
-                  {priorityOptions?.map(priority => (
-                    <option key={priority} value={priority}>{priority}</option>
+                  {priorityOptions?.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Assigned To</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{formatLocalizedValue('Assigned To')}</label>
                 <input
                   type="text"
                   value={editData?.assignedTo}
@@ -180,7 +191,7 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Estimated Resolution</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{formatLocalizedValue('Estimated Resolution')}</label>
                 <input
                   type="text"
                   value={editData?.estimatedResolution}
@@ -195,13 +206,13 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
                 onClick={() => setIsEditing(false)}
                 className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
               >
-                Cancel
+                {formatLocalizedValue('Cancel')}
               </button>
               <button
                 onClick={handleSave}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Save Changes
+                {formatLocalizedValue('Save Changes')}
               </button>
             </div>
           </div>
@@ -210,12 +221,12 @@ const IncidentDetailsCard = ({ incident, onUpdate }) => {
             {/* Key Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
-                <h4 className="font-medium text-foreground mb-2">Detailed Info</h4>
+                <h4 className="font-medium text-foreground mb-2">{formatLocalizedValue('Detailed Info')}</h4>
                 <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">Requested by:</p>
-                  <p className="font-medium text-foreground">{incident?.requestedBy?.firstName} {incident?.requestedBy?.lastName}</p>
-                  <p className="text-muted-foreground">Category:</p>
-                  <p className="font-medium text-foreground">{incident?.category}</p>
+                  <p className="text-muted-foreground">{formatLocalizedValue('Requested by')}:</p>
+                  <p className="font-medium text-foreground">{getLocalizedDisplayName(incident?.requestedBy) || incident?.requestedBy?.firstName || incident?.requestedBy?.lastName}</p>
+                  <p className="text-muted-foreground">{formatLocalizedValue('Category')}:</p>
+                  <p className="font-medium text-foreground">{formatLocalizedValue(incident?.category)}</p>
                 </div>
               </div>
               

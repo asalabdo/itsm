@@ -4,6 +4,7 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import assetService from '../../../services/assetService';
+import { formatLocalizedValue } from '../../../services/displayValue';
 
 const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
   const [formData, setFormData] = useState({
@@ -25,28 +26,28 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
   const [requiresAsset, setRequiresAsset] = useState(false);
 
   const priorityOptions = [
-    { value: 'critical', label: 'Critical' },
-    { value: 'high', label: 'High' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'low', label: 'Low' }
+    { value: 'critical', label: formatLocalizedValue('Critical') },
+    { value: 'high', label: formatLocalizedValue('High') },
+    { value: 'medium', label: formatLocalizedValue('Medium') },
+    { value: 'low', label: formatLocalizedValue('Low') }
   ];
 
   const departmentOptions = [
-    { value: 'it', label: 'IT Support' },
-    { value: 'hr', label: 'Human Resources' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'operations', label: 'Operations' },
-    { value: 'facilities', label: 'Facilities' }
+    { value: 'it', label: formatLocalizedValue('IT Support') },
+    { value: 'hr', label: formatLocalizedValue('Human Resources') },
+    { value: 'finance', label: formatLocalizedValue('Finance') },
+    { value: 'operations', label: formatLocalizedValue('Operations') },
+    { value: 'facilities', label: formatLocalizedValue('Facilities') }
   ];
 
   const categoryOptions = [
-    { value: 'hardware-issue', label: 'Hardware Issue', requiresAsset: true },
-    { value: 'software-issue', label: 'Software Issue', requiresAsset: true },
-    { value: 'asset-request', label: 'Asset Request', requiresAsset: false },
-    { value: 'access-request', label: 'Access Request', requiresAsset: false },
-    { value: 'general-inquiry', label: 'General Inquiry', requiresAsset: false },
-    { value: 'maintenance', label: 'Maintenance', requiresAsset: true },
-    { value: 'replacement', label: 'Replacement Request', requiresAsset: true }
+    { value: 'hardware-issue', label: formatLocalizedValue('Hardware Issue'), requiresAsset: true },
+    { value: 'software-issue', label: formatLocalizedValue('Software Issue'), requiresAsset: true },
+    { value: 'asset-request', label: formatLocalizedValue('Asset Request'), requiresAsset: false },
+    { value: 'access-request', label: formatLocalizedValue('Access Request'), requiresAsset: false },
+    { value: 'general-inquiry', label: formatLocalizedValue('General Inquiry'), requiresAsset: false },
+    { value: 'maintenance', label: formatLocalizedValue('Maintenance'), requiresAsset: true },
+    { value: 'replacement', label: formatLocalizedValue('Replacement Request'), requiresAsset: true }
   ];
 
   // Validate asset ownership when category changes
@@ -63,7 +64,7 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
           checking: false,
           hasAssets: true,
           assets: [],
-          message: 'Asset selection not required for this category'
+          message: formatLocalizedValue('Asset selection not required for this category')
         });
         setFormData(prev => ({ ...prev, assetId: '' }));
       }
@@ -92,15 +93,15 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
           checking: false,
           hasAssets: true,
           assets: userAssets,
-          message: `${userAssets?.length} assigned asset(s) available`
-        });
+        message: `${userAssets?.length} ${formatLocalizedValue('assigned asset(s) available') || 'assigned asset(s) available'}`
+      });
       } else {
         setAssetValidation({
           checking: false,
           hasAssets: false,
           assets: [],
-          message: 'No active assigned assets found. Please contact administration.'
-        });
+        message: formatLocalizedValue('No active assigned assets found. Please contact administration.')
+      });
       }
     } catch (error) {
       console.error('Error fetching user assets:', error);
@@ -108,7 +109,7 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
         checking: false,
         hasAssets: false,
         assets: [],
-        message: 'Error verifying assets. Please try again.'
+        message: formatLocalizedValue('Error verifying assets. Please try again.')
       });
     }
   };

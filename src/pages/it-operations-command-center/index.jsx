@@ -9,6 +9,7 @@ import TicketVolumeMetrics from './components/TicketVolumeMetrics';
 import IncidentAgingHeatmap from './components/IncidentAgingHeatmap';
 import TechnicianWorkload from './components/TechnicianWorkload';
 import SLAComplianceGauges from './components/SLAComplianceGauges';
+import ManageEngineOperationsPanel from './components/ManageEngineOperationsPanel';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
@@ -136,6 +137,10 @@ const ITOperationsCommandCenter = () => {
               <div className="xl:col-span-6">
                 <TechnicianWorkload />
               </div>
+            </div>
+
+            <div className="mt-6">
+              <ManageEngineOperationsPanel />
             </div>
 
             {/* Bottom Row - SLA Compliance Gauges */}

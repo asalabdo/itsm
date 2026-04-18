@@ -81,9 +81,9 @@ const TicketWorkflowCrud = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {quickLinks.map((item) => (
+                {quickLinks.map((item, index) => (
                   <Link
-                    key={item.path}
+                    key={`${item.path}-${item.label}-${index}`}
                     to={item.path}
                     className="group rounded-2xl border border-border bg-background p-4 hover:border-primary hover:shadow-sm transition-colors"
                   >

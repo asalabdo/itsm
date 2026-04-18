@@ -1,8 +1,11 @@
-import React from 'react';
-
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ChartContainer = ({ title, description, children, onExport, onRefresh, actions }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
   return (
     <div className="bg-card border border-border rounded-lg shadow-elevation-1">
       <div className="p-4 md:p-6 border-b border-border">
@@ -23,7 +26,7 @@ const ChartContainer = ({ title, description, children, onExport, onRefresh, act
                 onClick={onRefresh}
                 className="flex-shrink-0"
               >
-                Refresh
+                {t('refresh', 'Refresh')}
               </Button>
             )}
             {onExport && (
@@ -34,7 +37,7 @@ const ChartContainer = ({ title, description, children, onExport, onRefresh, act
                 onClick={onExport}
                 className="flex-shrink-0"
               >
-                Export
+                {t('export', 'Export')}
               </Button>
             )}
           </div>

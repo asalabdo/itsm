@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import Input from '../../../components/ui/Input';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [dateRange, setDateRange] = useState('last30days');
   const [department, setDepartment] = useState('all');
   const [ticketType, setTicketType] = useState('all');
@@ -13,38 +17,38 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
   const [endDate, setEndDate] = useState('');
 
   const dateRangeOptions = [
-    { value: 'today', label: 'Today' },
-    { value: 'yesterday', label: 'Yesterday' },
-    { value: 'last7days', label: 'Last 7 Days' },
-    { value: 'last30days', label: 'Last 30 Days' },
-    { value: 'last90days', label: 'Last 90 Days' },
-    { value: 'thismonth', label: 'This Month' },
-    { value: 'lastmonth', label: 'Last Month' },
-    { value: 'custom', label: 'Custom Range' },
+    { value: 'today', label: t('today', 'Today') },
+    { value: 'yesterday', label: t('yesterday', 'Yesterday') },
+    { value: 'last7days', label: t('last7Days', 'Last 7 Days') },
+    { value: 'last30days', label: t('last30Days', 'Last 30 Days') },
+    { value: 'last90days', label: t('last90Days', 'Last 90 Days') },
+    { value: 'thismonth', label: t('thisMonth', 'This Month') },
+    { value: 'lastmonth', label: t('lastMonth', 'Last Month') },
+    { value: 'custom', label: t('customRange', 'Custom Range') },
   ];
 
   const departmentOptions = [
-    { value: 'all', label: 'All Departments' },
-    { value: 'technical', label: 'Technical Support' },
-    { value: 'billing', label: 'Billing' },
-    { value: 'sales', label: 'Sales' },
-    { value: 'general', label: 'General Inquiry' },
+    { value: 'all', label: t('allDepartments', 'All Departments') },
+    { value: 'technical', label: t('technicalSupport', 'Technical Support') },
+    { value: 'billing', label: t('billing', 'Billing') },
+    { value: 'sales', label: t('sales', 'Sales') },
+    { value: 'general', label: t('generalInquiry', 'General Inquiry') },
   ];
 
   const ticketTypeOptions = [
-    { value: 'all', label: 'All Types' },
-    { value: 'incident', label: 'Incident' },
-    { value: 'problem', label: 'Problem' },
-    { value: 'change', label: 'Change Request' },
-    { value: 'service', label: 'Service Request' },
+    { value: 'all', label: t('allTypes', 'All Types') },
+    { value: 'incident', label: t('incident', 'Incident') },
+    { value: 'problem', label: t('problem', 'Problem') },
+    { value: 'change', label: t('changeRequest', 'Change Request') },
+    { value: 'service', label: t('serviceRequest', 'Service Request') },
   ];
 
   const priorityOptions = [
-    { value: 'all', label: 'All Priorities' },
-    { value: 'urgent', label: 'Urgent' },
-    { value: 'high', label: 'High' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'low', label: 'Low' },
+    { value: 'all', label: t('allPriorities', 'All Priorities') },
+    { value: 'urgent', label: t('urgent', 'Urgent') },
+    { value: 'high', label: t('high', 'High') },
+    { value: 'medium', label: t('medium', 'Medium') },
+    { value: 'low', label: t('low', 'Low') },
   ];
 
   const handleApply = () => {
@@ -74,15 +78,15 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div className="flex items-center gap-2">
           <Icon name="Filter" size={20} color="var(--color-primary)" />
-          <h3 className="text-lg font-semibold text-foreground">Filters</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('filtersTitle', 'Filters')}</h3>
         </div>
         <Button variant="ghost" size="sm" iconName="RotateCcw" onClick={handleReset}>
-          Reset
+          {t('resetFilters', 'Reset')}
         </Button>
       </div>
       <div className="space-y-4">
         <Select
-          label="Date Range"
+          label={t('dateRange', 'Date Range')}
           options={dateRangeOptions}
           value={dateRange}
           onChange={setDateRange}
@@ -91,13 +95,13 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
         {dateRange === 'custom' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Start Date"
+              label={t('startDate', 'Start Date')}
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e?.target?.value)}
             />
             <Input
-              label="End Date"
+              label={t('endDate', 'End Date')}
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e?.target?.value)}
@@ -106,28 +110,28 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
         )}
 
         <Select
-          label="Department"
+          label={t('departmentLabel', 'Department')}
           options={departmentOptions}
           value={department}
           onChange={setDepartment}
         />
 
         <Select
-          label="Ticket Type"
+          label={t('ticketType', 'Ticket Type')}
           options={ticketTypeOptions}
           value={ticketType}
           onChange={setTicketType}
         />
 
         <Select
-          label="Priority"
+          label={t('priorityLabel', 'Priority')}
           options={priorityOptions}
           value={priority}
           onChange={setPriority}
         />
 
         <Button variant="default" fullWidth onClick={handleApply} iconName="Check">
-          Apply Filters
+          {t('applyFilters', 'Apply Filters')}
         </Button>
       </div>
     </div>

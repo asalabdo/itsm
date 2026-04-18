@@ -59,3 +59,4 @@ backend/bin-settingsfix/
 backend/bin-erpfix2/
 backend/bin-workflowtests/
 vite.config.mjs.timestamp-1776363445382-6c0c6593577a1.mjs
+backend/bin-sla-i18n-check/

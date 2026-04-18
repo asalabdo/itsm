@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -81,7 +81,7 @@ const ReportsAnalytics = () => {
     window.dispatchEvent(new CustomEvent('itsm:refresh', { detail: { chartName } }));
   };
 
-  const handleGenerateReport = (template) => {
+  const handleGenerateReport = () => {
     navigate('/reporting-and-analytics-hub');
   };
 
@@ -94,10 +94,10 @@ const ReportsAnalytics = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 md:mb-8">
             <div>
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-2">
-                Reports & Analytics
+                {t('reportsAnalyticsTitle', 'Reports & Analytics')}
               </h1>
               <p className="text-sm md:text-base text-muted-foreground">
-                Comprehensive performance analysis and data-driven insights
+                {t('reportsAnalyticsDescription', 'Comprehensive performance analysis and data-driven insights')}
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-3">
@@ -107,7 +107,7 @@ const ReportsAnalytics = () => {
                 iconName="Filter"
                 onClick={() => setShowFilters(!showFilters)}>
 
-                Filters
+                {t('reportsFilters', 'Filters')}
               </Button>
               <Button
                 variant="outline"
@@ -115,7 +115,7 @@ const ReportsAnalytics = () => {
                 iconName="Download"
                 onClick={() => handleExportChart('All Reports')}
               >
-                Export All
+                {t('exportAllReports', 'Export All')}
               </Button>
               <Button
                 variant="default"
@@ -123,7 +123,7 @@ const ReportsAnalytics = () => {
                 iconName="Calendar"
                 onClick={() => navigate('/workflow-builder-studio')}
               >
-                Schedule Report
+                {t('scheduleReport', 'Schedule Report')}
               </Button>
             </div>
           </div>
@@ -155,8 +155,8 @@ const ReportsAnalytics = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3 space-y-6">
                 <ChartContainer
-                title="Ticket Volume Trends"
-                description="Daily ticket creation, resolution, and pending status over time"
+                title={t('ticketVolumeTrends', 'Ticket Volume Trends')}
+                description={t('ticketVolumeDescription', 'Daily ticket creation, resolution, and pending status over time')}
                 onExport={() => handleExportChart('Ticket Volume')}
                 onRefresh={() => handleRefreshChart('Ticket Volume')}
                 actions={
@@ -173,8 +173,8 @@ const ReportsAnalytics = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <ChartContainer
-                  title="Resolution Time by Category"
-                  description="Average resolution time compared to target SLA"
+                  title={t('resolutionTimeByCategory', 'Resolution Time by Category')}
+                  description={t('resolutionTimeDescription', 'Average resolution time compared to target SLA')}
                   onExport={() => handleExportChart('Resolution Time')}
                   onRefresh={() => handleRefreshChart('Resolution Time')}>
 
@@ -182,8 +182,8 @@ const ReportsAnalytics = () => {
                   </ChartContainer>
 
                   <ChartContainer
-                  title="Ticket Category Distribution"
-                  description="Breakdown of tickets by support category"
+                  title={t('ticketCategoryDistribution', 'Ticket Category Distribution')}
+                  description={t('categoryDistributionDescription', 'Breakdown of tickets by support category')}
                   onExport={() => handleExportChart('Category Distribution')}
                   onRefresh={() => handleRefreshChart('Category Distribution')}>
 
@@ -192,8 +192,8 @@ const ReportsAnalytics = () => {
                 </div>
 
                 <ChartContainer
-                title="SLA Performance"
-                description="Monthly SLA compliance and breach tracking"
+                title={t('slaPerformance', 'SLA Performance')}
+                description={t('slaPerformanceDescription', 'Monthly SLA compliance and breach tracking')}
                 onExport={() => handleExportChart('SLA Performance')}
                 onRefresh={() => handleRefreshChart('SLA Performance')}>
 
@@ -214,7 +214,7 @@ const ReportsAnalytics = () => {
                 <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
                   <div className="flex items-center gap-2 mb-4">
                     <Icon name="Info" size={20} color="var(--color-primary)" />
-                    <h3 className="text-lg font-semibold text-foreground">Quick Stats</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{t('quickStats', 'Quick Stats')}</h3>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -222,7 +222,7 @@ const ReportsAnalytics = () => {
                       <span className="text-sm font-medium text-foreground data-text">{summary?.openTickets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">{t('resolved', 'Resolved Today')}</span>
+                      <span className="text-sm text-muted-foreground caption">{t('resolvedToday', 'Resolved Today')}</span>
                       <span className="text-sm font-medium text-success data-text">{summary?.resolvedTickets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -230,7 +230,7 @@ const ReportsAnalytics = () => {
                       <span className="text-sm font-medium text-error data-text">{summary?.totalAssets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-border">
-                      <span className="text-sm text-muted-foreground caption">{t('activeTechnicians', 'Active Assets')}</span>
+                      <span className="text-sm text-muted-foreground caption">{t('activeAssets', 'Active Assets')}</span>
                       <span className="text-sm font-medium text-foreground data-text">{summary?.activeAssets ?? '--'}</span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -243,7 +243,7 @@ const ReportsAnalytics = () => {
                 <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1 mt-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Icon name="TrendingUp" size={20} color="var(--color-success)" />
-                    <h3 className="text-lg font-semibold text-foreground">Top Performers</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{t('topPerformers', 'Top Performers')}</h3>
                   </div>
                   <div className="space-y-3">
                     {topAgents.map((agent, index) =>
@@ -269,29 +269,29 @@ const ReportsAnalytics = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <ChartContainer
-                title="Team Workload Distribution"
-                description="Current ticket assignment across team members"
+                title={t('teamWorkloadDistribution', 'Team Workload Distribution')}
+                description={t('teamWorkloadDescription', 'Current ticket assignment across team members')}
                 onExport={() => handleExportChart('Workload')}
                 onRefresh={() => handleRefreshChart('Workload')}>
 
                   <div className="flex items-center justify-center h-64 text-muted-foreground">
                     <div className="text-center">
                       <Icon name="Users" size={48} className="mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">Workload visualization chart</p>
+                      <p className="text-sm">{t('workloadVisualizationChart', 'Workload visualization chart')}</p>
                     </div>
                   </div>
                 </ChartContainer>
 
                 <ChartContainer
-                title="Response Time Trends"
-                description="First response time analysis over the past 30 days"
+                title={t('responseTimeTrends', 'Response Time Trends')}
+                description={t('responseTimeDescription', 'First response time analysis over the past 30 days')}
                 onExport={() => handleExportChart('Response Time')}
                 onRefresh={() => handleRefreshChart('Response Time')}>
 
                   <div className="flex items-center justify-center h-64 text-muted-foreground">
                     <div className="text-center">
                       <Icon name="Clock" size={48} className="mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">Response time chart</p>
+                      <p className="text-sm">{t('responseTimeChart', 'Response time chart')}</p>
                     </div>
                   </div>
                 </ChartContainer>
@@ -306,13 +306,13 @@ const ReportsAnalytics = () => {
               <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
                 <div className="flex items-center gap-2 mb-4">
                   <Icon name="Calendar" size={20} color="var(--color-primary)" />
-                  <h3 className="text-lg md:text-xl font-semibold text-foreground">Scheduled Reports</h3>
+                  <h3 className="text-lg md:text-xl font-semibold text-foreground">{t('scheduledReports', 'Scheduled Reports')}</h3>
                 </div>
                 <div className="space-y-3">
                   {[
-                { name: 'Weekly Performance Summary', schedule: 'Every Monday at 9:00 AM', status: 'Active' },
-                { name: 'Monthly SLA Report', schedule: 'First day of month at 8:00 AM', status: 'Active' },
-                { name: 'Daily Ticket Summary', schedule: 'Every day at 6:00 PM', status: 'Paused' }]?.
+                { name: t('weeklyPerformanceSummary', 'Weekly Performance Summary'), schedule: t('everyMondayAt9', 'Every Monday at 9:00 AM'), status: t('activeStatus', 'Active') },
+                { name: t('monthlySlaReport', 'Monthly SLA Report'), schedule: t('firstDayOfMonthAt8', 'First day of month at 8:00 AM'), status: t('activeStatus', 'Active') },
+                { name: t('dailyTicketSummary', 'Daily Ticket Summary'), schedule: t('everyDayAt6', 'Every day at 6:00 PM'), status: t('pausedStatus', 'Paused') }]?.
                 map((report, index) =>
                 <div
                   key={index}
@@ -325,7 +325,7 @@ const ReportsAnalytics = () => {
                       <div className="flex items-center gap-2">
                         <span
                       className={`px-3 py-1 text-xs rounded-full caption ${
-                      report?.status === 'Active' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`
+                      report?.status === t('activeStatus', 'Active') ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`
                       }>
 
                           {report?.status}

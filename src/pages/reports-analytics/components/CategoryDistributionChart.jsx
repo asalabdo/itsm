@@ -1,13 +1,16 @@
-import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const CategoryDistributionChart = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const data = [
-    { name: 'Technical Support', value: 342, percentage: 38 },
-    { name: 'Billing Inquiry', value: 256, percentage: 28 },
-    { name: 'Sales Request', value: 178, percentage: 20 },
-    { name: 'General Inquiry', value: 89, percentage: 10 },
-    { name: 'Account Management', value: 45, percentage: 4 },
+    { name: t('technicalSupport', 'Technical Support'), value: 342, percentage: 38 },
+    { name: t('billingInquiry', 'Billing Inquiry'), value: 256, percentage: 28 },
+    { name: t('salesRequest', 'Sales Request'), value: 178, percentage: 20 },
+    { name: t('generalInquiry', 'General Inquiry'), value: 89, percentage: 10 },
+    { name: t('accountManagement', 'Account Management'), value: 45, percentage: 4 },
   ];
 
   const COLORS = [
@@ -25,11 +28,11 @@ const CategoryDistributionChart = () => {
         <div className="bg-popover border border-border rounded-lg p-3 shadow-elevation-3">
           <p className="text-sm font-medium text-foreground mb-1">{data?.name}</p>
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground caption">Tickets:</span>
+            <span className="text-muted-foreground caption">{t('ticketsLabel', 'Tickets')}:</span>
             <span className="font-medium text-foreground data-text">{data?.value}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground caption">Percentage:</span>
+            <span className="text-muted-foreground caption">{t('percentage', 'Percentage')}:</span>
             <span className="font-medium text-foreground data-text">{data?.percentage}%</span>
           </div>
         </div>
@@ -59,7 +62,7 @@ const CategoryDistributionChart = () => {
   };
 
   return (
-    <div className="w-full h-64 md:h-80 lg:h-96" aria-label="Ticket Category Distribution">
+    <div className="w-full h-64 md:h-80 lg:h-96" aria-label={t('ticketCategoryDistribution', 'Ticket Category Distribution')}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie

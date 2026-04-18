@@ -3,111 +3,114 @@ import { motion } from 'framer-motion';
 import Icon from '../../../components/AppIcon';
 
 import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const RoutingPreview = ({ category, priority, subject }) => {
-  const { isRtl } = useLanguage();
+  const { language, isRtl } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const getRoutingInfo = () => {
     if (!category || !priority) return null;
 
     const routingRules = {
       incident: {
         urgent: {
-          team: 'Critical Response Team',
-          assignee: 'Senior Engineer - On Call',
-          sla: '1 hour',
-          escalation: 'Immediate manager notification',
+          team: t('criticalResponseTeam', 'Critical Response Team'),
+          assignee: t('seniorEngineerOnCall', 'Senior Engineer - On Call'),
+          sla: isArabic ? 'ساعة واحدة' : '1 hour',
+          escalation: t('immediateManagerNotification', 'Immediate manager notification'),
           icon: 'Zap',
           color: 'var(--color-error)',
         },
         high: {
-          team: 'Priority Support Team',
-          assignee: 'Available Senior Agent',
-          sla: '4 hours',
-          escalation: 'Manager notification after 2 hours',
+          team: t('prioritySupportTeam', 'Priority Support Team'),
+          assignee: t('availableSeniorAgent', 'Available Senior Agent'),
+          sla: isArabic ? '4 ساعات' : '4 hours',
+          escalation: t('managerNotificationAfter2Hours', 'Manager notification after 2 hours'),
           icon: 'AlertCircle',
           color: 'var(--color-warning)',
         },
         medium: {
-          team: 'General Support Team',
-          assignee: 'Next Available Agent',
-          sla: '8 hours',
-          escalation: 'Standard escalation path',
+          team: t('generalSupportTeam', 'General Support Team'),
+          assignee: t('nextAvailableAgent', 'Next Available Agent'),
+          sla: isArabic ? '8 ساعات' : '8 hours',
+          escalation: t('standardEscalationPath', 'Standard escalation path'),
           icon: 'Info',
           color: 'var(--color-primary)',
         },
         low: {
-          team: 'General Support Team',
-          assignee: 'Queue Assignment',
-          sla: '24 hours',
-          escalation: 'Standard escalation path',
+          team: t('generalSupportTeam', 'General Support Team'),
+          assignee: t('queueAssignment', 'Queue Assignment'),
+          sla: isArabic ? '24 ساعة' : '24 hours',
+          escalation: t('standardEscalationPath', 'Standard escalation path'),
           icon: 'MinusCircle',
           color: 'var(--color-muted-foreground)',
         },
       },
       problem: {
         urgent: {
-          team: 'Problem Management Team',
-          assignee: 'Senior Problem Manager',
-          sla: '2 hours',
-          escalation: 'Director notification',
+          team: t('problemManagementTeam', 'Problem Management Team'),
+          assignee: t('seniorProblemManager', 'Senior Problem Manager'),
+          sla: isArabic ? 'ساعتان' : '2 hours',
+          escalation: t('directorNotification', 'Director notification'),
           icon: 'Bug',
           color: 'var(--color-error)',
         },
         high: {
-          team: 'Problem Management Team',
-          assignee: 'Problem Manager',
-          sla: '8 hours',
-          escalation: 'Manager notification after 4 hours',
+          team: t('problemManagementTeam', 'Problem Management Team'),
+          assignee: t('problemManager', 'Problem Manager'),
+          sla: isArabic ? '8 ساعات' : '8 hours',
+          escalation: t('managerNotificationAfter4Hours', 'Manager notification after 4 hours'),
           icon: 'Bug',
           color: 'var(--color-warning)',
         },
         medium: {
-          team: 'Problem Analysis Team',
-          assignee: 'Problem Analyst',
-          sla: '24 hours',
-          escalation: 'Standard escalation path',
+          team: t('problemAnalysisTeam', 'Problem Analysis Team'),
+          assignee: t('problemAnalyst', 'Problem Analyst'),
+          sla: isArabic ? '24 ساعة' : '24 hours',
+          escalation: t('standardEscalationPath', 'Standard escalation path'),
           icon: 'Bug',
           color: 'var(--color-primary)',
         },
         low: {
-          team: 'Problem Analysis Team',
-          assignee: 'Queue Assignment',
-          sla: '48 hours',
-          escalation: 'Standard escalation path',
+          team: t('problemAnalysisTeam', 'Problem Analysis Team'),
+          assignee: t('queueAssignment', 'Queue Assignment'),
+          sla: isArabic ? '48 ساعة' : '48 hours',
+          escalation: t('standardEscalationPath', 'Standard escalation path'),
           icon: 'Bug',
           color: 'var(--color-muted-foreground)',
         },
       },
       change: {
         urgent: {
-          team: 'Emergency Change Team',
-          assignee: 'Change Manager - Emergency',
-          sla: '4 hours',
-          escalation: 'CAB emergency approval',
+          team: t('emergencyChangeTeam', 'Emergency Change Team'),
+          assignee: t('changeManagerEmergency', 'Change Manager - Emergency'),
+          sla: isArabic ? '4 ساعات' : '4 hours',
+          escalation: t('cabEmergencyApproval', 'CAB emergency approval'),
           icon: 'GitBranch',
           color: 'var(--color-error)',
         },
         high: {
-          team: 'Change Management Team',
-          assignee: 'Senior Change Manager',
-          sla: '12 hours',
-          escalation: 'CAB approval required',
+          team: t('changeManagementTeam', 'Change Management Team'),
+          assignee: t('seniorChangeManager', 'Senior Change Manager'),
+          sla: isArabic ? '12 ساعة' : '12 hours',
+          escalation: t('cabApprovalRequired', 'CAB approval required'),
           icon: 'GitBranch',
           color: 'var(--color-warning)',
         },
         medium: {
-          team: 'Change Management Team',
-          assignee: 'Change Coordinator',
-          sla: '48 hours',
-          escalation: 'Standard CAB review',
+          team: t('changeManagementTeam', 'Change Management Team'),
+          assignee: t('changeCoordinator', 'Change Coordinator'),
+          sla: isArabic ? '48 ساعة' : '48 hours',
+          escalation: t('standardCabReview', 'Standard CAB review'),
           icon: 'GitBranch',
           color: 'var(--color-primary)',
         },
         low: {
-          team: 'Change Management Team',
-          assignee: 'Change Coordinator',
-          sla: '5 days',
-          escalation: 'Standard CAB review',
+          team: t('changeManagementTeam', 'Change Management Team'),
+          assignee: t('changeCoordinator', 'Change Coordinator'),
+          sla: isArabic ? '5 أيام' : '5 days',
+          escalation: t('standardCabReview', 'Standard CAB review'),
           icon: 'GitBranch',
           color: 'var(--color-muted-foreground)',
         },
@@ -122,10 +125,10 @@ const RoutingPreview = ({ category, priority, subject }) => {
   if (!routingInfo) return null;
 
   const routingItems = [
-    { icon: 'Users', label: 'Assigned Team', value: routingInfo?.team },
-    { icon: 'UserCheck', label: 'Assignee', value: routingInfo?.assignee },
-    { icon: 'Clock', label: 'Response SLA', value: routingInfo?.sla },
-    { icon: 'TrendingUp', label: 'Escalation Path', value: routingInfo?.escalation },
+    { icon: 'Users', label: t('assignedTeam', 'Assigned Team'), value: routingInfo?.team },
+    { icon: 'UserCheck', label: t('assignee', 'Assignee'), value: routingInfo?.assignee },
+    { icon: 'Clock', label: t('responseSla', 'Response SLA'), value: routingInfo?.sla },
+    { icon: 'TrendingUp', label: t('escalationPath', 'Escalation Path'), value: routingInfo?.escalation },
   ];
 
   return (
@@ -135,8 +138,8 @@ const RoutingPreview = ({ category, priority, subject }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
     >
-      <motion.div 
-        className={`flex items-start gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}
+          <motion.div 
+            className={`flex items-start gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
@@ -150,10 +153,10 @@ const RoutingPreview = ({ category, priority, subject }) => {
         </motion.div>
         <div className={`flex-1 min-w-0 ${'text-left'}`}>
           <h3 className="font-semibold text-foreground mb-1">
-            Automated Routing Preview
+            {t('automatedRoutingPreview', 'Automated Routing Preview')}
           </h3>
           <p className="text-sm text-muted-foreground caption">
-            Based on category and priority selection
+            {t('routingPreviewSubtitle', 'Based on category and priority selection')}
           </p>
         </div>
       </motion.div>
@@ -220,7 +223,7 @@ const RoutingPreview = ({ category, priority, subject }) => {
             >
               <Icon name="CheckCircle2" size={16} />
             </motion.div>
-            <span className="font-medium">Routing rules validated</span>
+            <span className="font-medium">{t('routingRulesValidated', 'Routing rules validated')}</span>
           </motion.div>
         </motion.div>
       )}

@@ -3,14 +3,17 @@ import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
-import { settingsAPI } from '../../services/api';
+import { manageEngineAPI, settingsAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const Settings = () => {
   const [saving, setSaving] = useState(false);
+  const [testingManageEngine, setTestingManageEngine] = useState(false);
+  const [manageEngineMessage, setManageEngineMessage] = useState(null);
   const { setLanguage, language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [profile, setProfile] = useState({
     displayName: '',
     role: '',
@@ -31,21 +34,59 @@ const Settings = () => {
     },
     integrations: [],
   });
+  const [manageEngineSettings, setManageEngineSettings] = useState({
+    syncEnabled: false,
+    syncDirection: 'import',
+    syncIntervalMinutes: 15,
+    webhookSecret: '',
+    serviceDesk: {
+      baseUrl: '',
+      apiKey: '',
+      technicianKey: '',
+      authMode: 'header',
+      apiKeyHeaderName: 'authtoken',
+      apiKeyQueryName: 'apiKey',
+      technicianHeaderName: 'TECHNICIAN_KEY',
+      catalogEndpoint: '/api/v3/templates',
+      requestsEndpoint: '/api/v3/requests',
+      servicesEndpoint: '/api/v3/service_catalog/items',
+      alertsEndpoint: '/api/v3/requests',
+    },
+    opManager: {
+      baseUrl: '',
+      apiKey: '',
+      technicianKey: '',
+      authMode: 'query',
+      apiKeyHeaderName: 'authtoken',
+      apiKeyQueryName: 'apiKey',
+      technicianHeaderName: 'TECHNICIAN_KEY',
+      catalogEndpoint: '/api/json/device/listDevices',
+      requestsEndpoint: '/api/json/device/listDevices',
+      servicesEndpoint: '/api/json/device/listDevices',
+      alertsEndpoint: '/api/json/alarm/listAlarms',
+    },
+  });
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await settingsAPI.getProfile();
+        const [profileRes, manageEngineRes] = await Promise.all([
+          settingsAPI.getProfile(),
+          manageEngineAPI.getSettings().catch(() => ({ data: null })),
+        ]);
         setProfile((prev) => ({
           ...prev,
-          ...(res.data || {}),
+          ...(profileRes.data || {}),
           notificationPreferences: {
             ...prev.notificationPreferences,
-            ...(res.data?.notificationPreferences || {}),
+            ...(profileRes.data?.notificationPreferences || {}),
           },
-          integrations: Array.isArray(res.data?.integrations) ? res.data.integrations : prev.integrations,
-          enabledModules: Array.isArray(res.data?.enabledModules) ? res.data.enabledModules : prev.enabledModules,
+          integrations: Array.isArray(profileRes.data?.integrations) ? profileRes.data.integrations : prev.integrations,
+          enabledModules: Array.isArray(profileRes.data?.enabledModules) ? profileRes.data.enabledModules : prev.enabledModules,
         }));
+        if (manageEngineRes?.data) {
+          applyManageEngineSettings(manageEngineRes.data);
+        }
       } catch (error) {
         console.error('Failed to load settings:', error);
       }
@@ -70,18 +111,71 @@ const Settings = () => {
     }));
   };
 
+  const updateManageEngineField = (section, key, value) => {
+    if (!section) {
+      setManageEngineSettings((prev) => ({ ...prev, [key]: value }));
+      return;
+    }
+
+    setManageEngineSettings((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [key]: value,
+      },
+    }));
+  };
+
+  const applyManageEngineSettings = (data) => {
+    if (!data) {
+      return;
+    }
+
+    setManageEngineSettings((prev) => ({
+      ...prev,
+      ...data,
+      serviceDesk: { ...prev.serviceDesk, ...(data.serviceDesk || {}) },
+      opManager: { ...prev.opManager, ...(data.opManager || {}) },
+    }));
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
-      await settingsAPI.updateProfile(profile);
+      const [, manageEngineResponse] = await Promise.all([
+        settingsAPI.updateProfile(profile),
+        manageEngineAPI.updateSettings(manageEngineSettings),
+      ]);
+      applyManageEngineSettings(manageEngineResponse?.data);
+      setManageEngineMessage({ type: 'success', text: isArabic ? 'تم حفظ إعدادات ManageEngine وإعادة تحميلها.' : 'ManageEngine settings saved and reloaded.' });
       window.dispatchEvent(new CustomEvent('itsm:toast', {
-        detail: { type: 'success', message: 'Settings saved successfully.' }
+        detail: { type: 'success', message: isArabic ? 'تم حفظ الإعدادات بنجاح.' : 'Settings saved successfully.' }
       }));
     } catch (error) {
       console.error('Failed to save settings:', error);
-      alert('Failed to save settings.');
+      alert(isArabic ? 'فشل حفظ الإعدادات.' : 'Failed to save settings.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleManageEngineTest = async () => {
+    try {
+      setTestingManageEngine(true);
+      const response = await manageEngineAPI.testConnection();
+      setManageEngineMessage({
+        type: response?.data?.status === 'connected' ? 'success' : 'error',
+        text: isArabic
+          ? `ServiceDesk: ${response?.data?.serviceDeskConnected ? 'متصل' : 'غير متصل'} | OpManager: ${response?.data?.opManagerConnected ? 'متصل' : 'غير متصل'}`
+          : `ServiceDesk: ${response?.data?.serviceDeskConnected ? 'Connected' : 'Disconnected'} | OpManager: ${response?.data?.opManagerConnected ? 'Connected' : 'Disconnected'}`
+      });
+    } catch (error) {
+      setManageEngineMessage({
+        type: 'error',
+        text: error?.response?.data?.error || (isArabic ? 'فشل اختبار اتصال ManageEngine.' : 'Failed to test ManageEngine connection.'),
+      });
+    } finally {
+      setTestingManageEngine(false);
     }
   };
 
@@ -342,6 +436,176 @@ const Settings = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">{isArabic ? 'تكامل ManageEngine' : 'ManageEngine Integration'}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {isArabic ? 'اضبط بيانات الاعتماد ونقاط النهاية ووضع المصادقة لـ ServiceDesk و OpManager.' : 'Configure runtime credentials, endpoints, and auth mode for ServiceDesk and OpManager.'}
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={handleManageEngineTest} loading={testingManageEngine}>
+                    {isArabic ? 'اختبار الاتصال' : 'Test Connection'}
+                  </Button>
+                </div>
+
+                {manageEngineMessage && (
+                  <div className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
+                    manageEngineMessage.type === 'success'
+                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
+                      : 'border-rose-500/30 bg-rose-500/10 text-rose-700'
+                  }`}>
+                    {manageEngineMessage.text}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <label className="space-y-2">
+                    <span className="text-sm font-medium text-foreground">{isArabic ? 'المزامنة مفعلة' : 'Sync Enabled'}</span>
+                    <select
+                      value={String(manageEngineSettings.syncEnabled)}
+                      onChange={(e) => updateManageEngineField(null, 'syncEnabled', e.target.value === 'true')}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="false">{isArabic ? 'معطلة' : 'Disabled'}</option>
+                      <option value="true">{isArabic ? 'مفعلة' : 'Enabled'}</option>
+                    </select>
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm font-medium text-foreground">{isArabic ? 'اتجاه المزامنة' : 'Sync Direction'}</span>
+                    <input
+                      value={manageEngineSettings.syncDirection}
+                      onChange={(e) => updateManageEngineField(null, 'syncDirection', e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm font-medium text-foreground">{isArabic ? 'فاصل المزامنة بالدقائق' : 'Sync Interval Minutes'}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={manageEngineSettings.syncIntervalMinutes}
+                      onChange={(e) => updateManageEngineField(null, 'syncIntervalMinutes', Number(e.target.value))}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </label>
+                </div>
+
+                <label className="space-y-2 block mb-6">
+                  <span className="text-sm font-medium text-foreground">{isArabic ? 'السر السري للويب هوك' : 'Webhook Secret'}</span>
+                  <input
+                    value={manageEngineSettings.webhookSecret || ''}
+                    onChange={(e) => updateManageEngineField(null, 'webhookSecret', e.target.value)}
+                    placeholder="********"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </label>
+
+                {[
+                  ['serviceDesk', 'ServiceDesk'],
+                  ['opManager', 'OpManager'],
+                ].map(([sectionKey, title]) => (
+                  <div key={sectionKey} className="mb-6 rounded-xl border border-border p-4">
+                    <h3 className="text-base font-semibold text-foreground mb-4">{title}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Base URL</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.baseUrl || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'baseUrl', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Auth Mode</span>
+                        <select
+                          value={manageEngineSettings[sectionKey]?.authMode || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'authMode', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="header">Header Key</option>
+                          <option value="query">Query Key</option>
+                        </select>
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">API Key</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.apiKey || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'apiKey', e.target.value)}
+                          placeholder="********"
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Technician Key</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.technicianKey || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'technicianKey', e.target.value)}
+                          placeholder="********"
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">API Key Header</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.apiKeyHeaderName || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'apiKeyHeaderName', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">API Key Query Name</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.apiKeyQueryName || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'apiKeyQueryName', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Technician Header</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.technicianHeaderName || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'technicianHeaderName', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Catalog Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.catalogEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'catalogEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Requests Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.requestsEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'requestsEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Services Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.servicesEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'servicesEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Alerts Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.alertsEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'alertsEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

@@ -3199,5 +3199,18 @@ export const ar = {
     addCommentPlaceholder: 'إضافة تعليق...',
     commentAction: 'تعليق',
     
-    // Ticket Details main page  
+    // Ticket Details main page
+    detailsHeader: 'تفاصيل المشكلة',
+    
+    // Asset filters
+    searchByIdNameSerial: 'البحث برقم التعريف أو الاسم أو الرقم التسلسلي...',
+    assetCategory: 'الفئة',
+    
+    // Problems page
+    createFirstProblem: 'إنشاء أول سجل مشكلة لتتبع الأسباب الجذرية.',
+    selectProblemDetail: 'اختر سجل المشكلة لرؤية المزيد من التفاصيل.',
+    serverRecordSelected: 'سجل الخادم المحدد',
+    
+    // Filters
+    filters: 'الفلاتر',
 };

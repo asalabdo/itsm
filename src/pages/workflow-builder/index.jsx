@@ -9,19 +9,24 @@ import ConfigurationPanel from './components/ConfigurationPanel';
 import TemplateGallery from './components/TemplateGallery';
 import TestWorkflow from './components/TestWorkflow';
 import { workflowsAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const WorkflowBuilder = () => {
+  const { language, isRtl } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [workflowBlocks, setWorkflowBlocks] = useState([]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showTestPanel, setShowTestPanel] = useState(false);
-  const [workflowName, setWorkflowName] = useState('سير عمل جديد');
+  const [workflowName, setWorkflowName] = useState(t('newWorkflow', 'سير عمل جديد'));
   const [workflowDescription, setWorkflowDescription] = useState('');
   const [triggerType, setTriggerType] = useState('Manual');
 
   const breadcrumbItems = [
-    { label: 'لوحة التحكم', path: '/agent-dashboard' },
-    { label: 'منشئ سير العمل', path: '/workflow-builder' },
+    { label: t('dashboard', 'لوحة التحكم'), path: '/agent-dashboard' },
+    { label: t('workflowBuilder', 'منشئ سير العمل'), path: '/workflow-builder' },
   ];
 
   const handleAddBlock = (block) => {

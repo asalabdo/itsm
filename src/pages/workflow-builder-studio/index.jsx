@@ -8,8 +8,13 @@ import TemplateLibrary from './components/TemplateLibrary';
 import ValidationPanel from './components/ValidationPanel';
 import WorkflowToolbar from './components/WorkflowToolbar';
 import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const WorkflowBuilderStudio = () => {
+  const { language, isRtl } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  
   const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
   const [isPropertiesCollapsed, setIsPropertiesCollapsed] = useState(false);
   const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
@@ -17,7 +22,7 @@ const WorkflowBuilderStudio = () => {
   const [nodes, setNodes] = useState([]);
   const [connections, setConnections] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [workflowName, setWorkflowName] = useState('Untitled Workflow');
+  const [workflowName, setWorkflowName] = useState(t('untitledWorkflowName', 'Untitled Workflow'));
   const [isSaving, setIsSaving] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -25,21 +30,21 @@ const WorkflowBuilderStudio = () => {
   const validationResults = [
     {
       type: 'error',
-      message: 'Missing end node',
-      details: 'Every workflow must have at least one end node to properly terminate execution',
-      suggestion: 'Add an End Node from the Workflow Steps category'
+      message: t('missingEndNode', 'Missing end node'),
+      details: t('everyWorkflowMustHave', 'Every workflow must have at least one end node to properly terminate execution'),
+      suggestion: t('addEndNode', 'Add an End Node from the Workflow Steps category')
     },
     {
       type: 'warning',
-      message: 'Unconnected node detected',
-      details: 'Node "Task Step" is not connected to any other nodes in the workflow',
-      suggestion: 'Connect this node to establish proper workflow flow'
+      message: t('unconnectedNode', 'Unconnected node detected'),
+      details: t('nodeNotConnected', 'Node "Task Step" is not connected to any other nodes in the workflow'),
+      suggestion: t('connectNode', 'Connect this node to establish proper workflow flow')
     },
     {
       type: 'suggestion',
-      message: 'Consider adding error handling',
-      details: 'Your workflow could benefit from error handling nodes for better resilience',
-      suggestion: 'Add conditional nodes to handle potential failures'
+      message: t('considerErrorHandling', 'Consider adding error handling'),
+      details: t('workflowBenefit', 'Your workflow could benefit from error handling nodes for better resilience'),
+      suggestion: t('addConditional', 'Add conditional nodes to handle potential failures')
     }
   ];
 
@@ -162,12 +167,12 @@ const WorkflowBuilderStudio = () => {
   };
 
   const workflowSteps = [
-    'Intake',
-    'Service + org match',
-    'Manager review',
-    'ERP user fan-out',
-    'Third-party submit',
-    'Close'
+    t('intake', 'Intake'),
+    t('serviceOrgMatch', 'Service + org match'),
+    t('managerReview', 'Manager review'),
+    t('erpFanOut', 'ERP user fan-out'),
+    t('thirdPartySubmit', 'Third-party submit'),
+    t('closeStep', 'Close')
   ];
 
   const activeWorkflowStep = nodes.length === 0
@@ -194,12 +199,12 @@ const WorkflowBuilderStudio = () => {
 
         <div className="px-4 md:px-6 pt-4">
           <WorkflowStatusStrip
-            title="Workflow Builder"
-            subtitle="Design the route that matches service, organization, manager review, and ERP dispatch."
+            title={t('workflowBuilderStudio', 'Workflow Builder')}
+            subtitle={t('workflowBuilderDescription', 'Design the route that matches service, organization, manager review, and ERP dispatch.')}
             service={workflowName}
-            organization="Organization-aware routing"
-            mode="Builder mode"
-            lastAction={isSaving ? 'Saving workflow changes' : `Canvas contains ${nodes.length} node(s) and ${connections.length} connection(s)`}
+            organization={t('organizationAwareRouting', 'Organization-aware routing')}
+            mode={t('builderMode', 'Builder mode')}
+            lastAction={isSaving ? t('savingWorkflow', 'Saving workflow changes') : t('canvasContains', `Canvas contains ${nodes.length} node(s) and ${connections.length} connection(s)`)}
             activeStep={activeWorkflowStep}
             steps={workflowSteps}
           />

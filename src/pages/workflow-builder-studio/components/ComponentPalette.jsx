@@ -1,57 +1,61 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ComponentPalette = ({ isCollapsed, onToggle, onDragStart }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
   const componentCategories = [
     {
       id: 'all',
-      label: 'All Components',
+      label: t('allComponents', 'All Components'),
       icon: 'Grid3x3'
     },
     {
       id: 'steps',
-      label: 'Workflow Steps',
+      label: t('workflowSteps', 'Workflow Steps'),
       icon: 'GitBranch',
       components: [
-        { id: 'start', name: 'Start Node', icon: 'Play', color: 'text-success', description: 'Workflow entry point' },
-        { id: 'task', name: 'Task Step', icon: 'CheckSquare', color: 'text-primary', description: 'Manual or automated task' },
-        { id: 'approval', name: 'Approval', icon: 'UserCheck', color: 'text-warning', description: 'Requires user approval' },
-        { id: 'notification', name: 'Notification', icon: 'Bell', color: 'text-accent', description: 'Send notifications' },
-        { id: 'end', name: 'End Node', icon: 'Square', color: 'text-error', description: 'Workflow completion' }
+        { id: 'start', name: t('startNode', 'Start Node'), icon: 'Play', color: 'text-success', description: t('workflowEntry', 'Workflow entry point') },
+        { id: 'task', name: t('taskStep', 'Task Step'), icon: 'CheckSquare', color: 'text-primary', description: t('manualOrAutomated', 'Manual or automated task') },
+        { id: 'approval', name: t('approvalNode', 'Approval'), icon: 'UserCheck', color: 'text-warning', description: t('requiresApproval', 'Requires user approval') },
+        { id: 'notification', name: t('notificationNode', 'Notification'), icon: 'Bell', color: 'text-accent', description: t('sendNotifications', 'Send notifications') },
+        { id: 'end', name: t('endNode', 'End Node'), icon: 'Square', color: 'text-error', description: t('workflowCompletion', 'Workflow completion') }
       ]
     },
     {
       id: 'decisions',
-      label: 'Decision Nodes',
+      label: t('decisionNodes', 'Decision Nodes'),
       icon: 'GitMerge',
       components: [
-        { id: 'condition', name: 'Conditional', icon: 'GitBranch', color: 'text-warning', description: 'If-then-else logic' },
-        { id: 'switch', name: 'Switch', icon: 'GitMerge', color: 'text-primary', description: 'Multiple conditions' },
-        { id: 'loop', name: 'Loop', icon: 'Repeat', color: 'text-accent', description: 'Repeat actions' }
+        { id: 'condition', name: t('conditional', 'Conditional'), icon: 'GitBranch', color: 'text-warning', description: t('ifThenElse', 'If-then-else logic') },
+        { id: 'switch', name: t('switchNode', 'Switch'), icon: 'GitMerge', color: 'text-primary', description: t('multipleConditions', 'Multiple conditions') },
+        { id: 'loop', name: t('loopNode', 'Loop'), icon: 'Repeat', color: 'text-accent', description: t('repeatActions', 'Repeat actions') }
       ]
     },
     {
       id: 'integrations',
-      label: 'Integration Points',
+      label: t('integrationPoints', 'Integration Points'),
       icon: 'Plug',
       components: [
-        { id: 'api', name: 'API Call', icon: 'Cloud', color: 'text-primary', description: 'External API integration' },
-        { id: 'database', name: 'Database', icon: 'Database', color: 'text-success', description: 'Database operations' },
-        { id: 'email', name: 'Email', icon: 'Mail', color: 'text-accent', description: 'Send emails' },
-        { id: 'webhook', name: 'Webhook', icon: 'Webhook', color: 'text-warning', description: 'Trigger webhooks' }
+        { id: 'api', name: t('apiCall', 'API Call'), icon: 'Cloud', color: 'text-primary', description: t('externalApi', 'External API integration') },
+        { id: 'database', name: t('databaseNode', 'Database'), icon: 'Database', color: 'text-success', description: t('dbOperations', 'Database operations') },
+        { id: 'email', name: t('emailNode', 'Email'), icon: 'Mail', color: 'text-accent', description: t('sendEmails', 'Send emails') },
+        { id: 'webhook', name: t('webhookNode', 'Webhook'), icon: 'Webhook', color: 'text-warning', description: t('triggerWebhooks', 'Trigger webhooks') }
       ]
     },
     {
       id: 'data',
-      label: 'Data Operations',
+      label: t('dataOperations', 'Data Operations'),
       icon: 'Database',
       components: [
-        { id: 'transform', name: 'Transform', icon: 'RefreshCw', color: 'text-primary', description: 'Data transformation' },
-        { id: 'validate', name: 'Validate', icon: 'ShieldCheck', color: 'text-success', description: 'Data validation' },
-        { id: 'aggregate', name: 'Aggregate', icon: 'Layers', color: 'text-accent', description: 'Combine data' }
+        { id: 'transform', name: t('transformNode', 'Transform'), icon: 'RefreshCw', color: 'text-primary', description: t('dataTransform', 'Data transformation') },
+        { id: 'validate', name: t('validateNode', 'Validate'), icon: 'ShieldCheck', color: 'text-success', description: t('dataValidation', 'Data validation') },
+        { id: 'aggregate', name: t('aggregateNode', 'Aggregate'), icon: 'Layers', color: 'text-accent', description: t('combineData', 'Combine data') }
       ]
     }
   ];
@@ -110,7 +114,7 @@ const ComponentPalette = ({ isCollapsed, onToggle, onDragStart }) => {
     <div className="w-64 lg:w-80 bg-card border-r border-border flex flex-col h-full">
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base lg:text-lg font-semibold">Components</h2>
+          <h2 className="text-base lg:text-lg font-semibold">{t('components', 'Components')}</h2>
           <button
             onClick={onToggle}
             className="p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring"
@@ -124,7 +128,7 @@ const ComponentPalette = ({ isCollapsed, onToggle, onDragStart }) => {
           <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search components..."
+            placeholder={t('searchComponents', 'Search components...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e?.target?.value)}
             className="w-full pl-10 pr-4 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
@@ -151,7 +155,7 @@ const ComponentPalette = ({ isCollapsed, onToggle, onDragStart }) => {
         {getFilteredComponents()?.length === 0 ? (
           <div className="text-center py-8">
             <Icon name="Search" size={48} className="mx-auto text-muted-foreground mb-3" />
-            <p className="text-sm text-muted-foreground">No components found</p>
+            <p className="text-sm text-muted-foreground">{t('noComponents', 'No components found')}</p>
           </div>
         ) : (
           <div className="space-y-2">

@@ -5,8 +5,13 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import assetService from '../../../services/assetService';
 import { formatLocalizedValue } from '../../../services/displayValue';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
+  const { language, isRtl } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -259,14 +264,14 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
                 <Icon name="Plus" size={24} className="text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-foreground">Create New Ticket</h2>
-                <p className="text-sm text-muted-foreground">Submit a support request</p>
+                <h2 className="text-xl font-semibold text-foreground">{t('createNewTicket', 'Create New Ticket')}</h2>
+                <p className="text-sm text-muted-foreground">{t('submitSupportRequest', 'Submit a support request')}</p>
               </div>
             </div>
             <button
               onClick={handleClose}
               className="p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring"
-              aria-label="Close modal"
+              aria-label={t('closeModal', 'Close modal')}
             >
               <Icon name="X" size={20} />
             </button>
@@ -276,8 +281,8 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
           <div className="flex-1 overflow-y-auto scrollbar-custom p-6 space-y-6">
             {/* Title */}
             <Input
-              label="Ticket Title"
-              placeholder="Brief description of the issue"
+              label={t('ticketTitle', 'Ticket Title')}
+              placeholder={t('briefDescriptionIssue', 'Brief description of the issue')}
               value={formData?.title}
               onChange={(e) => handleInputChange('title', e?.target?.value)}
               error={errors?.title}
@@ -286,8 +291,8 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
 
             {/* Category */}
             <Select
-              label="Category"
-              placeholder="Select ticket category"
+              label={t('category', 'Category')}
+              placeholder={t('selectTicketCategory', 'Select ticket category')}
               options={categoryOptions}
               value={formData?.category}
               onChange={(value) => handleInputChange('category', value)}

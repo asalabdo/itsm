@@ -282,6 +282,15 @@ export const en = {
     completed: 'Completed',
     cancelled: 'Cancelled',
 
+    // Service Catalog SLA Items
+    slaHours: 'SLA: {hours}h',
+    adobeCreativeCloud: 'Adobe Creative Cloud',
+    adobeCreativeCloudDesc: 'Access to full suite of Adobe applications.',
+    guestWifiAccess: 'Guest Wi-Fi Access',
+    guestWifiAccessDesc: 'Temporary internet access for visitors.',
+    vpnAccessRequest: 'VPN Access',
+    vpnAccessRequestDesc: 'Secure remote access to company internal network.',
+    
     // Customer Portal
     portalUser: 'Portal User',
     welcomePortal: 'Welcome to Your Support Portal',

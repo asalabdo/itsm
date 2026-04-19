@@ -145,7 +145,7 @@ const ChangeManagementDashboard = () => {
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Page Header */}
-          <div className={`flex items-center justify-between mb-8 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
+          <div className={`flex items-center justify-between mb-8`}>
             <div>
               <h1 className="text-3xl font-semibold text-foreground font-heading">
                 {t('changeManagementDashboard', 'Change Management Dashboard')}

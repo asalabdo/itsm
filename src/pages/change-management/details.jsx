@@ -74,17 +74,17 @@ const ChangeManagementDetails = () => {
       <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
         <div className="flex items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Change Request</h1>
-            <p className="text-sm text-muted-foreground">{change?.changeNumber || 'Loading change request...'}</p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">{t('changeRequestLabel', 'Change Request')}</h1>
+            <p className="text-sm text-muted-foreground">{change?.changeNumber || t('loadingChange', 'Loading change request...')}</p>
           </div>
           <Button variant="outline" onClick={() => navigate('/change-management')}>
-            Back to Change Management
+            {t('backToChangeManagement', 'Back to Change Management')}
           </Button>
         </div>
 
         {loading ? (
           <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-            Loading change request...
+            {t('loadingChange', 'Loading change request...')}
           </div>
         ) : change ? (
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.9fr] gap-6">
@@ -98,7 +98,7 @@ const ChangeManagementDetails = () => {
                     <h2 className="text-xl md:text-2xl font-semibold text-foreground">{change.title}</h2>
                   </div>
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    {change.status}
+                    {t(change.status, change.status)}
                   </span>
                 </div>
                 <p className="text-sm md:text-base text-muted-foreground leading-7">{change.description}</p>
@@ -106,21 +106,21 @@ const ChangeManagementDetails = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="rounded-lg border border-border bg-card p-5">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Risk</p>
-                  <p className="text-lg font-semibold text-foreground">{change.riskLevel}</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">{t('riskLabel', 'Risk')}</p>
+                  <p className="text-lg font-semibold text-foreground">{t(change.riskLevel, change.riskLevel)}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-card p-5">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Category</p>
-                  <p className="text-lg font-semibold text-foreground">{change.category}</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">{t('categoryLabel', 'Category')}</p>
+                  <p className="text-lg font-semibold text-foreground">{t(change.category, change.category)}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-card p-5">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Requested By</p>
-                  <p className="text-lg font-semibold text-foreground">{change.requestedBy?.username || 'Unknown'}</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">{t('requestedBy', 'Requested By')}</p>
+                  <p className="text-lg font-semibold text-foreground">{change.requestedBy?.username || t('unknown', 'Unknown')}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-card p-5">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Schedule</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">{t('scheduleLabel', 'Schedule')}</p>
                   <p className="text-lg font-semibold text-foreground">
-                    {change.scheduledStartDate ? format(new Date(change.scheduledStartDate), 'MMM dd, HH:mm') : 'Not scheduled'}
+                    {change.scheduledStartDate ? format(new Date(change.scheduledStartDate), 'MMM dd, HH:mm') : t('notScheduled', 'Not scheduled')}
                   </p>
                 </div>
               </div>
@@ -128,33 +128,33 @@ const ChangeManagementDetails = () => {
 
             <div className="space-y-4">
               <div className="rounded-lg border border-border bg-card p-6 shadow-elevation-1 space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Actions</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t('actionsLabel', 'Actions')}</h3>
                 <Select
-                  label="Status"
+                  label={t('statusLabel', 'Status')}
                   options={statusOptions}
                   value={status}
                   onChange={setStatus}
                 />
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" onClick={saveChange}>
-                    Save
+                    {t('saveAction', 'Save')}
                   </Button>
                   <Button variant="default" className="flex-1" onClick={submitForApproval}>
-                    Submit
+                    {t('submitAction', 'Submit')}
                   </Button>
                 </div>
                 <Input
-                  label="Approval Notes"
+                  label={t('approvalNotes', 'Approval Notes')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add approval notes"
+                  placeholder={t('addApprovalNotes', 'Add approval notes')}
                 />
                 <div className="flex gap-3">
                   <Button variant="success" className="flex-1" onClick={approve}>
-                    Approve
+                    {t('approveAction', 'Approve')}
                   </Button>
                   <Button variant="destructive" className="flex-1" onClick={reject}>
-                    Reject
+                    {t('rejectAction', 'Reject')}
                   </Button>
                 </div>
               </div>
@@ -162,19 +162,19 @@ const ChangeManagementDetails = () => {
               <div className="rounded-lg border border-border bg-card p-6 shadow-elevation-1">
                 <div className="flex items-center gap-2 mb-3">
                   <Icon name="FileText" size={18} className="text-primary" />
-                  <h3 className="text-lg font-semibold text-foreground">Implementation Plan</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{t('implementationPlan', 'Implementation Plan')}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {change.implementationPlan || 'No implementation plan provided.'}
+                  {change.implementationPlan || t('noImplementationPlan', 'No implementation plan provided.')}
                 </p>
               </div>
             </div>
           </div>
         ) : (
           <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <h2 className="text-lg font-semibold text-foreground mb-2">Change request not found</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-2">{t('notFound', 'Change request not found')}</h2>
             <Button variant="outline" onClick={() => navigate('/change-management')}>
-              Return to list
+              {t('returnToList', 'Return to list')}
             </Button>
           </div>
         )}

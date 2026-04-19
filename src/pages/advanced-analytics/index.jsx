@@ -11,13 +11,13 @@ const StatCard = ({ title, value, subtitle, icon, color }) => {
   return (
     <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className={`flex items-center justify-between mb-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
-        <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{title}</p>
+        <p className={`text-sm text-muted-foreground`}>{title}</p>
         <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${color}20` }}>
           <Icon name={icon} size={18} color={color} />
         </div>
       </div>
-      <p className={`text-2xl font-bold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{value}</p>
-      {subtitle && <p className={`text-xs text-muted-foreground mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{subtitle}</p>}
+      <p className={`text-2xl font-bold text-foreground`}>{value}</p>
+      {subtitle && <p className={`text-xs text-muted-foreground mt-1`}>{subtitle}</p>}
     </div>
   );
 };
@@ -79,13 +79,13 @@ const AdvancedAnalyticsHub = () => {
   const resolutionRate = tickets.length ? ((resolved / tickets.length) * 100).toFixed(1) : '0';
 
   return (
-    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-background">
       <Header />
       <BreadcrumbTrail />
       <main className="px-4 md:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto">
         <div className="mb-6">
-          <h1 className={`text-2xl md:text-3xl font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('advancedAnalytics', 'Advanced Analytics')}</h1>
-          <p className={`text-sm text-muted-foreground mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>{t('deepInsights', 'Deep insights into service performance and trends')}</p>
+          <h1 className={`text-2xl md:text-3xl font-semibold text-foreground`}>{t('advancedAnalytics', 'Advanced Analytics')}</h1>
+          <p className={`text-sm text-muted-foreground mt-1`}>{t('deepInsights', 'Deep insights into service performance and trends')}</p>
         </div>
 
         {loading ? (
@@ -103,10 +103,10 @@ const AdvancedAnalyticsHub = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-                <h3 className={`font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('ticketsByPriority', 'Tickets by Priority')}</h3>
+                <h3 className={`font-semibold text-foreground mb-4`}>{t('ticketsByPriority', 'Tickets by Priority')}</h3>
                 <div className="space-y-3">
                   {Object.entries(byPriority).length === 0 ? (
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('noDataAvailable', 'No data available')}</p>
+                    <p className={`text-sm text-muted-foreground`}>{t('noDataAvailable', 'No data available')}</p>
                   ) : Object.entries(byPriority).map(([priority, count]) => {
                     const pct = tickets.length ? Math.round((count / tickets.length) * 100) : 0;
                     const colors = { Urgent: 'bg-error', High: 'bg-warning', Medium: 'bg-primary', Low: 'bg-success' };
@@ -126,10 +126,10 @@ const AdvancedAnalyticsHub = () => {
               </div>
 
               <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-                <h3 className={`font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('ticketsByCategory', 'Tickets by Category')}</h3>
+                <h3 className={`font-semibold text-foreground mb-4`}>{t('ticketsByCategory', 'Tickets by Category')}</h3>
                 <div className="space-y-3">
                   {Object.entries(byCategory).length === 0 ? (
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('noDataAvailable', 'No data available')}</p>
+                    <p className={`text-sm text-muted-foreground`}>{t('noDataAvailable', 'No data available')}</p>
                   ) : Object.entries(byCategory).map(([cat, count]) => {
                     const pct = tickets.length ? Math.round((count / tickets.length) * 100) : 0;
                     return (

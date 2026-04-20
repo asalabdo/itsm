@@ -9,6 +9,7 @@ import RequestCreationWizard from './components/RequestCreationWizard';
 import ActiveRequestsDashboard from './components/ActiveRequestsDashboard';
 import ApprovalWorkflowCards from './components/ApprovalWorkflowCards';
 import PerformanceMetrics from './components/PerformanceMetrics';
+import ManageEngineRequestIntake from './components/ManageEngineRequestIntake';
 import FilterControls from './components/FilterControls';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -17,6 +18,7 @@ import { serviceRequestsAPI } from '../../services/api';
 const ServiceRequestManagement = () => {
   const location = useLocation();
   const { language, isRtl } = useLanguage();
+  const isArabic = language === 'ar';
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -46,7 +48,20 @@ const ServiceRequestManagement = () => {
   // Auto-refresh every 3 minutes for real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
-      handleRefresh();
+      setRefreshing(true);
+      window.dispatchEvent(new CustomEvent('itsm:refresh'));
+      serviceRequestsAPI.getAll()
+        .then((response) => {
+          setServiceRequests(Array.isArray(response?.data) ? response.data : []);
+        })
+        .catch((error) => {
+          console.error('Failed to load service requests:', error);
+          setServiceRequests([]);
+        })
+        .finally(() => {
+          setRefreshing(false);
+          setLastRefresh(new Date());
+        });
     }, 180000); // 3 minutes
 
     return () => clearInterval(interval);
@@ -115,9 +130,11 @@ const ServiceRequestManagement = () => {
     }
   };
 
+  // `t` is intentionally used here to keep the filter labels localized with the active language.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const filterOptions = useMemo(() => {
     const asOptionList = (values) => [
-      { value: 'all', label: 'All' },
+      { value: 'all', label: t('all', isArabic ? 'الكل' : 'All') },
       ...Array.from(new Set(values.filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b))).map((value) => ({
         value: String(value).toLowerCase().replace(/\s+/g, '-'),
         label: String(value),
@@ -143,7 +160,7 @@ const ServiceRequestManagement = () => {
       priorityOptions: asOptionList(priorityValues),
       assigneeOptions: asOptionList(assigneeValues),
     };
-  }, [serviceRequests]);
+  }, [isArabic, serviceRequests]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const slaAlert = useMemo(() => {
     const now = new Date();
@@ -242,7 +259,7 @@ const ServiceRequestManagement = () => {
 
               {/* Last Refresh Indicator */}
               <div className="text-sm text-muted-foreground hidden md:block">
-                {t('lastRefresh', 'Last Refresh')}: {lastRefresh?.toLocaleTimeString('en-US', { 
+                {t('lastRefresh', 'Last Refresh')}: {lastRefresh?.toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { 
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
@@ -272,6 +289,10 @@ const ServiceRequestManagement = () => {
                 </div>
               </div>
 
+              <div>
+                <ManageEngineRequestIntake />
+              </div>
+
               {/* Middle Section: Approval Workflow Cards */}
               <div>
                 <ApprovalWorkflowCards />
@@ -291,7 +312,8 @@ const ServiceRequestManagement = () => {
           )}
 
           {viewMode === 'requests' && (
-            <div className="grid grid-cols-1">
+            <div className="space-y-8">
+              <ManageEngineRequestIntake />
               <ActiveRequestsDashboard expanded={true} />
             </div>
           )}

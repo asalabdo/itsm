@@ -24,6 +24,54 @@ const PrioritiesPage = () => {
 
   const cards = priorities.length ? priorities : getDefaultCards();
 
+  const priorityText = {
+    urgent: {
+      label: t('urgent', 'Urgent'),
+      impact: t('critical', 'Critical'),
+      urgency: t('immediate', 'Immediate'),
+      description: t('stopTheLineIssues', 'Business critical incidents that stop work or affect many users.'),
+    },
+    high: {
+      label: t('high', 'High'),
+      impact: t('high', 'High'),
+      urgency: t('high', 'High'),
+      description: t('significantOperationalImpact', 'Important issues with significant impact but limited scope.'),
+    },
+    medium: {
+      label: t('medium', 'Medium'),
+      impact: t('medium', 'Medium'),
+      urgency: t('medium', 'Medium'),
+      description: t('standardSupportRequest', 'Standard operational tickets and service requests.'),
+    },
+    low: {
+      label: t('low', 'Low'),
+      impact: t('low', 'Low'),
+      urgency: t('low', 'Low'),
+      description: t('canBeScheduled', 'Minor requests and work that can be scheduled.'),
+    },
+  };
+
+  const getDisplayPriority = (priority) => {
+    const localized = priorityText[priority?.key] || {};
+    if (language === 'ar') {
+      return {
+        ...priority,
+        label: localized.label || priority?.label || priority?.key,
+        impact: localized.impact || priority?.impact || '',
+        urgency: localized.urgency || priority?.urgency || '',
+        description: localized.description || priority?.description || '',
+      };
+    }
+
+    return {
+      ...priority,
+      label: priority?.label || localized.label || priority?.key,
+      impact: priority?.impact || localized.impact || '',
+      urgency: priority?.urgency || localized.urgency || '',
+      description: priority?.description || localized.description || '',
+    };
+  };
+
   const localizedLevel = (level) => {
     const map = {
       urgent: { impact: t('critical', 'Critical'), urgency: t('immediate', 'Immediate') },
@@ -68,28 +116,30 @@ const PrioritiesPage = () => {
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {cards.map((priority) => (
+          {cards.map((priority) => {
+            const displayPriority = getDisplayPriority(priority);
+            return (
             <div key={priority.key} className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-              <div className={`flex items-start justify-between gap-2 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-start justify-between gap-2 mb-4`}>
                 <div>
-                  <h2 className={`text-xl font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{priority.label}</h2>
-                  <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{priority.description}</p>
+                  <h2 className={`text-xl font-semibold text-foreground`}>{displayPriority.label}</h2>
+                  <p className={`text-sm text-muted-foreground`}>{displayPriority.description}</p>
                 </div>
                 <Icon name="Flag" size={20} className="text-primary" />
               </div>
               <div className="space-y-2 text-sm">
-                <div className={`flex justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-muted-foreground">{t('impact', 'Impact')}</span><span className="font-medium">{priority.impact}</span></div>
-                <div className={`flex justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-muted-foreground">{t('urgency', 'Urgency')}</span><span className="font-medium">{priority.urgency}</span></div>
+                <div className={`flex justify-between`}><span className="text-muted-foreground">{t('impact', 'Impact')}</span><span className="font-medium">{displayPriority.impact}</span></div>
+                <div className={`flex justify-between`}><span className="text-muted-foreground">{t('urgency', 'Urgency')}</span><span className="font-medium">{displayPriority.urgency}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t('response', 'Response')}</span><span className="font-medium">{priority.responseHours}h</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t('resolution', 'Resolution')}</span><span className="font-medium">{priority.resolutionHours}h</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{t('escalate', 'Escalate')}</span><span className="font-medium">{priority.escalationMinutes}m</span></div>
               </div>
               <div className="flex flex-wrap gap-2 mt-4">
-                <Button size="sm" variant="outline" onClick={() => navigate(`/ticket-management-center?priority=${encodeURIComponent(priority.label)}`)}>{t('tickets', 'Tickets')}</Button>
-                <Button size="sm" variant="outline" onClick={() => navigate(`/search?priority=${encodeURIComponent(priority.label)}`)}>{t('search', 'Search')}</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/ticket-management-center?priority=${encodeURIComponent(priority.key || displayPriority.label)}`)}>{t('tickets', 'Tickets')}</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/search?priority=${encodeURIComponent(priority.key || displayPriority.label)}`)}>{t('search', 'Search')}</Button>
               </div>
             </div>
-          ))}
+          );})}
         </section>
       </main>
     </div>

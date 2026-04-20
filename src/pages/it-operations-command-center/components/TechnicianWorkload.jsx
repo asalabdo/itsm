@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { ticketsAPI } from '../../../services/ticketsApi';
 
 const TechnicianWorkload = () => {
   const navigate = useNavigate();
@@ -15,7 +16,6 @@ const TechnicianWorkload = () => {
 
   const fetchWorkloadData = async () => {
     try {
-      const { ticketsAPI } = await import('../../../services/api');
       const [techniciansRes, queueRes] = await Promise.all([
         ticketsAPI.getTechnicians?.() || Promise.resolve({ data: [] }),
         ticketsAPI.getAssignmentQueue?.() || Promise.resolve({ data: [] })

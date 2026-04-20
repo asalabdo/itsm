@@ -59,7 +59,7 @@ const Sidebar = ({ collapsed = false, onToggle }) => {
         { label: t('executiveSummary', 'Executive Summary'), path: '/executive-it-service-summary', icon: 'BarChart3' },
         { label: t('monitoringEvents', 'Monitoring Events'), path: '/monitoring-events', icon: 'Radar' },
         { label: t('problems', 'Problems'), path: '/problems', icon: 'Bug' },
-        // { label: t('reportsAnalytics', 'Reports Hub'), path: '/reporting-and-analytics-hub', icon: 'LineChart' },
+        { label: t('reportsAnalytics', 'Reports Hub'), path: '/reporting-and-analytics-hub', icon: 'LineChart' },
         { label: t('servicePerformance', 'Service Analytics'), path: '/service-performance-analytics', icon: 'TrendingUp' },
         { label: t('advancedAnalytics', 'Advanced Analytics'), path: '/advanced-analytics', icon: 'Sparkles' },
         { label: t('scenarioValidation', 'Scenario Validation'), path: '/scenario-validation-center', icon: 'TestTube' },

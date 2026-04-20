@@ -1,0 +1,117 @@
+import { useEffect, useState } from 'react';
+import Icon from '../../../components/AppIcon';
+import { manageEngineAPI } from '../../../services/api';
+
+const ManageEngineReportingSnapshot = () => {
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState({
+    catalog: 0,
+    operations: 0,
+    serviceDeskCatalog: 0,
+    opManagerCatalog: 0,
+    serviceDeskRequests: 0,
+    opManagerAlerts: 0,
+  });
+  const [syncStatus, setSyncStatus] = useState(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [unifiedRes, syncRes] = await Promise.all([
+          manageEngineAPI.getUnified().catch(() => ({ data: { summary: {} } })),
+          manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
+        ]);
+
+        setSummary({
+          catalog: unifiedRes?.data?.summary?.catalog || 0,
+          operations: unifiedRes?.data?.summary?.operations || 0,
+          serviceDeskCatalog: unifiedRes?.data?.summary?.serviceDeskCatalog || 0,
+          opManagerCatalog: unifiedRes?.data?.summary?.opManagerCatalog || 0,
+          serviceDeskRequests: unifiedRes?.data?.summary?.serviceDeskRequests || 0,
+          opManagerAlerts: unifiedRes?.data?.summary?.opManagerAlerts || 0,
+        });
+        setSyncStatus(syncRes?.data || null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadData();
+  }, []);
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <div className="flex items-center gap-2 text-primary mb-1">
+            <Icon name="ServerCog" size={18} />
+            <h3 className="font-semibold text-foreground">ManageEngine Reporting Snapshot</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            External service demand and monitoring data ready for reporting.
+          </p>
+        </div>
+        <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+          {syncStatus?.status || 'idle'}
+        </span>
+      </div>
+
+      {loading ? (
+        <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
+          Loading ManageEngine reporting metrics...
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <div className="text-xs text-muted-foreground mb-1">External catalog</div>
+              <div className="text-2xl font-semibold text-foreground">{summary.catalog}</div>
+              <div className="text-xs text-muted-foreground mt-2">
+                {summary.serviceDeskCatalog} ServiceDesk + {summary.opManagerCatalog} OpManager
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <div className="text-xs text-muted-foreground mb-1">Operational feed</div>
+              <div className="text-2xl font-semibold text-foreground">{summary.operations}</div>
+              <div className="text-xs text-muted-foreground mt-2">
+                {summary.serviceDeskRequests} requests + {summary.opManagerAlerts} alerts
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <div className="text-xs text-muted-foreground mb-1">Imported tickets</div>
+              <div className="text-2xl font-semibold text-foreground">
+                {(syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0)}
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">
+                {syncStatus?.createdCount || 0} created / {syncStatus?.updatedCount || 0} updated
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <div className="text-xs text-muted-foreground mb-1">Last sync</div>
+              <div className="text-sm font-semibold text-foreground">
+                {syncStatus?.lastSyncAt ? new Date(syncStatus.lastSyncAt).toLocaleString() : 'Not run yet'}
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">
+                {syncStatus?.message || 'Ready for downstream reporting and export.'}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-background p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="LineChart" size={16} className="text-primary" />
+              <span className="text-sm font-medium text-foreground">Reporting hint</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Use this snapshot to explain how much of the current operational load is coming from external
+              service requests versus monitoring events before exporting reports to stakeholders.
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default ManageEngineReportingSnapshot;

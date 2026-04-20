@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import {
+  CATALOG_CATEGORY_LABELS_AR,
+  CATALOG_SERVICE_DESCRIPTIONS_AR,
+  CATALOG_SERVICE_NAMES_AR,
+  getLocalizedField,
+} from '../../../services/catalogLocalization';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { servicesAPI } from '../../../services/serviceRequestsApi';
 
 const ServiceCatalog = ({ expanded = false, onRequestService }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,73 +27,14 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
     return category === 'hardware' || name === 'macbook pro m3';
   };
 
-  const categoryLabelMap = {
-    'technical support': 'الدعم الفني',
-    'service desk': 'مكتب الخدمة',
-    'access management': 'إدارة الوصول',
-    'security operations': 'عمليات الأمن',
-    'asset management': 'إدارة الأصول',
-    'it asset team': 'فريق أصول تقنية المعلومات',
-    'change management': 'إدارة التغيير',
-    'change advisory board': 'مجلس استشاري التغيير',
-    'cyber security': 'الأمن السيبراني',
-    'security team': 'فريق الأمن',
-    'hr services': 'خدمات الموارد البشرية',
-    'hr shared services': 'الخدمات المشتركة للموارد البشرية',
-    'finance & erp': 'المالية وERP',
-    'finance applications': 'تطبيقات المالية',
-    'facilities': 'المرافق',
-    'facilities operations': 'عمليات المرافق',
-    'incident management': 'إدارة الحوادث',
-    'incident commander': 'قائد الحادثة',
-    'knowledge base': 'قاعدة المعرفة',
-    'knowledge team': 'فريق المعرفة',
-    'service requests': 'طلبات الخدمة',
-    'fulfillment team': 'فريق التنفيذ',
-    'software licensing': 'ترخيص البرمجيات',
-    'software asset team': 'فريق أصول البرمجيات',
-  };
-
-  const serviceNameMap = {
-    'technical support': 'الدعم الفني',
-    'access management': 'إدارة الوصول',
-    'asset management': 'إدارة الأصول',
-    'change management': 'إدارة التغيير',
-    'cyber security': 'الأمن السيبراني',
-    'hr services': 'خدمات الموارد البشرية',
-    'finance & erp': 'المالية وERP',
-    facilities: 'المرافق',
-    'incident management': 'إدارة الحوادث',
-    'knowledge base': 'قاعدة المعرفة',
-    'service requests': 'طلبات الخدمة',
-    'software licensing': 'ترخيص البرمجيات',
-  };
-
-  const serviceDescriptionMap = {
-    'device, email, printer, and network connectivity issues.': 'مشاكل الأجهزة والبريد والطابعة واتصال الشبكة.',
-    'password resets, account unlocks, mfa, vpn, and permissions.': 'إعادة تعيين كلمات المرور، فتح الحسابات، المصادقة الثنائية، VPN، والصلاحيات.',
-    'register, transfer, audit, and dispose assets.': 'تسجيل الأصول ونقلها وتدقيقها والتخلص منها.',
-    'planned changes, configs, deployment, rollback.': 'التغييرات المخططة والإعدادات والنشر والتراجع.',
-    'phishing, breach, vpn, usb, antivirus, suspicious links.': 'التصيد، الاختراق، VPN، USB، مضاد الفيروسات، والروابط المشبوهة.',
-    'leave, attendance, onboarding, and employee request support.': 'الدعم في الإجازات والحضور وتهيئة الموظفين وطلبات الموظفين.',
-    'erp, procurement, finance, reporting, and data corrections.': 'ERP والمشتريات والمالية والتقارير وتصحيح البيانات.',
-    'meeting rooms, car services, maintenance and phone services.': 'غرف الاجتماعات وخدمات السيارات والصيانة وخدمات الهاتف.',
-    'major incidents, outages, data loss and security incidents.': 'الحوادث الكبرى والانقطاعات وفقدان البيانات والحوادث الأمنية.',
-    'article creation, updates and access requests.': 'إنشاء المقالات وتحديثها وطلبات الوصول.',
-    'equipment, software, onboarding and workspace requests.': 'طلبات الأجهزة والبرامج وتهيئة الموظفين ومساحات العمل.',
-    'new, renew, transfer, revoke and audit licenses.': 'إصدار التراخيص وتجديدها ونقلها وإلغاؤها وتدقيقها.',
-  };
-
-  const localizeText = (value, map = {}) => {
+  const localizeText = useCallback((value, map = {}) => {
     const raw = String(value || '').trim();
-    if (!isArabic) return raw;
-    return map[raw.toLowerCase()] || raw;
-  };
+    return getLocalizedField({ value: raw, valueAr: map[raw.toLowerCase()] }, 'value', map, language) || raw;
+  }, [language]);
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const { servicesAPI } = await import('../../../services/api');
         const res = await servicesAPI.getCatalog?.() || { data: [] };
         setServices((res.data || []).filter((service) => !isHiddenCatalogItem(service)));
       } catch (error) {
@@ -108,7 +55,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
       if (!acc[key]) {
         acc[key] = {
           value: key,
-          label: localizeText(rawCategory, categoryLabelMap),
+          label: localizeText(rawCategory, CATALOG_CATEGORY_LABELS_AR),
           count: 0,
         };
       }
@@ -120,15 +67,11 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
       { value: 'all', label: t('allCategories', 'All Categories'), count: services?.length },
       ...Object.values(grouped).sort((a, b) => a.label.localeCompare(b.label)),
     ];
-  }, [services, isArabic]);
+  }, [localizeText, services, t]);
 
   const filteredServices = services?.filter(service => {
-    const localizedName = isArabic
-      ? (service?.nameAr || serviceNameMap[String(service?.name || '').trim().toLowerCase()] || service?.name)
-      : (service?.name || service?.nameAr);
-    const localizedDesc = isArabic
-      ? (service?.descriptionAr || serviceDescriptionMap[String(service?.description || '').trim().toLowerCase()] || service?.description)
-      : (service?.description || service?.descriptionAr);
+    const localizedName = getLocalizedField(service, 'name', CATALOG_SERVICE_NAMES_AR, language);
+    const localizedDesc = getLocalizedField(service, 'description', CATALOG_SERVICE_DESCRIPTIONS_AR, language);
     const matchesSearch = String(localizedName || '').toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
                          String(localizedDesc || '').toLowerCase()?.includes(searchTerm?.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || String(service?.category || '').trim().toLowerCase() === selectedCategory;
@@ -149,13 +92,6 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
       case 'support': return 'Headphones';
       default: return 'Package';
     }
-  };
-
-  const getPopularityColor = (popularity) => {
-    if (popularity >= 90) return 'bg-green-500';
-    if (popularity >= 80) return 'bg-blue-500';
-    if (popularity >= 70) return 'bg-yellow-500';
-    return 'bg-gray-500';
   };
 
   if (loading) {
@@ -240,7 +176,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
                   </div>
                   <div className="ml-3">
                   <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
-                    {isArabic ? (service?.nameAr || serviceNameMap[String(service?.name || '').trim().toLowerCase()] || service?.name) : service?.name}
+                    {getLocalizedField(service, 'name', CATALOG_SERVICE_NAMES_AR, language)}
                   </h3>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="text-xs text-muted-foreground">
@@ -258,14 +194,14 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
 
             {/* Service Description */}
             <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-              {isArabic ? (service?.descriptionAr || serviceDescriptionMap[String(service?.description || '').trim().toLowerCase()] || service?.description) : service?.description}
+              {getLocalizedField(service, 'description', CATALOG_SERVICE_DESCRIPTIONS_AR, language)}
             </p>
 
             <div className="space-y-2 mb-4">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{t('category', 'Category')}:</span>
                 <span className="font-medium text-foreground capitalize">
-                  {localizeText(service?.category, categoryLabelMap)}
+                  {localizeText(service?.category, CATALOG_CATEGORY_LABELS_AR)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
@@ -309,3 +245,4 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
 };
 
 export default ServiceCatalog;
+

@@ -9,11 +9,18 @@ import { manageEngineAPI } from '../../services/api';
 import DynamicFormRenderer from '../../components/ui/DynamicFormRenderer';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
+import {
+  CATALOG_CATEGORY_LABELS_AR,
+  CATALOG_EXTERNAL_PRIORITY_LABELS_AR,
+  CATALOG_EXTERNAL_STATUS_LABELS_AR,
+  CATALOG_SERVICE_DESCRIPTIONS_AR,
+  CATALOG_SERVICE_NAMES_AR,
+  getLocalizedField,
+} from '../../services/catalogLocalization';
 
 const ServiceCatalogHub = () => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
   const [catalog, setCatalog] = useState([]);
   const [externalCatalog, setExternalCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +30,8 @@ const ServiceCatalogHub = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [message, setMessage] = useState(null);
   const [externalSourceFilter, setExternalSourceFilter] = useState('');
+  const [externalTypeFilter, setExternalTypeFilter] = useState('');
+  const [externalStatusFilter, setExternalStatusFilter] = useState('');
 
   const isHiddenCatalogItem = (item) => {
     const name = String(item?.name || '').trim().toLowerCase();
@@ -30,86 +39,20 @@ const ServiceCatalogHub = () => {
     return category === 'hardware' || name === 'macbook pro m3';
   };
 
-  const categoryMap = {
-    'technical support': 'الدعم الفني',
-    'service desk': 'مكتب الخدمة',
-    'access management': 'إدارة الوصول',
-    'security operations': 'عمليات الأمن',
-    'asset management': 'إدارة الأصول',
-    'it asset team': 'فريق أصول تقنية المعلومات',
-    'change management': 'إدارة التغيير',
-    'change advisory board': 'مجلس استشاري التغيير',
-    'cyber security': 'الأمن السيبراني',
-    'security team': 'فريق الأمن',
-    'hr services': 'خدمات الموارد البشرية',
-    'hr shared services': 'الخدمات المشتركة للموارد البشرية',
-    'finance & erp': 'المالية وERP',
-    'finance applications': 'تطبيقات المالية',
-    facilities: 'المرافق',
-    'facilities operations': 'عمليات المرافق',
-    'incident management': 'إدارة الحوادث',
-    'incident commander': 'قائد الحادثة',
-    'knowledge base': 'قاعدة المعرفة',
-    'knowledge team': 'فريق المعرفة',
-    'service requests': 'طلبات الخدمة',
-    'fulfillment team': 'فريق التنفيذ',
-    'software licensing': 'ترخيص البرمجيات',
-    'software asset team': 'فريق أصول البرمجيات',
-  };
-
-  const serviceNameMap = {
-    'technical support': 'الدعم الفني',
-    'access management': 'إدارة الوصول',
-    'asset management': 'إدارة الأصول',
-    'change management': 'إدارة التغيير',
-    'cyber security': 'الأمن السيبراني',
-    'hr services': 'خدمات الموارد البشرية',
-    'finance & erp': 'المالية وERP',
-    facilities: 'المرافق',
-    'incident management': 'إدارة الحوادث',
-    'knowledge base': 'قاعدة المعرفة',
-    'service requests': 'طلبات الخدمة',
-    'software licensing': 'ترخيص البرمجيات',
-  };
-
-  const serviceDescriptionMap = {
-    'device, email, printer, and network connectivity issues.': 'مشكلات الأجهزة والبريد والطابعات واتصال الشبكة.',
-    'password resets, account unlocks, mfa, vpn, and permissions.': 'إعادة تعيين كلمات المرور، فتح الحسابات، المصادقة متعددة العوامل، VPN، والصلاحيات.',
-    'register, transfer, audit, and dispose assets.': 'تسجيل الأصول ونقلها ومراجعتها والتخلص منها.',
-    'planned changes, configs, deployment, rollback.': 'التغييرات المخططة والإعدادات والنشر والتراجع.',
-    'phishing, breach, vpn, usb, antivirus, suspicious links.': 'التصيد، الاختراق، VPN، USB، مضاد الفيروسات، والروابط المشبوهة.',
-    'leave, attendance, onboarding, and employee request support.': 'دعم الإجازات والحضور والتهيئة وطلبات الموظفين.',
-    'erp, procurement, finance, reporting, and data corrections.': 'ERP والمشتريات والمالية والتقارير وتصحيح البيانات.',
-    'meeting rooms, car services, maintenance and phone services.': 'غرف الاجتماعات، خدمات السيارات، الصيانة، وخدمات الهاتف.',
-    'major incidents, outages, data loss and security incidents.': 'الحوادث الكبرى والانقطاعات وفقدان البيانات والحوادث الأمنية.',
-    'article creation, updates and access requests.': 'إنشاء المقالات وتحديثها وطلبات الوصول.',
-    'equipment, software, onboarding and workspace requests.': 'طلبات الأجهزة والبرمجيات وتهيئة الموظفين ومساحات العمل.',
-    'new, renew, transfer, revoke and audit licenses.': 'إصدار التراخيص وتجديدها ونقلها وإلغاؤها وتدقيقها.',
-  };
-
   const localizeText = (value, map = {}) => {
     const raw = String(value || '').trim();
-    if (!isArabic) return raw;
-    return map[raw.toLowerCase()] || raw;
+    return getLocalizedField({ value: raw, valueAr: map[raw.toLowerCase()] }, 'value', map, language) || raw;
   };
 
-  const localizeName = (item) => {
-    const raw = String(item?.name || '').trim();
-    if (!isArabic) return raw;
-    return item?.nameAr || serviceNameMap[raw.toLowerCase()] || raw;
-  };
+  const localizeName = (item) => getLocalizedField(item, 'name', CATALOG_SERVICE_NAMES_AR, language);
 
-  const localizeDescription = (item) => {
-    const raw = String(item?.description || '').trim();
-    if (!isArabic) return raw;
-    return item?.descriptionAr || serviceDescriptionMap[raw.toLowerCase()] || raw;
-  };
+  const localizeDescription = (item) => getLocalizedField(item, 'description', CATALOG_SERVICE_DESCRIPTIONS_AR, language);
 
   useEffect(() => {
     fetchCatalog();
     // Refetch when ManageEngine catalog filters change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [externalSourceFilter, searchQuery]);
+  }, [externalSourceFilter, externalTypeFilter, externalStatusFilter, searchQuery]);
 
   const fetchCatalog = async () => {
     try {
@@ -117,6 +60,8 @@ const ServiceCatalogHub = () => {
         serviceRequestService.getCatalog(),
         manageEngineAPI.getCatalog({
           source: externalSourceFilter || undefined,
+          type: externalTypeFilter || undefined,
+          status: externalStatusFilter || undefined,
           search: searchQuery || undefined,
         }).catch(() => ({ data: [] }))
       ]);
@@ -134,6 +79,8 @@ const ServiceCatalogHub = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const localizedSelectedName = localizeName(selectedItem);
+
       if (selectedItem?.isExternal) {
         setMessage({ type: 'success', text: t('externalServiceLoaded', 'External service details loaded successfully.') });
         setSelectedItem(null);
@@ -142,8 +89,8 @@ const ServiceCatalogHub = () => {
       }
 
       await serviceRequestService.submitRequest({
-        title: `Request for ${selectedItem.name}`,
-        description: `User requested ${selectedItem.name} via Service Catalog.`,
+        title: `${t('requestFor', 'Request for')} ${localizedSelectedName}`,
+        description: `${t('userRequested', 'User requested')} ${localizedSelectedName} ${t('viaServiceCatalog', 'via Service Catalog.')}`,
         catalogItemId: selectedItem.id,
         customDataJson: JSON.stringify(formData)
       });
@@ -187,13 +134,18 @@ const ServiceCatalogHub = () => {
     return visibleCatalog.filter((item) => {
       const name = localizeName(item);
       const desc = localizeDescription(item);
-      const cat = localizeText(item?.category, categoryMap);
+      const cat = localizeText(item?.category, CATALOG_CATEGORY_LABELS_AR);
       return [name, desc, cat].join(' ').toLowerCase().includes(query);
     });
   }, [catalog, externalCatalog, searchQuery, language]);
   const filteredCategories = [...new Set(filteredCatalog.map(item => {
-    return localizeText(item.category, categoryMap);
+    return localizeText(item.category, CATALOG_CATEGORY_LABELS_AR);
   }))];
+  const externalSummary = useMemo(() => ({
+    total: filteredCatalog.filter((item) => item.isExternal).length,
+    serviceDesk: filteredCatalog.filter((item) => item.isExternal && item.sourceSystem === 'ServiceDesk').length,
+    opManager: filteredCatalog.filter((item) => item.isExternal && item.sourceSystem === 'OpManager').length,
+  }), [filteredCatalog]);
 
   return (
     <>
@@ -216,17 +168,48 @@ const ServiceCatalogHub = () => {
               onChange={(e) => setSearchQuery(e?.target?.value)}
               className="max-w-xl"
             />
-            <div className="max-w-xs">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-4xl">
               <select
                 value={externalSourceFilter}
                 onChange={(e) => setExternalSourceFilter(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
               >
                 <option value="">{t('allExternalSources', 'All external sources')}</option>
-                <option value="ServiceDesk">{isArabic ? 'ServiceDesk' : 'ServiceDesk'}</option>
-                <option value="OpManager">{isArabic ? 'OpManager' : 'OpManager'}</option>
+                <option value="ServiceDesk">{t('serviceDesk', 'ServiceDesk')}</option>
+                <option value="OpManager">{t('opManager', 'OpManager')}</option>
+              </select>
+              <select
+                value={externalTypeFilter}
+                onChange={(e) => setExternalTypeFilter(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+              >
+                <option value="">{t('allExternalTypes', 'All external types')}</option>
+                <option value="catalog">{t('catalog', 'Catalog')}</option>
+                <option value="service">{t('services', 'Services')}</option>
+              </select>
+              <select
+                value={externalStatusFilter}
+                onChange={(e) => setExternalStatusFilter(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+              >
+                <option value="">{t('allStatuses', 'All statuses')}</option>
+                <option value="active">{t('active', 'Active')}</option>
+                <option value="enabled">{t('enabled', 'Enabled')}</option>
+                <option value="available">{t('available', 'Available')}</option>
               </select>
             </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+              {t('externalItems', 'External items')}: {externalSummary.total}
+            </span>
+            <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+              ServiceDesk: {externalSummary.serviceDesk}
+            </span>
+            <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+              OpManager: {externalSummary.opManager}
+            </span>
           </div>
 
           {message && (
@@ -250,15 +233,15 @@ const ServiceCatalogHub = () => {
               <p className="text-muted-foreground mt-2">{t('tryDifferentKeyword', 'Try a different keyword or clear the search to see the full catalog.')}</p>
             </div>
           ) : (
-            filteredCategories.map(category => (
-              <div key={category} className="space-y-4">
+              filteredCategories.map(category => (
+                <div key={category} className="space-y-4">
                 <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <span className="w-1.5 h-6 bg-primary rounded-full"></span>
                   {category}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredCatalog.filter(item => {
-                    const cat = localizeText(item.category, categoryMap);
+                    const cat = localizeText(item.category, CATALOG_CATEGORY_LABELS_AR);
                     return cat === category;
                   }).map(item => {
                     const localizedName = localizeName(item);
@@ -282,8 +265,8 @@ const ServiceCatalogHub = () => {
                       <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{localizedDesc}</p>
                       {item.isExternal && (
                         <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          {item.sourceStatus && <span className="rounded-full bg-muted px-2 py-1">{localizeText(item.sourceStatus, { active: 'نشط', pending: 'قيد الانتظار', closed: 'مغلق', resolved: 'محلول' })}</span>}
-                          {item.sourcePriority && <span className="rounded-full bg-muted px-2 py-1">{localizeText(item.sourcePriority, { urgent: 'عاجل', high: 'مرتفع', medium: 'متوسط', low: 'منخفض' })}</span>}
+                          {item.sourceStatus && <span className="rounded-full bg-muted px-2 py-1">{localizeText(item.sourceStatus, CATALOG_EXTERNAL_STATUS_LABELS_AR)}</span>}
+                          {item.sourcePriority && <span className="rounded-full bg-muted px-2 py-1">{localizeText(item.sourcePriority, CATALOG_EXTERNAL_PRIORITY_LABELS_AR)}</span>}
                         </div>
                       )}
                       <button 
@@ -302,7 +285,7 @@ const ServiceCatalogHub = () => {
 
           {/* Request Modal */}
           {selectedItem && (() => {
-            const localizedName = language === 'ar' && selectedItem.nameAr ? selectedItem.nameAr : selectedItem.name;
+            const localizedName = localizeName(selectedItem);
             return (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
@@ -350,6 +333,17 @@ const ServiceCatalogHub = () => {
                           ))}
                         </div>
                       )}
+                      {selectedItem.externalUrl && (
+                        <a
+                          href={selectedItem.externalUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 pt-2 text-sm font-medium text-primary hover:underline"
+                        >
+                          <Icon name="ExternalLink" size={16} />
+                          {t('openInSourceSystem', 'Open in source system')}
+                        </a>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -391,3 +385,5 @@ const ServiceCatalogHub = () => {
 };
 
 export default ServiceCatalogHub;
+
+

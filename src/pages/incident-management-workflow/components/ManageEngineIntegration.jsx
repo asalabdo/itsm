@@ -24,6 +24,15 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
     search: '',
   });
 
+  const resetFilters = () => {
+    setFilters({
+      source: '',
+      type: '',
+      status: '',
+      search: '',
+    });
+  };
+
   const refreshAll = async () => {
     await Promise.all([testConnection(), loadUnifiedData(), loadSyncStatus()]);
   };
@@ -223,6 +232,24 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
         />
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={resetFilters}>
+          Clear Filters
+        </Button>
+        <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+          ServiceDesk ops: {operationGroups.serviceDesk.length}
+        </span>
+        <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+          OpManager ops: {operationGroups.opManager.length}
+        </span>
+        <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+          ServiceDesk catalog: {catalogGroups.serviceDesk.length}
+        </span>
+        <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+          OpManager services: {catalogGroups.opManager.length}
+        </span>
+      </div>
+
       {(lastSyncTime || syncDetails?.lastSyncAt) && (
         <div className="text-xs text-muted-foreground mb-4">
           Last sync: {(lastSyncTime || new Date(syncDetails.lastSyncAt)).toLocaleString()}
@@ -283,6 +310,16 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
                   {item.priority && <span className="rounded-full bg-muted px-2 py-1">{item.priority}</span>}
                   {item.category && <span className="rounded-full bg-muted px-2 py-1">{item.category}</span>}
                   {item.owner && <span className="rounded-full bg-muted px-2 py-1">{item.owner}</span>}
+                  {item.externalUrl && (
+                    <a
+                      href={item.externalUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full bg-primary/10 px-2 py-1 text-primary hover:bg-primary/20"
+                    >
+                      Open Source
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
@@ -308,6 +345,18 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
                   <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">{item.category || item.source}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{item.description || 'No description available.'}</p>
+                {item.externalUrl && (
+                  <div className="mt-3">
+                    <a
+                      href={item.externalUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Open Source
+                    </a>
+                  </div>
+                )}
               </div>
             ))}
             {catalog.length === 0 && (

@@ -7,6 +7,7 @@ import FilterPanel from './components/FilterPanel';
 import PerformanceChart from './components/PerformanceChart';
 import TopIssuesTable from './components/TopIssuesTable';
 import TrendAnalysisSection from './components/TrendAnalysisSection';
+import ManageEnginePerformanceInsights from './components/ManageEnginePerformanceInsights';
 import { dashboardAPI, reportsAPI, ticketsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
 import { useLanguage } from '../../context/LanguageContext';
@@ -190,6 +191,10 @@ const ServicePerformanceAnalytics = () => {
             <TrendAnalysisSection reportData={reportData} />
 
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-3">
+                <ManageEnginePerformanceInsights />
+              </div>
+
               <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
                 <h4 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>
                   {t('keyInsightsShort', 'Key Insights')}

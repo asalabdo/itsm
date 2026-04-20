@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -14,6 +14,7 @@ import AuditTrail from './components/AuditTrail';
 import CustomerSatisfaction from './components/CustomerSatisfaction';
 import ReplyComposer from './components/ReplyComposer';
 import WorkflowAdminPanel from './components/WorkflowAdminPanel';
+import ManageEngineTicketContext from './components/ManageEngineTicketContext';
 import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
 import { ticketsAPI } from '../../services/api';
 import { markBackendReady } from '../../services/backendAvailability';
@@ -175,7 +176,7 @@ const TicketDetails = () => {
   const [searchParams] = useSearchParams();
   const ticketId = id || searchParams.get('id') || '4521';
   const { language } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
 
   const [ticketData, setTicketData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -193,7 +194,7 @@ const TicketDetails = () => {
   })();
   const canEditWorkflow = /admin|manager/i.test(currentUserRole);
 
-  const fetchTicket = async (silent = false) => {
+  const fetchTicket = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
       const res = await ticketsAPI.getById(ticketId);
@@ -207,13 +208,13 @@ const TicketDetails = () => {
     } finally {
       if (!silent) setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchTicket();
   }, [ticketId]);
 
-  const ticket = ticketData || {
+  useEffect(() => {
+    void fetchTicket();
+  }, [fetchTicket]);
+
+  const ticket = useMemo(() => (ticketData || {
     id: ticketId,
     ticketNumber: `TKT-${ticketId}`,
     title: t('ticketDetailsUnavailable', 'Ticket details not available'),
@@ -226,7 +227,7 @@ const TicketDetails = () => {
     createdAt: new Date().toISOString(),
     slaDueDate: null,
     slaRemainingMinutes: null,
-  };
+  }), [ticketData, ticketId, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -250,7 +251,7 @@ const TicketDetails = () => {
     return () => {
       cancelled = true;
     };
-  }, [ticketData, ticketId, workflowRefreshKey]);
+  }, [ticket, ticketData, workflowRefreshKey]);
 
   const messages = mapConversationMessages(ticketData || ticket, t);
   const internalNotes = mapInternalNotes(ticketData || ticket, t);
@@ -555,6 +556,8 @@ const TicketDetails = () => {
                   onStartTimer={handleStartTimer}
                   onStopTimer={handleStopTimer}
                 />
+
+                <ManageEngineTicketContext ticket={ticket} />
 
                 <CustomerSatisfaction
                   isResolved={ticket?.status === 'Resolved'}

@@ -10,6 +10,21 @@ export default defineConfig({
   build: {
     outDir: "build",
     chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return undefined;
+          }
+
+          if (id.includes("recharts") || id.includes("d3")) {
+            return "charts-vendor";
+          }
+
+          return "vendor";
+        },
+      },
+    },
   },
   plugins: [tsconfigPaths(), react(), tagger()],
   server: {

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+﻿import { useCallback, useMemo, useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -12,6 +12,7 @@ import ApprovalHistoryPanel from './components/ApprovalHistoryPanel';
 import ActionSidebar from './components/ActionSidebar';
 import FilterPanel from './components/FilterPanel';
 import ApprovalModal from './components/ApprovalModal';
+import ManageEngineApprovalInsights from './components/ManageEngineApprovalInsights';
 import { approvalsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
 import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
@@ -20,6 +21,7 @@ import { getTranslation } from '../../services/i18n';
 
 const ApprovalQueueManager = () => {
   const { language } = useLanguage();
+  const isArabic = language === 'ar';
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('urgency');
@@ -51,21 +53,21 @@ const ApprovalQueueManager = () => {
     return Number.isFinite(parsed) ? parsed : 0;
   };
 
-  const mapApprovalRequest = (request) => {
+  const mapApprovalRequest = useCallback((request) => {
     const createdAt = request?.createdAt ? new Date(request.createdAt) : null;
     const priorityRank = Number(request?.priority ?? 0);
     const urgency = priorityRank >= 4 ? 'critical' : priorityRank >= 3 ? 'high' : priorityRank >= 2 ? 'medium' : 'low';
-    const requesterName = request?.requestedBy?.fullName || request?.requestedBy?.username || 'Unknown requester';
-    const department = request?.requestedBy?.department || 'Unassigned';
+    const requesterName = request?.requestedBy?.fullName || request?.requestedBy?.username || (isArabic ? 'مستخدم غير معروف' : 'Unknown requester');
+    const department = request?.requestedBy?.department || (isArabic ? 'غير مخصص' : 'Unassigned');
 
     return {
       ...request,
-      type: request?.itemType || request?.title || 'Approval Request',
+      type: request?.itemType || request?.title || (isArabic ? 'طلب اعتماد' : 'Approval Request'),
       requester: requesterName,
       department,
       description: request?.description || request?.title || '',
       justification: request?.description || request?.title || '',
-      submissionDate: createdAt ? createdAt.toLocaleDateString() : 'Unknown',
+      submissionDate: createdAt ? createdAt.toLocaleDateString() : (isArabic ? 'غير معروف' : 'Unknown'),
       urgency,
       status: String(request?.status || 'Pending').toLowerCase(),
       value: request?.value || '--',
@@ -74,14 +76,14 @@ const ApprovalQueueManager = () => {
       history: request?.history || [],
       documents: request?.documents || [],
     };
-  };
+  }, [isArabic]);
 
   useEffect(() => {
     approvalsAPI.getPending().then(res => {
       const mapped = (res.data || []).map(mapApprovalRequest);
       setApprovalRequests(mapped);
     }).catch(console.error).finally(() => setLoadingApprovals(false));
-  }, []);
+  }, [mapApprovalRequest]);
 
   useEffect(() => {
     if (!selectedRequest && approvalRequests.length > 0) {
@@ -92,8 +94,7 @@ const ApprovalQueueManager = () => {
   const stats = [
     { label: t('pendingApprovals', 'Pending Approvals'), value: approvalRequests.length.toString(), icon: 'Clock', color: 'text-warning' },
     { label: t('overdue', 'Overdue'), value: approvalRequests.filter(r => r.isOverdue).length.toString(), icon: 'AlertTriangle', color: 'text-error' },
-    { label: t('approvedToday', 'Approved Today'), value: '0', icon: 'CheckCircle', color: 'text-success' },
-    { label: t('totalValue', 'Total Value'), value: `${approvalRequests.reduce((sum, request) => sum + parseCurrencyValue(request?.value), 0).toLocaleString()} ريال`, icon: 'Banknote', color: 'text-primary' }
+    { label: t('totalValue', 'Total Value'), value: `${approvalRequests.reduce((sum, request) => sum + parseCurrencyValue(request?.value), 0).toLocaleString()} ${isArabic ? 'ريال' : 'SAR'}`, icon: 'Banknote', color: 'text-primary' }
   ];
 
   const sortOptions = [
@@ -318,8 +319,8 @@ const ApprovalQueueManager = () => {
   return (
     <>
       <Helmet>
-        <title>Approval Queue Manager - WorkflowHub</title>
-        <meta name="description" content="Streamline decision-making with efficient approval queue management, bulk processing, and role-based workflows" />
+        <title>{isArabic ? 'إدارة قائمة الموافقات - WorkflowHub' : 'Approval Queue Manager - WorkflowHub'}</title>
+        <meta name="description" content={isArabic ? 'تبسيط اتخاذ القرار من خلال إدارة فعّالة لقائمة الموافقات والمعالجة الجماعية ومسارات العمل حسب الدور' : 'Streamline decision-making with efficient approval queue management, bulk processing, and role-based workflows'} />
       </Helmet>
     <div className="min-h-screen bg-background">
         <Header />
@@ -331,10 +332,10 @@ const ApprovalQueueManager = () => {
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div>
                   <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2">
-                    Approval Queue Manager
+                    {isArabic ? 'إدارة قائمة الموافقات' : 'Approval Queue Manager'}
                   </h1>
                   <p className="text-sm md:text-base text-muted-foreground">
-                    Review and process approval requests efficiently
+                    {isArabic ? 'راجع طلبات الموافقة وعالجها بكفاءة' : 'Review and process approval requests efficiently'}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -344,7 +345,7 @@ const ApprovalQueueManager = () => {
                     iconPosition="left"
                     onClick={() => setShowFilters(!showFilters)}
                   >
-                    Filters
+                    {t('filters', 'Filters')}
                   </Button>
                   <Button
                     variant="outline"
@@ -352,7 +353,7 @@ const ApprovalQueueManager = () => {
                     iconPosition="left"
                     onClick={handleExport}
                   >
-                    Export
+                    {t('export', 'Export')}
                   </Button>
                 </div>
               </div>
@@ -379,15 +380,19 @@ const ApprovalQueueManager = () => {
 
             <div className="mb-6">
               <WorkflowStatusStrip
-                title="Approval Workflow"
-                subtitle="Track the active approval route, the assigned review owner, and the latest queued action."
-                service={selectedRequest?.type || 'Approval queue'}
-                organization={selectedRequest?.department || 'All departments'}
-                mode="Manager-first routing"
-                lastAction={selectedRequest ? `${selectedRequest?.status || 'Pending'} • ${selectedRequest?.requester || 'Unknown requester'}` : 'Waiting for a request to review'}
+                  title={isArabic ? 'مسار الموافقات' : 'Approval Workflow'}
+                  subtitle={isArabic ? 'تتبع مسار الموافقة الحالي ومالك المراجعة والإجراء الأخير في القائمة' : 'Track the active approval route, the assigned review owner, and the latest queued action.'}
+                  service={selectedRequest?.type || (isArabic ? 'قائمة الموافقات' : 'Approval queue')}
+                  organization={selectedRequest?.department || (isArabic ? 'كل الأقسام' : 'All departments')}
+                  mode={isArabic ? 'التوجيه أولًا للمدير' : 'Manager-first routing'}
+                  lastAction={selectedRequest ? `${selectedRequest?.status || (isArabic ? 'قيد الانتظار' : 'Pending')} • ${selectedRequest?.requester || (isArabic ? 'مستخدم غير معروف' : 'Unknown requester')}` : (isArabic ? 'بانتظار طلب للمراجعة' : 'Waiting for a request to review')}
                 activeStep={activeWorkflowStep}
                 steps={workflowSteps}
               />
+            </div>
+
+            <div className="mb-6">
+              <ManageEngineApprovalInsights />
             </div>
 
             {showFilters && (
@@ -408,7 +413,7 @@ const ApprovalQueueManager = () => {
                 }`}
               >
                 <Icon name="List" size={16} className="inline mr-2" />
-                Queue View
+                {isArabic ? 'عرض القائمة' : 'Queue View'}
               </button>
               <button
                 onClick={() => setActiveView('history')}
@@ -417,7 +422,7 @@ const ApprovalQueueManager = () => {
                 }`}
               >
                 <Icon name="History" size={16} className="inline mr-2" />
-                History
+                {isArabic ? 'السجل' : 'History'}
               </button>
             </div>
 
@@ -429,18 +434,18 @@ const ApprovalQueueManager = () => {
                       <div className="p-4 border-b border-border space-y-3">
                         <div className="flex items-center justify-between">
                           <h2 className="text-base md:text-lg font-semibold text-foreground">
-                            Approval Queue ({approvalCountLabel})
+                            {isArabic ? `قائمة الموافقات (${approvalCountLabel})` : `Approval Queue (${approvalCountLabel})`}
                           </h2>
                           <button
                             onClick={handleSelectAll}
                             className="text-xs md:text-sm text-primary hover:underline"
                           >
-                            {selectedRequests?.length === approvalRequests?.length ? 'Deselect All' : 'Select All'}
+                            {selectedRequests?.length === approvalRequests?.length ? (isArabic ? 'إلغاء تحديد الكل' : 'Deselect All') : (isArabic ? 'تحديد الكل' : 'Select All')}
                           </button>
                         </div>
                         <Input
                           type="search"
-                          placeholder="Search requests..."
+                          placeholder={isArabic ? 'ابحث في الطلبات...' : 'Search requests...'}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e?.target?.value)}
                         />
@@ -454,11 +459,11 @@ const ApprovalQueueManager = () => {
                         <div className="p-4 space-y-3">
                         {loadingApprovals ? (
                           <div className="rounded-lg border border-border bg-card p-6 text-center text-muted-foreground">
-                            Loading approval requests...
+                            {isArabic ? 'جارٍ تحميل طلبات الموافقة...' : 'Loading approval requests...'}
                           </div>
                         ) : filteredRequests.length === 0 ? (
                           <div className="rounded-lg border border-border bg-card p-6 text-center text-muted-foreground">
-                            No approval requests match the current filters.
+                            {isArabic ? 'لا توجد طلبات موافقة تطابق الفلاتر الحالية.' : 'No approval requests match the current filters.'}
                           </div>
                         ) : filteredRequests?.map((request) => (
                           <ApprovalRequestCard

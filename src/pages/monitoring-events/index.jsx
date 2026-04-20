@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+import ManageEngineMonitoringFeed from './components/ManageEngineMonitoringFeed';
 import { monitoringAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -13,7 +14,7 @@ import { getTranslation } from '../../services/i18n';
 const MonitoringEvents = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   
   const severityOptions = [
     { value: 'Critical', label: t('severityCritical', 'Critical') },
@@ -130,7 +131,7 @@ const MonitoringEvents = () => {
     { label: t('severity', 'Severity'), value: form.severity },
     { label: t('category', 'Category'), value: form.category },
     { label: t('createProblemRecord', 'Create Problem'), value: form.createProblem ? t('yes', 'Yes') : t('no', 'No') },
-  ]), [pingStatus, form.severity, form.category, form.createProblem]);
+  ]), [pingStatus, form.severity, form.category, form.createProblem, t]);
 
   return (
     <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -239,6 +240,8 @@ const MonitoringEvents = () => {
           </section>
 
           <aside className="space-y-6">
+            <ManageEngineMonitoringFeed />
+
             <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
               <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('liveSummary', 'Live Summary')}</h2>
               <div className="space-y-3">

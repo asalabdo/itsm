@@ -5,10 +5,23 @@ import Select from '../../../components/ui/Select';
 import Input from '../../../components/ui/Input';
 import { Checkbox } from '../../../components/ui/Checkbox';
 
+const getTodayDate = () => new Date();
+
+const formatDateInputValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
   const [dateRange, setDateRange] = useState('last-30-days');
-  const [startDate, setStartDate] = useState('2025-12-08');
-  const [endDate, setEndDate] = useState('2026-01-07');
+  const [startDate, setStartDate] = useState(() => {
+    const start = getTodayDate();
+    start.setDate(start.getDate() - 29);
+    return formatDateInputValue(start);
+  });
+  const [endDate, setEndDate] = useState(() => formatDateInputValue(getTodayDate()));
   const [selectedDepartments, setSelectedDepartments] = useState(['all']);
   const [selectedMetrics, setSelectedMetrics] = useState(['tickets', 'assets', 'workflows']);
   const [dataGranularity, setDataGranularity] = useState('daily');
@@ -74,8 +87,10 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
 
   const handleReset = () => {
     setDateRange('last-30-days');
-    setStartDate('2025-12-08');
-    setEndDate('2026-01-07');
+    const start = getTodayDate();
+    start.setDate(start.getDate() - 29);
+    setStartDate(formatDateInputValue(start));
+    setEndDate(formatDateInputValue(getTodayDate()));
     setSelectedDepartments(['all']);
     setSelectedMetrics(['tickets', 'assets', 'workflows']);
     setDataGranularity('daily');

@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+import ManageEngineProblemSignals from './components/ManageEngineProblemSignals';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 import { problemAPI } from '../../services/api';
@@ -35,7 +36,7 @@ const getStatusOptions = (t) => [
 
 const Problems = () => {
   const { language, isRtl } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProblem, setSelectedProblem] = useState(null);
@@ -46,7 +47,7 @@ const Problems = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const loadProblems = async () => {
+  const loadProblems = useCallback(async () => {
     try {
       setLoading(true);
       const res = await problemAPI.getAll();
@@ -60,11 +61,11 @@ const Problems = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProblem]);
 
   useEffect(() => {
-    loadProblems();
-  }, []);
+    void loadProblems();
+  }, [loadProblems]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -248,6 +249,8 @@ const Problems = () => {
           </section>
 
           <aside className="space-y-6">
+            <ManageEngineProblemSignals />
+
             <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
               <div className={`flex items-center justify-between gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                 <div>

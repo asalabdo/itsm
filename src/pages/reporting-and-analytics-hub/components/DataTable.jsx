@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
@@ -35,6 +35,10 @@ const DataTable = ({ title, columns, data, onExport }) => {
   const totalPages = Math.ceil(sortedData?.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = sortedData?.slice(startIndex, startIndex + itemsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data]);
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">

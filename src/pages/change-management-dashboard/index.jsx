@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import ChangeCalendar from './components/ChangeCalendar';
 import ApprovalWorkflow from './components/ApprovalWorkflow';
 import ChangeSuccessMetrics from './components/ChangeSuccessMetrics';
 import PipelineVisualization from './components/PipelineVisualization';
+import ManageEngineChangeImpactPanel from './components/ManageEngineChangeImpactPanel';
 import FilterControls from './components/FilterControls';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -17,11 +18,11 @@ const ChangeManagementDashboard = () => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const isArabic = language === 'ar';
+  const locale = isArabic ? 'ar-SA' : 'en-US';
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [activeFilters, setActiveFilters] = useState({});
   const [viewMode, setViewMode] = useState('overview'); // overview, calendar, metrics, pipeline
-  const [loading, setLoading] = useState(false);
   const [changes, setChanges] = useState([]);
   const [overviewMetrics, setOverviewMetrics] = useState(null);
 
@@ -196,7 +197,7 @@ const ChangeManagementDashboard = () => {
 
               {/* Last Refresh Indicator */}
               <div className="text-sm text-muted-foreground hidden md:block">
-                {t('lastRefresh', 'Last refresh')}: {lastRefresh?.toLocaleTimeString(isArabic ? 'ar-SA' : 'en-US', { 
+                {t('lastRefresh', 'Last refresh')}: {lastRefresh?.toLocaleTimeString(locale, { 
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
@@ -216,6 +217,8 @@ const ChangeManagementDashboard = () => {
           {/* Dashboard Content */}
           {viewMode === 'overview' && (
             <div className="space-y-8">
+              <ManageEngineChangeImpactPanel changes={filteredChanges} />
+
               {/* Top Section: Calendar + Approval Workflow */}
               <div className="grid grid-cols-1 xl:grid-cols-16 gap-8">
                 <div className="xl:col-span-10">
@@ -235,36 +238,41 @@ const ChangeManagementDashboard = () => {
           )}
 
           {viewMode === 'calendar' && (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-              <div className="xl:col-span-2">
+            <div className="space-y-8">
+              <ManageEngineChangeImpactPanel changes={filteredChanges} />
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div className="xl:col-span-2">
                 <ChangeCalendar changes={filteredChanges} />
-              </div>
-              <div>
-                <ApprovalWorkflow changes={filteredChanges} />
+                </div>
+                <div>
+                  <ApprovalWorkflow changes={filteredChanges} />
+                </div>
               </div>
             </div>
           )}
 
           {viewMode === 'metrics' && (
             <div className="space-y-8">
+              <ManageEngineChangeImpactPanel changes={filteredChanges} />
               <ChangeSuccessMetrics changes={filteredChanges} overviewMetrics={overviewMetrics} onExport={handleExport} />
             </div>
           )}
 
           {viewMode === 'pipeline' && (
             <div className="space-y-8">
+              <ManageEngineChangeImpactPanel changes={filteredChanges} />
               <PipelineVisualization changes={filteredChanges} />
             </div>
           )}
 
           {/* Emergency Alert Banner */}
           <div className={`fixed bottom-6 z-50 ${isArabic ? 'left-6 right-auto' : 'right-6'}`}>
-              <div className="bg-error text-error-foreground px-4 py-3 rounded-lg operations-shadow flex items-center space-x-3 max-w-sm">
-                <Icon name="AlertTriangle" size={20} className="animate-pulse" />
-                <div>
-                <div className="font-medium text-sm">{t('emergencyChangeAlert', 'Emergency Change Alert')}</div>
-                <div className="text-xs opacity-90">{t('securityPatchDeployment', 'Security patch deployment in progress')}</div>
-                </div>
+          <div className="bg-error text-error-foreground px-4 py-3 rounded-lg operations-shadow flex items-center space-x-3 max-w-sm">
+            <Icon name="AlertTriangle" size={20} className="animate-pulse" />
+            <div>
+              <div className="font-medium text-sm">{t('emergencyChangeAlert', 'Emergency Change Alert')}</div>
+              <div className="text-xs opacity-90">{t('securityPatchDeployment', 'Security patch deployment in progress')}</div>
+            </div>
               <Button variant="ghost" size="sm" className="text-error-foreground hover:bg-error/20">
                 <Icon name="X" size={16} />
               </Button>

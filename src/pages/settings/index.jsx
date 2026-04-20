@@ -10,7 +10,9 @@ import { getTranslation } from '../../services/i18n';
 const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [testingManageEngine, setTestingManageEngine] = useState(false);
+  const [syncingManageEngine, setSyncingManageEngine] = useState(false);
   const [manageEngineMessage, setManageEngineMessage] = useState(null);
+  const [manageEngineSyncStatus, setManageEngineSyncStatus] = useState(null);
   const { setLanguage, language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const isArabic = language === 'ar';
@@ -70,9 +72,10 @@ const Settings = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [profileRes, manageEngineRes] = await Promise.all([
+        const [profileRes, manageEngineRes, syncRes] = await Promise.all([
           settingsAPI.getProfile(),
           manageEngineAPI.getSettings().catch(() => ({ data: null })),
+          manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
         ]);
         setProfile((prev) => ({
           ...prev,
@@ -87,6 +90,7 @@ const Settings = () => {
         if (manageEngineRes?.data) {
           applyManageEngineSettings(manageEngineRes.data);
         }
+        setManageEngineSyncStatus(syncRes?.data || null);
       } catch (error) {
         console.error('Failed to load settings:', error);
       }
@@ -176,6 +180,47 @@ const Settings = () => {
       });
     } finally {
       setTestingManageEngine(false);
+    }
+  };
+
+  const handleManageEngineSourceTest = async (sourceKey) => {
+    try {
+      setTestingManageEngine(true);
+      const response = await manageEngineAPI.testConnection();
+      const connected = sourceKey === 'serviceDesk'
+        ? Boolean(response?.data?.serviceDeskConnected)
+        : Boolean(response?.data?.opManagerConnected);
+      setManageEngineMessage({
+        type: connected ? 'success' : 'error',
+        text: `${sourceKey === 'serviceDesk' ? 'ServiceDesk' : 'OpManager'}: ${connected ? 'Connected' : 'Disconnected'}`,
+      });
+    } catch (error) {
+      setManageEngineMessage({
+        type: 'error',
+        text: error?.response?.data?.error || 'Failed to test ManageEngine source connection.',
+      });
+    } finally {
+      setTestingManageEngine(false);
+    }
+  };
+
+  const handleManageEngineSync = async () => {
+    try {
+      setSyncingManageEngine(true);
+      const response = await manageEngineAPI.syncIncidents();
+      const syncRes = await manageEngineAPI.getSyncStatus().catch(() => ({ data: null }));
+      setManageEngineSyncStatus(syncRes?.data || response?.data || null);
+      setManageEngineMessage({
+        type: response?.data?.status === 'partial' ? 'error' : 'success',
+        text: response?.data?.message || 'ManageEngine sync completed.',
+      });
+    } catch (error) {
+      setManageEngineMessage({
+        type: 'error',
+        text: error?.response?.data?.error || 'Failed to run ManageEngine sync.',
+      });
+    } finally {
+      setSyncingManageEngine(false);
     }
   };
 

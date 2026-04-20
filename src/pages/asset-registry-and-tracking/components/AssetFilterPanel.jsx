@@ -51,18 +51,18 @@ const AssetFilterPanel = ({
   ];
 
   const statusTypes = [
-    { id: 'active', label: language === 'ar' ? 'نشط' : 'Active' },
-    { id: 'inactive', label: language === 'ar' ? 'غير نشط' : 'Inactive' },
-    { id: 'maintenance', label: language === 'ar' ? 'تحت الصيانة' : 'Maintenance' },
-    { id: 'retired', label: language === 'ar' ? 'متقاعد' : 'Retired' },
-    { id: 'lost', label: language === 'ar' ? 'مفقود/ضائع' : 'Lost' },
+    { id: 'active', label: t('statusActive', 'Active') },
+    { id: 'inactive', label: t('statusInactive', 'Inactive') },
+    { id: 'maintenance', label: t('statusMaintenance', 'Maintenance') },
+    { id: 'retired', label: t('statusRetired', 'Retired') },
+    { id: 'lost', label: t('statusLost', 'Lost') },
   ];
 
   const maintenanceTypes = [
-    { id: 'due', label: language === 'ar' ? 'الصيانة المستحقة' : 'Due soon' },
-    { id: 'overdue', label: language === 'ar' ? 'الصيانة المتأخرة' : 'Overdue' },
-    { id: 'scheduled', label: language === 'ar' ? 'مجدولة' : 'Scheduled' },
-    { id: 'completed', label: language === 'ar' ? 'مكتملة حديثًا' : 'Recently completed' },
+    { id: 'due', label: t('maintenanceDueSoon', 'Due soon') },
+    { id: 'overdue', label: t('maintenanceOverdue', 'Overdue') },
+    { id: 'scheduled', label: t('maintenanceScheduled', 'Scheduled') },
+    { id: 'completed', label: t('maintenanceCompleted', 'Recently completed') },
   ];
 
   const handleFilterChange = (key, value) => {

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { manageEngineAPI } from '../../../services/api';
+import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
-import { getTranslation } from '../../../services/i18n';
 
 const ManageEngineExecutiveSummary = () => {
   const { language } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
   const isArabic = language === 'ar';
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
@@ -27,14 +26,7 @@ const ManageEngineExecutiveSummary = () => {
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      setSummary({
-        catalog: unifiedRes?.data?.summary?.catalog || 0,
-        operations: unifiedRes?.data?.summary?.operations || 0,
-        serviceDeskCatalog: unifiedRes?.data?.summary?.serviceDeskCatalog || 0,
-        opManagerCatalog: unifiedRes?.data?.summary?.opManagerCatalog || 0,
-        serviceDeskRequests: unifiedRes?.data?.summary?.serviceDeskRequests || 0,
-        opManagerAlerts: unifiedRes?.data?.summary?.opManagerAlerts || 0,
-      });
+      setSummary(summarizeManageEngineUnified(unifiedRes));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);

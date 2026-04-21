@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
@@ -9,14 +9,15 @@ import QuickActions from './components/QuickActions';
 import TicketTableRow from './components/TicketTableRow';
 import TicketCard from './components/TicketCard';
 import ChatbotWidget from '../../components/ChatbotWidget';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { ticketsAPI, dashboardAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const AgentDashboard = () => {
   const { language, isRtl } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
-  
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
+
   const [filters, setFilters] = useState({ priority: 'all', status: 'all', category: 'all', sla: 'all' });
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('agent-dashboard-view-mode') || 'table');
@@ -30,7 +31,7 @@ const AgentDashboard = () => {
     { icon: 'CheckCircle', iconColor: 'var(--color-success)', title: t('resolved', 'Resolved'), value: '--', subtitle: t('totalResolved', 'Total resolved'), trend: '', trendDirection: null }
   ]);
 
-  const mapTicket = (ticket) => ({
+  const mapTicket = useCallback((ticket) => ({
     id: ticket.ticketNumber || String(ticket.id),
     backendId: ticket.id,
     customer: ticket.requestedByName || t('unknown', 'Unknown'),
@@ -49,17 +50,17 @@ const AgentDashboard = () => {
     lastUpdated: ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleString() : t('notAvailable', 'Not Available'),
     unread: ticket.status === 'Open',
     category: ticket.category
-  });
+  }), [t]);
 
   useEffect(() => {
     localStorage.setItem('agent-dashboard-view-mode', viewMode);
   }, [viewMode]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       console.log('Fetching dashboard data...');
-      
+
       const [ticketsRes, summaryRes] = await Promise.all([
         ticketsAPI.getAll(),
         dashboardAPI.getSummary()
@@ -74,7 +75,7 @@ const AgentDashboard = () => {
 
       const summary = summaryRes?.data;
       console.log('Summary data:', summary);
-      
+
       if (summary && Object.keys(summary).length > 0 && summary.totalTickets !== undefined) {
         setMetricsData([
           { icon: 'Ticket', iconColor: 'var(--color-primary)', title: t('openTickets', 'Open Tickets'), value: String(summary.openTickets ?? 0), subtitle: `${summary.totalTickets ?? 0} ${t('total', 'Total')}`, trend: '', trendDirection: null },
@@ -96,11 +97,11 @@ const AgentDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mapTicket, t]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   useEffect(() => {
     const handleRefresh = () => {
@@ -109,7 +110,7 @@ const AgentDashboard = () => {
 
     window.addEventListener('itsm:refresh', handleRefresh);
     return () => window.removeEventListener('itsm:refresh', handleRefresh);
-  }, []);
+  }, [fetchData]);
 
   const handleFilterChange = (key, value) => setFilters((prev) => ({ ...prev, [key]: value }));
   const handleClearFilters = () => setFilters({ priority: 'all', status: 'all', category: 'all', sla: 'all' });
@@ -162,12 +163,19 @@ const AgentDashboard = () => {
           <FilterPanel filters={filters} onFilterChange={handleFilterChange} onClearFilters={handleClearFilters} />
         </div>
 
+        <div className="mb-6 md:mb-8">
+          <ManageEngineOnPremSnapshot
+            title={t('manageEngineAgentContext', 'ManageEngine Agent Context')}
+            description={t('manageEngineAgentContextDesc', 'ServiceDesk Plus requests and OpManager alerts that may affect the active ticket queue.')}
+          />
+        </div>
+
         <div className="bg-card border border-border rounded-lg shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
           <div className="p-4 md:p-6 border-b border-border">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-1 ${isRtl ? 'text-right' : 'text-left'}`}>{t('activeTicketsTitle', 'Active Tickets')}</h2>
-                <p className={`text-sm md:text-base text-muted-foreground caption ${isRtl ? 'text-right' : 'text-left'}`}>
+                <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-1`}>{t('activeTicketsTitle', 'Active Tickets')}</h2>
+                <p className={`text-sm md:text-base text-muted-foreground caption`}>
                   {loading ? t('loading', 'Loading...') : `${tickets?.length} ${t('ticketsFoundCount', 'tickets found')}`}
                 </p>
               </div>
@@ -189,9 +197,9 @@ const AgentDashboard = () => {
                 <thead className="bg-muted/50 border-b border-border">
                   <tr>
                     {colHeaders.map(({ key, label, sortable }) => (
-                      <th key={key} className={`px-3 md:px-4 py-3 md:py-4 ${isRtl ? 'text-right' : 'text-left'}`}>
+                      <th key={key} className={`px-3 md:px-4 py-3 md:py-4`}>
                         {sortable ? (
-                          <button className={`flex items-center gap-2 text-xs md:text-sm font-medium text-muted-foreground hover:text-foreground transition-smooth caption ${isRtl ? 'flex-row-reverse' : ''}`} onClick={() => handleSort(key)}>
+                          <button className={`flex items-center gap-2 text-xs md:text-sm font-medium text-muted-foreground hover:text-foreground transition-smooth caption`} onClick={() => handleSort(key)}>
                             {label}<Icon name={getSortIcon(key)} size={16} />
                           </button>
                         ) : (
@@ -235,7 +243,7 @@ const AgentDashboard = () => {
           {tickets?.length > 0 && (
             <div className="p-4 md:p-6 border-t border-border">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className={`text-sm text-muted-foreground caption ${isRtl ? 'text-right' : 'text-left'}`}>{t('showingTickets', 'Showing')} {tickets?.length} {t('ofTickets', 'of')} {allTickets?.length} {t('ticketsLabel', 'tickets')}</p>
+                <p className={`text-sm text-muted-foreground caption`}>{t('showingTickets', 'Showing')} {tickets?.length} {t('ofTickets', 'of')} {allTickets?.length} {t('ticketsLabel', 'tickets')}</p>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" iconName="ChevronLeft" disabled>{t('previousBtn', 'Previous')}</Button>
                   <Button variant="default" size="sm">1</Button>

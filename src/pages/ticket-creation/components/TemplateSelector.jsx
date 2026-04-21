@@ -116,7 +116,7 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
 
   return (
     <div className="space-y-3">
-      <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
+      <div className={`flex items-center justify-between`}>
         <label className={`block text-sm font-medium text-foreground ${'text-left'}`}>
           Use Template (Optional)
         </label>
@@ -135,7 +135,7 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
 
       <AnimatePresence>
         {showTemplates && (
-          <motion.div 
+          <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -159,8 +159,8 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
                 whileTap={{ scale: 0.98 }}
                 variants={{
                   hidden: { opacity: 0, y: 20 },
-                  visible: { 
-                    opacity: 1, 
+                  visible: {
+                    opacity: 1,
                     y: 0,
                     transition: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }
                   },
@@ -168,8 +168,8 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
                 initial="hidden"
                 animate="visible"
               >
-                <div className={`flex items-start gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                  <motion.div 
+                <div className={`flex items-start gap-3 mb-2`}>
+                  <motion.div
                     className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0"
                     whileHover={{ scale: 1.1, rotate: 10 }}
                     transition={{ duration: 0.2 }}
@@ -185,8 +185,8 @@ const TemplateSelector = ({ category, onTemplateSelect }) => {
                     </p>
                   </div>
                 </div>
-                <motion.div 
-                  className={`flex items-center gap-2 text-xs text-primary caption ${isRtl ? 'flex-row-reverse' : ''}`}
+                <motion.div
+                  className={`flex items-center gap-2 text-xs text-primary caption`}
                   initial={{ opacity: 0.7 }}
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.2 }}

@@ -10,10 +10,12 @@ namespace ITSMBackend.Services
 {
     public class ManageEngineSourceSettings
     {
+        public string Profile { get; set; } = string.Empty;
         public string BaseUrl { get; set; } = string.Empty;
         public string ApiKey { get; set; } = string.Empty;
         public string TechnicianKey { get; set; } = string.Empty;
         public string AuthMode { get; set; } = string.Empty;
+        public string PortalId { get; set; } = string.Empty;
         public string ApiKeyHeaderName { get; set; } = string.Empty;
         public string ApiKeyQueryName { get; set; } = string.Empty;
         public string TechnicianHeaderName { get; set; } = string.Empty;
@@ -157,19 +159,7 @@ namespace ITSMBackend.Services
             DateTime? since = null)
         {
             var serviceDesk = await BuildServiceDeskSettingsAsync();
-            var query = new Dictionary<string, string>();
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                query["status"] = status;
-            }
-            if (!string.IsNullOrWhiteSpace(priority))
-            {
-                query["priority"] = priority;
-            }
-            if (since.HasValue)
-            {
-                query["created_time.gt"] = since.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
-            }
+            var query = BuildServiceDeskRequestListQuery(serviceDesk, status, priority, since);
 
             var document = await GetJsonDocumentAsync(serviceDesk, serviceDesk.RequestsEndpoint, query, ManageEngineAuthMode.ServiceDesk);
             if (document == null)
@@ -337,7 +327,13 @@ namespace ITSMBackend.Services
 
         private async Task<bool> TestServiceDeskConnectionAsync(ManageEngineSourceSettings settings)
         {
-            var response = await SendAsync(settings, settings.RequestsEndpoint, HttpMethod.Get, null, null, ManageEngineAuthMode.ServiceDesk);
+            var response = await SendAsync(
+                settings,
+                settings.RequestsEndpoint,
+                HttpMethod.Get,
+                null,
+                BuildServiceDeskRequestListQuery(settings),
+                ManageEngineAuthMode.ServiceDesk);
             return response?.IsSuccessStatusCode == true;
         }
 
@@ -353,14 +349,16 @@ namespace ITSMBackend.Services
             var candidateEndpoints = new[]
             {
                 settings.CatalogEndpoint,
-                "/api/v3/templates",
                 "/api/v3/request_templates",
                 "/api/v3/service_catalog/items"
             }.Where(value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.OrdinalIgnoreCase);
 
             foreach (var endpoint in candidateEndpoints)
             {
-                var document = await GetJsonDocumentAsync(settings, endpoint, null, ManageEngineAuthMode.ServiceDesk);
+                var query = endpoint.Contains("request_templates", StringComparison.OrdinalIgnoreCase)
+                    ? BuildServiceDeskTemplateListQuery(settings)
+                    : null;
+                var document = await GetJsonDocumentAsync(settings, endpoint, query, ManageEngineAuthMode.ServiceDesk);
                 if (document == null)
                 {
                     continue;
@@ -383,7 +381,7 @@ namespace ITSMBackend.Services
         private async Task<List<ManageEngineNormalizedItem>> GetServiceDeskOperationalItemsAsync()
         {
             var settings = await BuildServiceDeskSettingsAsync();
-            var document = await GetJsonDocumentAsync(settings, settings.RequestsEndpoint, null, ManageEngineAuthMode.ServiceDesk);
+            var document = await GetJsonDocumentAsync(settings, settings.RequestsEndpoint, BuildServiceDeskRequestListQuery(settings), ManageEngineAuthMode.ServiceDesk);
             if (document == null)
             {
                 return new List<ManageEngineNormalizedItem>();
@@ -429,14 +427,16 @@ namespace ITSMBackend.Services
         {
             return new ManageEngineSourceSettings
             {
+                Profile = FirstNonEmpty(_settings.ServiceDesk.Profile, "serviceDeskPlus151"),
                 BaseUrl = FirstNonEmpty(_settings.ServiceDesk.BaseUrl, _settings.BaseUrl),
                 ApiKey = FirstNonEmpty(_settings.ServiceDesk.ApiKey, _settings.ApiKey),
                 TechnicianKey = FirstNonEmpty(_settings.ServiceDesk.TechnicianKey, _settings.TechnicianKey),
                 AuthMode = FirstNonEmpty(_settings.ServiceDesk.AuthMode, "header"),
+                PortalId = _settings.ServiceDesk.PortalId,
                 ApiKeyHeaderName = FirstNonEmpty(_settings.ServiceDesk.ApiKeyHeaderName, "authtoken"),
                 ApiKeyQueryName = FirstNonEmpty(_settings.ServiceDesk.ApiKeyQueryName, "apiKey"),
                 TechnicianHeaderName = FirstNonEmpty(_settings.ServiceDesk.TechnicianHeaderName, "TECHNICIAN_KEY"),
-                CatalogEndpoint = FirstNonEmpty(_settings.ServiceDesk.CatalogEndpoint, "/api/v3/templates"),
+                CatalogEndpoint = FirstNonEmpty(_settings.ServiceDesk.CatalogEndpoint, "/api/v3/request_templates"),
                 RequestsEndpoint = FirstNonEmpty(_settings.ServiceDesk.RequestsEndpoint, "/api/v3/requests"),
                 ServicesEndpoint = FirstNonEmpty(_settings.ServiceDesk.ServicesEndpoint, "/api/v3/service_catalog/items"),
                 AlertsEndpoint = FirstNonEmpty(_settings.ServiceDesk.AlertsEndpoint, "/api/v3/requests")
@@ -447,10 +447,12 @@ namespace ITSMBackend.Services
         {
             return new ManageEngineSourceSettings
             {
+                Profile = FirstNonEmpty(_settings.OpManager.Profile, "opManager"),
                 BaseUrl = FirstNonEmpty(_settings.OpManager.BaseUrl, _settings.BaseUrl),
                 ApiKey = FirstNonEmpty(_settings.OpManager.ApiKey, _settings.ApiKey),
                 TechnicianKey = FirstNonEmpty(_settings.OpManager.TechnicianKey, _settings.TechnicianKey),
                 AuthMode = FirstNonEmpty(_settings.OpManager.AuthMode, "query"),
+                PortalId = _settings.OpManager.PortalId,
                 ApiKeyHeaderName = FirstNonEmpty(_settings.OpManager.ApiKeyHeaderName, "authtoken"),
                 ApiKeyQueryName = FirstNonEmpty(_settings.OpManager.ApiKeyQueryName, "apiKey"),
                 TechnicianHeaderName = FirstNonEmpty(_settings.OpManager.TechnicianHeaderName, "TECHNICIAN_KEY"),
@@ -589,7 +591,9 @@ namespace ITSMBackend.Services
                 if (payload != null)
                 {
                     var json = JsonSerializer.Serialize(payload, SerializerOptions);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    request.Content = ShouldUseServiceDeskPlus151(settings, authMode)
+                        ? new FormUrlEncodedContent(new Dictionary<string, string> { ["input_data"] = json })
+                        : new StringContent(json, Encoding.UTF8, "application/json");
                 }
 
                 return await _httpClient.SendAsync(request);
@@ -604,6 +608,17 @@ namespace ITSMBackend.Services
         private static void ApplyHeaders(HttpRequestMessage request, ManageEngineSourceSettings settings, ManageEngineAuthMode authMode)
         {
             var authModeValue = (settings.AuthMode ?? string.Empty).Trim().ToLowerInvariant();
+
+            if (ShouldUseServiceDeskPlus151(settings, authMode))
+            {
+                request.Headers.Accept.Clear();
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.manageengine.sdp.v3+json"));
+
+                if (!string.IsNullOrWhiteSpace(settings.PortalId))
+                {
+                    request.Headers.TryAddWithoutValidation("PORTALID", settings.PortalId);
+                }
+            }
 
             if ((authMode == ManageEngineAuthMode.ServiceDesk || authModeValue == "header" || authModeValue == "servicedesk")
                 && !string.IsNullOrWhiteSpace(settings.TechnicianKey))
@@ -620,6 +635,118 @@ namespace ITSMBackend.Services
                     string.IsNullOrWhiteSpace(settings.ApiKeyHeaderName) ? "authtoken" : settings.ApiKeyHeaderName,
                     settings.ApiKey);
             }
+        }
+
+        private static bool ShouldUseServiceDeskPlus151(ManageEngineSourceSettings settings, ManageEngineAuthMode authMode)
+        {
+            if (authMode != ManageEngineAuthMode.ServiceDesk)
+            {
+                return false;
+            }
+
+            var profile = (settings.Profile ?? string.Empty).Trim().ToLowerInvariant();
+            return profile is "" or "servicedeskplus151" or "servicedesk-plus-15.1" or "sdp151";
+        }
+
+        private static Dictionary<string, string>? BuildServiceDeskRequestListQuery(
+            ManageEngineSourceSettings settings,
+            string? status = null,
+            string? priority = null,
+            DateTime? since = null)
+        {
+            if (!ShouldUseServiceDeskPlus151(settings, ManageEngineAuthMode.ServiceDesk))
+            {
+                var legacyQuery = new Dictionary<string, string>();
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    legacyQuery["status"] = status;
+                }
+
+                if (!string.IsNullOrWhiteSpace(priority))
+                {
+                    legacyQuery["priority"] = priority;
+                }
+
+                if (since.HasValue)
+                {
+                    legacyQuery["created_time.gt"] = since.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
+                }
+
+                return legacyQuery.Count == 0 ? null : legacyQuery;
+            }
+
+            var listInfo = new Dictionary<string, object>
+            {
+                ["row_count"] = 100,
+                ["start_index"] = 1,
+                ["sort_field"] = "updated_time",
+                ["sort_order"] = "desc"
+            };
+            var searchCriteria = new List<Dictionary<string, string>>();
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                searchCriteria.Add(new Dictionary<string, string>
+                {
+                    ["field"] = "status.name",
+                    ["condition"] = "is",
+                    ["value"] = status
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(priority))
+            {
+                searchCriteria.Add(new Dictionary<string, string>
+                {
+                    ["field"] = "priority.name",
+                    ["condition"] = "is",
+                    ["value"] = priority
+                });
+            }
+
+            if (since.HasValue)
+            {
+                searchCriteria.Add(new Dictionary<string, string>
+                {
+                    ["field"] = "created_time",
+                    ["condition"] = "greater than",
+                    ["value"] = since.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                });
+            }
+
+            if (searchCriteria.Count > 0)
+            {
+                listInfo["search_criteria"] = searchCriteria;
+            }
+
+            return BuildServiceDeskInputDataQuery(listInfo);
+        }
+
+        private static Dictionary<string, string>? BuildServiceDeskTemplateListQuery(ManageEngineSourceSettings settings)
+        {
+            if (!ShouldUseServiceDeskPlus151(settings, ManageEngineAuthMode.ServiceDesk))
+            {
+                return null;
+            }
+
+            var listInfo = new Dictionary<string, object>
+            {
+                ["row_count"] = 100,
+                ["start_index"] = 1,
+                ["sort_field"] = "name",
+                ["sort_order"] = "asc"
+            };
+
+            return BuildServiceDeskInputDataQuery(listInfo);
+        }
+
+        private static Dictionary<string, string> BuildServiceDeskInputDataQuery(Dictionary<string, object> listInfo)
+        {
+            var inputData = JsonSerializer.Serialize(
+                new Dictionary<string, object> { ["list_info"] = listInfo },
+                SerializerOptions);
+
+            return new Dictionary<string, string> { ["input_data"] = inputData };
         }
 
         private static Uri BuildUri(
@@ -663,7 +790,24 @@ namespace ITSMBackend.Services
                 return root.EnumerateArray();
             }
 
-            var candidates = new[] { "data", "rows", "requests", "templates", "services", "items", "response" };
+            var candidates = new[]
+            {
+                "data",
+                "rows",
+                "requests",
+                "request",
+                "templates",
+                "template",
+                "request_templates",
+                "services",
+                "service",
+                "items",
+                "alarms",
+                "alarm",
+                "devices",
+                "device",
+                "response"
+            };
             foreach (var candidate in candidates)
             {
                 if (root.TryGetProperty(candidate, out var nested))
@@ -680,11 +824,32 @@ namespace ITSMBackend.Services
                         {
                             return nestedArray;
                         }
+
+                        if (HasManageEngineIdentity(nested))
+                        {
+                            return new[] { nested };
+                        }
                     }
                 }
             }
 
+            if (HasManageEngineIdentity(root))
+            {
+                return new[] { root };
+            }
+
             return Enumerable.Empty<JsonElement>();
+        }
+
+        private static bool HasManageEngineIdentity(JsonElement element)
+        {
+            return element.ValueKind == JsonValueKind.Object
+                && (!string.IsNullOrWhiteSpace(GetString(element, "id"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "request_id"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "template_id"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "resourceId"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "deviceId"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "alarmId")));
         }
 
         private static ManageEngineIncident MapIncident(JsonElement element)
@@ -728,7 +893,7 @@ namespace ITSMBackend.Services
                 CreatedAt = GetDateTime(element, "created_time"),
                 UpdatedAt = GetDateTime(element, "updated_time"),
                 ExternalUrl = BuildExternalUrl(baseUrl, "service-catalog", id),
-                Metadata = BuildMetadata(element, "module", "template_key", "request_type", "form_name")
+                Metadata = BuildMetadata(element, "module", "template_key", "request_type", "form_name", "assetTag", "asset_tag", "assetId", "asset_id", "serialNumber", "serial_number", "barcode")
             };
         }
 
@@ -749,7 +914,7 @@ namespace ITSMBackend.Services
                 CreatedAt = GetDateTime(element, "created_time"),
                 UpdatedAt = GetDateTime(element, "updated_time"),
                 ExternalUrl = BuildExternalUrl(baseUrl, "requests", id),
-                Metadata = BuildMetadata(element, "requester", "site", "group", "mode", "resolution")
+                Metadata = BuildMetadata(element, "requester", "site", "group", "mode", "resolution", "assetTag", "asset_tag", "assetId", "asset_id", "serialNumber", "serial_number", "barcode", "ci", "configuration_item")
             };
         }
 
@@ -770,7 +935,7 @@ namespace ITSMBackend.Services
                 CreatedAt = GetDateTime(element, "createTime"),
                 UpdatedAt = GetDateTime(element, "modTime"),
                 ExternalUrl = BuildExternalUrl(baseUrl, "devices", id),
-                Metadata = BuildMetadata(element, "type", "hostName", "ipAddress", "deviceName", "health")
+                Metadata = BuildMetadata(element, "type", "hostName", "ipAddress", "deviceName", "health", "assetTag", "asset_tag", "assetId", "asset_id", "serialNumber", "serial_number", "deviceTag", "device_tag", "deviceSerialNumber", "device_serial_number", "barcode")
             };
         }
 
@@ -791,7 +956,7 @@ namespace ITSMBackend.Services
                 CreatedAt = GetDateTime(element, "createTime"),
                 UpdatedAt = GetDateTime(element, "modTime"),
                 ExternalUrl = BuildExternalUrl(baseUrl, "alarms", id),
-                Metadata = BuildMetadata(element, "eventtype", "entity", "alarmcode", "suppressedMessage")
+                Metadata = BuildMetadata(element, "eventtype", "entity", "alarmcode", "suppressedMessage", "assetTag", "asset_tag", "assetId", "asset_id", "serialNumber", "serial_number", "deviceTag", "device_tag", "deviceSerialNumber", "device_serial_number", "barcode")
             };
         }
 
@@ -844,10 +1009,12 @@ namespace ITSMBackend.Services
             var current = MergeWithStoredSettings(defaults, integration.ConfigurationJson);
             var merged = new ManageEngineSourceSettings
             {
+                Profile = ResolveUpdatedValue(request.Profile, current.Profile),
                 BaseUrl = ResolveUpdatedValue(request.BaseUrl, current.BaseUrl),
                 ApiKey = ResolveSecretValue(request.ApiKey, current.ApiKey),
                 TechnicianKey = ResolveSecretValue(request.TechnicianKey, current.TechnicianKey),
                 AuthMode = ResolveUpdatedValue(request.AuthMode, current.AuthMode),
+                PortalId = ResolveUpdatedValue(request.PortalId, current.PortalId),
                 ApiKeyHeaderName = ResolveUpdatedValue(request.ApiKeyHeaderName, current.ApiKeyHeaderName),
                 ApiKeyQueryName = ResolveUpdatedValue(request.ApiKeyQueryName, current.ApiKeyQueryName),
                 TechnicianHeaderName = ResolveUpdatedValue(request.TechnicianHeaderName, current.TechnicianHeaderName),
@@ -905,10 +1072,12 @@ namespace ITSMBackend.Services
 
                 return new ManageEngineSourceSettings
                 {
+                    Profile = FirstNonEmpty(stored.Profile, defaults.Profile),
                     BaseUrl = FirstNonEmpty(stored.BaseUrl, defaults.BaseUrl),
                     ApiKey = FirstNonEmpty(stored.ApiKey, defaults.ApiKey),
                     TechnicianKey = FirstNonEmpty(stored.TechnicianKey, defaults.TechnicianKey),
                     AuthMode = FirstNonEmpty(stored.AuthMode, defaults.AuthMode),
+                    PortalId = FirstNonEmpty(stored.PortalId, defaults.PortalId),
                     ApiKeyHeaderName = FirstNonEmpty(stored.ApiKeyHeaderName, defaults.ApiKeyHeaderName),
                     ApiKeyQueryName = FirstNonEmpty(stored.ApiKeyQueryName, defaults.ApiKeyQueryName),
                     TechnicianHeaderName = FirstNonEmpty(stored.TechnicianHeaderName, defaults.TechnicianHeaderName),
@@ -928,10 +1097,12 @@ namespace ITSMBackend.Services
         {
             return new ManageEngineSourceSettings
             {
+                Profile = settings.Profile,
                 BaseUrl = settings.BaseUrl,
                 ApiKey = MaskSecret(settings.ApiKey),
                 TechnicianKey = MaskSecret(settings.TechnicianKey),
                 AuthMode = settings.AuthMode,
+                PortalId = settings.PortalId,
                 ApiKeyHeaderName = settings.ApiKeyHeaderName,
                 ApiKeyQueryName = settings.ApiKeyQueryName,
                 TechnicianHeaderName = settings.TechnicianHeaderName,
@@ -1030,6 +1201,12 @@ namespace ITSMBackend.Services
                 JsonValueKind.Number => property.ToString(),
                 JsonValueKind.True => "true",
                 JsonValueKind.False => "false",
+                JsonValueKind.Object => FirstNonEmpty(
+                    GetString(property, "display_value"),
+                    GetString(property, "value"),
+                    GetString(property, "name"),
+                    GetString(property, "text"),
+                    GetString(property, "id")),
                 _ => string.Empty
             };
         }
@@ -1079,18 +1256,38 @@ namespace ITSMBackend.Services
 
             if (property.ValueKind == JsonValueKind.String)
             {
-                var raw = property.GetString();
-                if (DateTime.TryParse(raw, out var parsedDate))
-                {
-                    return parsedDate;
-                }
+                return ParseManageEngineDateTime(property.GetString());
+            }
 
-                if (long.TryParse(raw, out var epochValue))
-                {
-                    return epochValue > 100000000000
-                        ? DateTimeOffset.FromUnixTimeMilliseconds(epochValue).UtcDateTime
-                        : DateTimeOffset.FromUnixTimeSeconds(epochValue).UtcDateTime;
-                }
+            if (property.ValueKind == JsonValueKind.Object)
+            {
+                return ParseManageEngineDateTime(FirstNonEmpty(
+                    GetString(property, "value"),
+                    GetString(property, "display_value"),
+                    GetString(property, "date"),
+                    GetString(property, "time")));
+            }
+
+            return null;
+        }
+
+        private static DateTime? ParseManageEngineDateTime(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return null;
+            }
+
+            if (DateTime.TryParse(raw, out var parsedDate))
+            {
+                return parsedDate;
+            }
+
+            if (long.TryParse(raw, out var epochValue))
+            {
+                return epochValue > 100000000000
+                    ? DateTimeOffset.FromUnixTimeMilliseconds(epochValue).UtcDateTime
+                    : DateTimeOffset.FromUnixTimeSeconds(epochValue).UtcDateTime;
             }
 
             return null;

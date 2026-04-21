@@ -42,23 +42,27 @@ const Settings = () => {
     syncIntervalMinutes: 15,
     webhookSecret: '',
     serviceDesk: {
+      profile: 'serviceDeskPlus151',
       baseUrl: '',
       apiKey: '',
       technicianKey: '',
       authMode: 'header',
+      portalId: '',
       apiKeyHeaderName: 'authtoken',
       apiKeyQueryName: 'apiKey',
       technicianHeaderName: 'TECHNICIAN_KEY',
-      catalogEndpoint: '/api/v3/templates',
+      catalogEndpoint: '/api/v3/request_templates',
       requestsEndpoint: '/api/v3/requests',
       servicesEndpoint: '/api/v3/service_catalog/items',
       alertsEndpoint: '/api/v3/requests',
     },
     opManager: {
+      profile: 'opManager',
       baseUrl: '',
       apiKey: '',
       technicianKey: '',
       authMode: 'query',
+      portalId: '',
       apiKeyHeaderName: 'authtoken',
       apiKeyQueryName: 'apiKey',
       technicianHeaderName: 'TECHNICIAN_KEY',
@@ -151,13 +155,13 @@ const Settings = () => {
         manageEngineAPI.updateSettings(manageEngineSettings),
       ]);
       applyManageEngineSettings(manageEngineResponse?.data);
-      setManageEngineMessage({ type: 'success', text: isArabic ? 'تم حفظ إعدادات ManageEngine وإعادة تحميلها.' : 'ManageEngine settings saved and reloaded.' });
+      setManageEngineMessage({ type: 'success', text: isArabic ? 'ØªÙ… Ø­ÙØ¸ Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª ManageEngine ÙˆØ¥Ø¹Ø§Ø¯Ø© ØªØ­Ù…ÙŠÙ„Ù‡Ø§.' : 'ManageEngine settings saved and reloaded.' });
       window.dispatchEvent(new CustomEvent('itsm:toast', {
-        detail: { type: 'success', message: isArabic ? 'تم حفظ الإعدادات بنجاح.' : 'Settings saved successfully.' }
+        detail: { type: 'success', message: isArabic ? 'ØªÙ… Ø­ÙØ¸ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø¨Ù†Ø¬Ø§Ø­.' : 'Settings saved successfully.' }
       }));
     } catch (error) {
       console.error('Failed to save settings:', error);
-      alert(isArabic ? 'فشل حفظ الإعدادات.' : 'Failed to save settings.');
+      alert(isArabic ? 'ÙØ´Ù„ Ø­ÙØ¸ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª.' : 'Failed to save settings.');
     } finally {
       setSaving(false);
     }
@@ -170,13 +174,13 @@ const Settings = () => {
       setManageEngineMessage({
         type: response?.data?.status === 'connected' ? 'success' : 'error',
         text: isArabic
-          ? `ServiceDesk: ${response?.data?.serviceDeskConnected ? 'متصل' : 'غير متصل'} | OpManager: ${response?.data?.opManagerConnected ? 'متصل' : 'غير متصل'}`
+          ? `ServiceDesk: ${response?.data?.serviceDeskConnected ? 'Ù…ØªØµÙ„' : 'ØºÙŠØ± Ù…ØªØµÙ„'} | OpManager: ${response?.data?.opManagerConnected ? 'Ù…ØªØµÙ„' : 'ØºÙŠØ± Ù…ØªØµÙ„'}`
           : `ServiceDesk: ${response?.data?.serviceDeskConnected ? 'Connected' : 'Disconnected'} | OpManager: ${response?.data?.opManagerConnected ? 'Connected' : 'Disconnected'}`
       });
     } catch (error) {
       setManageEngineMessage({
         type: 'error',
-        text: error?.response?.data?.error || (isArabic ? 'فشل اختبار اتصال ManageEngine.' : 'Failed to test ManageEngine connection.'),
+        text: error?.response?.data?.error || (isArabic ? 'ÙØ´Ù„ Ø§Ø®ØªØ¨Ø§Ø± Ø§ØªØµØ§Ù„ ManageEngine.' : 'Failed to test ManageEngine connection.'),
       });
     } finally {
       setTestingManageEngine(false);
@@ -486,14 +490,25 @@ const Settings = () => {
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">{isArabic ? 'تكامل ManageEngine' : 'ManageEngine Integration'}</h2>
+                    <h2 className="text-lg font-semibold text-foreground">{isArabic ? 'ØªÙƒØ§Ù…Ù„ ManageEngine' : 'ManageEngine Integration'}</h2>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {isArabic ? 'اضبط بيانات الاعتماد ونقاط النهاية ووضع المصادقة لـ ServiceDesk و OpManager.' : 'Configure runtime credentials, endpoints, and auth mode for ServiceDesk and OpManager.'}
+                      {isArabic ? 'Ø§Ø¶Ø¨Ø· Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø§Ø¹ØªÙ…Ø§Ø¯ ÙˆÙ†Ù‚Ø§Ø· Ø§Ù„Ù†Ù‡Ø§ÙŠØ© ÙˆÙˆØ¶Ø¹ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø© Ù„Ù€ ServiceDesk Ùˆ OpManager.' : 'Configure runtime credentials, endpoints, and auth mode for ServiceDesk and OpManager.'}
                     </p>
                   </div>
-                  <Button variant="outline" onClick={handleManageEngineTest} loading={testingManageEngine}>
-                    {isArabic ? 'اختبار الاتصال' : 'Test Connection'}
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="outline" onClick={handleManageEngineTest} loading={testingManageEngine}>
+                      {isArabic ? 'اختبار الاتصال' : 'Test All'}
+                    </Button>
+                    <Button variant="outline" onClick={() => handleManageEngineSourceTest('serviceDesk')} loading={testingManageEngine}>
+                      ServiceDesk 15.1
+                    </Button>
+                    <Button variant="outline" onClick={() => handleManageEngineSourceTest('opManager')} loading={testingManageEngine}>
+                      OpManager
+                    </Button>
+                    <Button onClick={handleManageEngineSync} loading={syncingManageEngine}>
+                      {isArabic ? 'تشغيل المزامنة' : 'Sync Now'}
+                    </Button>
+                  </div>
                 </div>
 
                 {manageEngineMessage && (
@@ -506,20 +521,42 @@ const Settings = () => {
                   </div>
                 )}
 
+                {manageEngineSyncStatus && (
+                  <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="rounded-xl border border-border bg-muted/20 px-4 py-3">
+                      <div className="text-xs text-muted-foreground">Sync status</div>
+                      <div className="mt-1 text-sm font-semibold capitalize text-foreground">{manageEngineSyncStatus.status || 'idle'}</div>
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/20 px-4 py-3">
+                      <div className="text-xs text-muted-foreground">Created</div>
+                      <div className="mt-1 text-sm font-semibold text-foreground">{manageEngineSyncStatus.createdCount || 0}</div>
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/20 px-4 py-3">
+                      <div className="text-xs text-muted-foreground">Updated</div>
+                      <div className="mt-1 text-sm font-semibold text-foreground">{manageEngineSyncStatus.updatedCount || 0}</div>
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/20 px-4 py-3">
+                      <div className="text-xs text-muted-foreground">Sources</div>
+                      <div className="mt-1 text-xs font-medium text-foreground">
+                        ServiceDesk: {manageEngineSyncStatus.serviceDeskCount || 0} | OpManager: {manageEngineSyncStatus.opManagerCount || 0}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">{isArabic ? 'المزامنة مفعلة' : 'Sync Enabled'}</span>
+                    <span className="text-sm font-medium text-foreground">{isArabic ? 'Ø§Ù„Ù…Ø²Ø§Ù…Ù†Ø© Ù…ÙØ¹Ù„Ø©' : 'Sync Enabled'}</span>
                     <select
                       value={String(manageEngineSettings.syncEnabled)}
                       onChange={(e) => updateManageEngineField(null, 'syncEnabled', e.target.value === 'true')}
                       className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
                     >
-                      <option value="false">{isArabic ? 'معطلة' : 'Disabled'}</option>
-                      <option value="true">{isArabic ? 'مفعلة' : 'Enabled'}</option>
+                      <option value="false">{isArabic ? 'Ù…Ø¹Ø·Ù„Ø©' : 'Disabled'}</option>
+                      <option value="true">{isArabic ? 'Ù…ÙØ¹Ù„Ø©' : 'Enabled'}</option>
                     </select>
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">{isArabic ? 'اتجاه المزامنة' : 'Sync Direction'}</span>
+                    <span className="text-sm font-medium text-foreground">{isArabic ? 'Ø§ØªØ¬Ø§Ù‡ Ø§Ù„Ù…Ø²Ø§Ù…Ù†Ø©' : 'Sync Direction'}</span>
                     <input
                       value={manageEngineSettings.syncDirection}
                       onChange={(e) => updateManageEngineField(null, 'syncDirection', e.target.value)}
@@ -527,7 +564,7 @@ const Settings = () => {
                     />
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-foreground">{isArabic ? 'فاصل المزامنة بالدقائق' : 'Sync Interval Minutes'}</span>
+                    <span className="text-sm font-medium text-foreground">{isArabic ? 'ÙØ§ØµÙ„ Ø§Ù„Ù…Ø²Ø§Ù…Ù†Ø© Ø¨Ø§Ù„Ø¯Ù‚Ø§Ø¦Ù‚' : 'Sync Interval Minutes'}</span>
                     <input
                       type="number"
                       min="1"
@@ -539,7 +576,7 @@ const Settings = () => {
                 </div>
 
                 <label className="space-y-2 block mb-6">
-                  <span className="text-sm font-medium text-foreground">{isArabic ? 'السر السري للويب هوك' : 'Webhook Secret'}</span>
+                  <span className="text-sm font-medium text-foreground">{isArabic ? 'Ø§Ù„Ø³Ø± Ø§Ù„Ø³Ø±ÙŠ Ù„Ù„ÙˆÙŠØ¨ Ù‡ÙˆÙƒ' : 'Webhook Secret'}</span>
                   <input
                     value={manageEngineSettings.webhookSecret || ''}
                     onChange={(e) => updateManageEngineField(null, 'webhookSecret', e.target.value)}
@@ -553,8 +590,34 @@ const Settings = () => {
                   ['opManager', 'OpManager'],
                 ].map(([sectionKey, title]) => (
                   <div key={sectionKey} className="mb-6 rounded-xl border border-border p-4">
-                    <h3 className="text-base font-semibold text-foreground mb-4">{title}</h3>
+                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="text-base font-semibold text-foreground">{sectionKey === 'serviceDesk' ? 'ServiceDesk Plus 15.1' : title}</h3>
+                        {sectionKey === 'serviceDesk' && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Uses on-prem API v3 with authtoken, SDP v3 Accept header, PORTALID when configured, and input_data payloads.
+                          </p>
+                        )}
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => handleManageEngineSourceTest(sectionKey)} loading={testingManageEngine}>
+                        Test {sectionKey === 'serviceDesk' ? 'ServiceDesk' : 'OpManager'}
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Integration Profile</span>
+                        <select
+                          value={manageEngineSettings[sectionKey]?.profile || (sectionKey === 'serviceDesk' ? 'serviceDeskPlus151' : 'opManager')}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'profile', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          {sectionKey === 'serviceDesk' ? (
+                            <option value="serviceDeskPlus151">ServiceDesk Plus 15.1 On-Prem API v3</option>
+                          ) : (
+                            <option value="opManager">OpManager</option>
+                          )}
+                        </select>
+                      </label>
                       <label className="space-y-2">
                         <span className="text-sm font-medium text-foreground">Base URL</span>
                         <input
@@ -589,6 +652,15 @@ const Settings = () => {
                           value={manageEngineSettings[sectionKey]?.technicianKey || ''}
                           onChange={(e) => updateManageEngineField(sectionKey, 'technicianKey', e.target.value)}
                           placeholder="********"
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Portal ID</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.portalId || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'portalId', e.target.value)}
+                          placeholder={sectionKey === 'serviceDesk' ? 'Optional SDP portal id' : 'Optional'}
                           className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
                         />
                       </label>

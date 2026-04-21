@@ -6,6 +6,7 @@ import Input from '../../components/ui/Input';
 import { streamTicketChatResponse } from '../../services/ticketChatService';
 import { ticketsAPI } from '../../services/api';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
@@ -214,6 +215,12 @@ const TicketChatbot = () => {
       <Header />
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <ManageEngineOnPremSnapshot
+          compact
+          title={t('manageEngineAssistantContext', 'ManageEngine Assistant Context')}
+          description={t('manageEngineAssistantContextDesc', 'Live ServiceDesk and OpManager context helps the assistant understand external demand before guiding ticket creation.')}
+        />
+
         <div className="mt-6">
           <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
             <div className="flex items-center justify-between gap-4">

@@ -8,6 +8,7 @@ import SLAAlertPanel from './components/SLAAlertPanel';
 import WorkloadBalancer from './components/WorkloadBalancer';
 import PerformanceChart from './components/PerformanceChart';
 import QuickActions from './components/QuickActions';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { dashboardAPI, usersAPI, ticketsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
 import { useLanguage } from '../../context/LanguageContext';
@@ -25,7 +26,7 @@ const ManagerDashboard = () => {
   const [, setChartData] = useState([]);
   const [, setPendingTickets] = useState([]);
 
-  function translateCategory(category) {
+  const translateCategory = useCallback((category) => {
     const normalized = String(category || 'General').toLowerCase().replace(/[\s_-]+/g, '');
     const categoryMap = {
       technicalsupport: t('technicalSupport', 'Technical Support'),
@@ -42,9 +43,9 @@ const ManagerDashboard = () => {
       general: t('generalInquiry', 'General Inquiry'),
     };
     return categoryMap[normalized] || category || t('generalInquiry', 'General Inquiry');
-  }
+  }, [t]);
 
-  function formatTimeRemaining(dueDate) {
+  const formatTimeRemaining = useCallback((dueDate) => {
     if (!dueDate) return 'N/A';
     const diff = new Date(dueDate) - new Date();
     if (diff < 0) return `${t('overdueBy', 'Overdue by')} ${Math.floor(-diff / 60000)} ${t('minutesShort', 'min')}`;
@@ -52,7 +53,7 @@ const ManagerDashboard = () => {
     return hours > 0
       ? `${hours}${t('hoursShort', 'h')} ${t('remaining', 'remaining')}`
       : `${Math.floor(diff / 60000)} ${t('minutesShort', 'min')} ${t('remaining', 'remaining')}`;
-  }
+  }, [t]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -140,7 +141,7 @@ const ManagerDashboard = () => {
       }
     };
     fetchData();
-  }, [t, locale]);
+  }, [t, locale, formatTimeRemaining, translateCategory]);
 
   const rangeToDays = (range) => {
     switch (range) {
@@ -294,6 +295,13 @@ const ManagerDashboard = () => {
           <div>
             <QuickActions />
           </div>
+        </div>
+
+        <div className="mb-6 md:mb-8">
+          <ManageEngineOnPremSnapshot
+            title={t('manageEngineManagerContext', 'ManageEngine Manager Context')}
+            description={t('manageEngineManagerContextDesc', 'External ServiceDesk demand and OpManager monitoring pressure alongside team workload.')}
+          />
         </div>
 
         <div className="mb-6 md:mb-8">

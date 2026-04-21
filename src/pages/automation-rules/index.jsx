@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import automationService from '../../services/automationService';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -146,6 +147,12 @@ const AutomationManagement = () => {
             {isArabic ? 'قاعدة جديدة' : t('newRule', 'New Rule')}
           </Button>
         </div>
+
+        <ManageEngineOnPremSnapshot
+          compact
+          title={t('manageEngineAutomationSignals', 'ManageEngine Automation Signals')}
+          description={t('manageEngineAutomationSignalsDesc', 'Use on-prem ServiceDesk demand and OpManager alarm volume to tune backend triggers and rules.')}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.9fr] gap-6">
           <section className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">

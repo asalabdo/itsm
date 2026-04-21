@@ -11,7 +11,7 @@ const StatCard = ({ title, value, subtitle, icon, color }) => {
   const { isRtl } = useLanguage();
   return (
     <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className={`flex items-center justify-between mb-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+      <div className={`flex items-center justify-between mb-3`}>
         <p className={`text-sm text-muted-foreground`}>{title}</p>
         <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${color}20` }}>
           <Icon name={icon} size={18} color={color} />
@@ -95,7 +95,7 @@ const AdvancedAnalyticsHub = () => {
                     const colors = { Urgent: 'bg-error', High: 'bg-warning', Medium: 'bg-primary', Low: 'bg-success' };
                     return (
                       <div key={priority}>
-                        <div className={`flex justify-between text-sm mb-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                        <div className={`flex justify-between text-sm mb-1`}>
                           <span className="text-foreground">{priority}</span>
                           <span className="text-muted-foreground">{count} ({pct}%)</span>
                         </div>
@@ -117,7 +117,7 @@ const AdvancedAnalyticsHub = () => {
                     const pct = tickets.length ? Math.round((count / tickets.length) * 100) : 0;
                     return (
                       <div key={cat}>
-                        <div className={`flex justify-between text-sm mb-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                        <div className={`flex justify-between text-sm mb-1`}>
                           <span className="text-foreground">{cat}</span>
                           <span className="text-muted-foreground">{count} ({pct}%)</span>
                         </div>

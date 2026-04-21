@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 
 const ManageEngineOperationsPanel = () => {
   const [loading, setLoading] = useState(true);
@@ -25,7 +26,7 @@ const ManageEngineOperationsPanel = () => {
         serviceDeskConnected: Boolean(connectionRes?.data?.serviceDeskConnected),
         opManagerConnected: Boolean(connectionRes?.data?.opManagerConnected),
       });
-      setOperations(Array.isArray(unifiedRes?.data?.operations) ? unifiedRes.data.operations.slice(0, 6) : []);
+      setOperations(normalizeManageEngineUnified(unifiedRes).operations.slice(0, 6));
     } finally {
       setLoading(false);
     }

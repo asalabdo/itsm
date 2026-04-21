@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -304,6 +305,12 @@ const ScenarioValidationCenter = () => {
             className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
+
+        <ManageEngineOnPremSnapshot
+          compact
+          title={t('manageEngineScenarioEvidence', 'ManageEngine Scenario Evidence')}
+          description={t('manageEngineScenarioEvidenceDesc', 'Validate test scenarios against live on-prem ServiceDesk request flow and OpManager event pressure.')}
+        />
 
         <div className="space-y-6">
           {filteredGroups.map((group) => (

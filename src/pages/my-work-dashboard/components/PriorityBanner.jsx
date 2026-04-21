@@ -60,19 +60,17 @@ const PriorityBanner = ({ tickets = [] }) => {
   const currentIncident = urgentIncidents?.[currentIndex];
 
   return (
-    <div className={`relative px-6 py-5 border-b-2 ${
-      currentIncident?.priority === 'P1' ? 'bg-error/10 border-error' : 'bg-warning/10 border-warning'
-    }`} dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className={`relative px-6 py-5 border-b-2 ${currentIncident?.priority === 'P1' ? 'bg-error/10 border-error' : 'bg-warning/10 border-warning'
+      }`} dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="flex items-center justify-between gap-6 flex-wrap">
-        <div className={`flex items-center gap-4 flex-1 min-w-0 ${isRtl ? 'flex-row-reverse' : ''}`}>
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-md ${
-            currentIncident?.priority === 'P1' ?'bg-error text-error-foreground' :'bg-warning text-warning-foreground'
-          }`}>
+        <div className={`flex items-center gap-4 flex-1 min-w-0`}>
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-md ${currentIncident?.priority === 'P1' ? 'bg-error text-error-foreground' : 'bg-warning text-warning-foreground'
+            }`}>
             <Icon name="AlertTriangle" size={18} />
             <span className="whitespace-nowrap">{currentIncident?.priority}</span>
             <span className="whitespace-nowrap">{t('urgent', 'URGENT')}</span>
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-foreground text-base mb-1 truncate">
               <span className="font-mono">{currentIncident?.id}</span>
@@ -85,9 +83,9 @@ const PriorityBanner = ({ tickets = [] }) => {
           </div>
         </div>
 
-        <div className={`flex items-center gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+        <div className={`flex items-center gap-4`}>
           <div className={isRtl ? 'text-left' : 'text-right'}>
-            <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-2`}>
               <Icon name="Clock" size={18} className="text-muted-foreground" />
               <span className={`font-bold text-base ${getSLAColor(currentIncident?.slaRemaining, currentIncident?.escalationWarning)}`}>
                 {formatSLATime(currentIncident?.slaRemaining)}
@@ -100,7 +98,7 @@ const PriorityBanner = ({ tickets = [] }) => {
             <p className="text-xs text-muted-foreground mt-1">{t('slaBreachWarning', 'SLA Breach Warning')}</p>
           </div>
 
-          <div className={`flex gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex gap-3`}>
             <button onClick={handleAccept} className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all hover:scale-105 shadow-md whitespace-nowrap">
               {t('accept', 'Accept')}
             </button>
@@ -112,14 +110,13 @@ const PriorityBanner = ({ tickets = [] }) => {
       </div>
       {/* Pagination dots */}
       {urgentIncidents?.length > 1 && (
-        <div className={`flex justify-center gap-2 mt-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+        <div className={`flex justify-center gap-2 mt-4`}>
           {urgentIncidents?.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-                index === currentIndex ? 'bg-foreground scale-125' : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-              }`}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${index === currentIndex ? 'bg-foreground scale-125' : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                }`}
             />
           ))}
         </div>

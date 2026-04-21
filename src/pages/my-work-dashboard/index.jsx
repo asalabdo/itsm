@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import { useLanguage } from '../../context/LanguageContext';
@@ -10,6 +10,7 @@ import InProgressWorkCard from './components/InProgressWorkCard';
 import CompletedTodayCard from './components/CompletedTodayCard';
 import PersonalPerformanceCard from './components/PersonalPerformanceCard';
 import QuickActionsPanel from './components/QuickActionsPanel';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 
 import { ticketsAPI, usersAPI } from '../../services/api';
 
@@ -27,7 +28,6 @@ const MyWorkDashboard = () => {
 
   const visibleTickets = useMemo(() => {
     return tickets.filter((ticket) => {
-      const status = String(ticket?.status || '').toLowerCase();
       if (selectedFilter === 'urgent') {
         return ['critical', 'high'].includes(String(ticket?.priority || '').toLowerCase());
       }
@@ -57,7 +57,7 @@ const MyWorkDashboard = () => {
     loadUserProfile();
   }, [currentUser?.id]);
 
-  const fetchWorkData = async () => {
+  const fetchWorkData = useCallback(async () => {
     try {
       setLoading(true);
       const userId = currentUser?.id;
@@ -70,7 +70,7 @@ const MyWorkDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser?.id]);
 
   useEffect(() => {
     fetchWorkData();
@@ -87,7 +87,7 @@ const MyWorkDashboard = () => {
       clearInterval(interval);
       window.removeEventListener('itsm:refresh', handleRefresh);
     };
-  }, [currentUser?.id]);
+  }, [currentUser?.id, fetchWorkData]);
 
   const handleFilterChange = (filter) => {
     setSelectedFilter(filter);
@@ -201,6 +201,14 @@ const MyWorkDashboard = () => {
             {/* Performance Dashboard */}
             <div className="mt-8">
               <PersonalPerformanceCard tickets={visibleTickets} />
+            </div>
+
+            <div className="mt-8">
+              <ManageEngineOnPremSnapshot
+                compact
+                title={t('manageEngineMyWorkContext', 'ManageEngine My Work Context')}
+                description={t('manageEngineMyWorkContextDesc', 'External requests and alerts that can influence your assigned work today.')}
+              />
             </div>
           </div>
 

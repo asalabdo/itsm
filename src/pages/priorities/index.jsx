@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { slaAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -72,16 +73,6 @@ const PrioritiesPage = () => {
     };
   };
 
-  const localizedLevel = (level) => {
-    const map = {
-      urgent: { impact: t('critical', 'Critical'), urgency: t('immediate', 'Immediate') },
-      high: { impact: t('high', 'High'), urgency: t('high', 'High') },
-      medium: { impact: t('medium', 'Medium'), urgency: t('medium', 'Medium') },
-      low: { impact: t('low', 'Low'), urgency: t('low', 'Low') },
-    };
-    return map[level] || {};
-  };
-
   useEffect(() => {
     const load = async () => {
       try {
@@ -114,6 +105,12 @@ const PrioritiesPage = () => {
             </div>
           </div>
         </section>
+
+        <ManageEngineOnPremSnapshot
+          compact
+          title={t('manageEnginePrioritySignals', 'ManageEngine Priority Signals')}
+          description={t('manageEnginePrioritySignalsDesc', 'Use ServiceDesk request priority and OpManager alarm pressure to validate local priority targets.')}
+        />
 
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {cards.map((priority) => {

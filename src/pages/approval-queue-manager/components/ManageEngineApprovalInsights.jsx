@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -20,8 +21,7 @@ const ManageEngineApprovalInsights = () => {
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      const items = operationsRes?.data?.items || operationsRes?.data?.operations || [];
-      setRequests(Array.isArray(items) ? items.slice(0, 4) : []);
+      setRequests(normalizeManageEngineList(operationsRes).slice(0, 4));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);
@@ -34,15 +34,15 @@ const ManageEngineApprovalInsights = () => {
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 md:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className={`flex items-start justify-between gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+      <div className={`flex items-start justify-between gap-3 mb-4`}>
         <div>
-          <div className={`flex items-center gap-2 text-primary mb-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-2 text-primary mb-1`}>
             <Icon name="ServerCog" size={18} />
             <h3 className="font-semibold text-foreground">
               {t('manageEngineApprovalInsights', 'ManageEngine Approval Insights')}
             </h3>
           </div>
-          <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+          <p className={`text-sm text-muted-foreground`}>
             {t('manageEngineApprovalInsightsDesc', 'Live ServiceDesk requests that may need follow-up while local approvals are in progress.')}
           </p>
         </div>
@@ -81,7 +81,7 @@ const ManageEngineApprovalInsights = () => {
         ) : (
           requests.map((request) => (
             <div key={`${request.source}-${request.externalId}`} className="rounded-lg border border-border p-4">
-              <div className={`flex items-start justify-between gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-start justify-between gap-3`}>
                 <div>
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">
                     {request.source} {request.itemType}
@@ -92,7 +92,7 @@ const ManageEngineApprovalInsights = () => {
                   {request.status || t('open', 'Open')}
                 </span>
               </div>
-              <p className={`text-sm text-muted-foreground mt-2 line-clamp-2 ${isRtl ? 'text-right' : 'text-left'}`}>
+              <p className={`text-sm text-muted-foreground mt-2 line-clamp-2`}>
                 {request.description || t('noDescriptionAvailable', 'No description available.')}
               </p>
             </div>

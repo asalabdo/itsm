@@ -95,9 +95,8 @@ const UserProfileMenu = () => {
               return (
                 <button
                   key={item?.label}
-                  className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-muted transition-smooth ${isRtl ? 'text-right' : 'text-left'} ${
-                    item?.danger ? 'text-error hover:text-error' : 'text-foreground'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-muted transition-smooth ${item?.danger ? 'text-error hover:text-error' : 'text-foreground'
+                    }`}
                   onClick={() => handleMenuItemClick(item?.action)}
                 >
                   <Icon

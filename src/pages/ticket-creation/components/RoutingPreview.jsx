@@ -132,19 +132,19 @@ const RoutingPreview = ({ category, priority, subject }) => {
   ];
 
   return (
-    <motion.div 
+    <motion.div
       className="p-4 md:p-5 bg-primary/5 border border-primary/30 rounded-xl"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
     >
-          <motion.div 
-            className={`flex items-start gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}
+      <motion.div
+        className={`flex items-start gap-3 mb-4`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <motion.div 
+        <motion.div
           className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0"
           whileHover={{ scale: 1.1, rotate: 5 }}
           transition={{ duration: 0.3 }}
@@ -161,7 +161,7 @@ const RoutingPreview = ({ category, priority, subject }) => {
         </div>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         className="space-y-3"
         variants={{
           visible: {
@@ -174,13 +174,13 @@ const RoutingPreview = ({ category, priority, subject }) => {
         animate="visible"
       >
         {routingItems.map((item, idx) => (
-          <motion.div 
+          <motion.div
             key={idx}
             className="flex items-start gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors duration-300"
             variants={{
               hidden: { opacity: 0, x: isRtl ? 10 : -10 },
-              visible: { 
-                opacity: 1, 
+              visible: {
+                opacity: 1,
                 x: 0,
                 transition: { duration: 0.3 }
               },
@@ -191,11 +191,11 @@ const RoutingPreview = ({ category, priority, subject }) => {
               whileHover={{ scale: 1.1 }}
               transition={{ duration: 0.2 }}
             >
-              <Icon 
-                name={item.icon} 
-                size={18} 
-                color="var(--color-muted-foreground)" 
-                className="mt-0.5 flex-shrink-0" 
+              <Icon
+                name={item.icon}
+                size={18}
+                color="var(--color-muted-foreground)"
+                className="mt-0.5 flex-shrink-0"
               />
             </motion.div>
             <div className={`flex-1 min-w-0 ${'text-left'}`}>
@@ -207,14 +207,14 @@ const RoutingPreview = ({ category, priority, subject }) => {
       </motion.div>
 
       {subject && subject?.length > 10 && (
-        <motion.div 
+        <motion.div
           className="mt-4 pt-4 border-t border-border"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <motion.div 
-            className={`flex items-center gap-2 text-sm text-success ${isRtl ? 'flex-row-reverse' : ''}`}
+          <motion.div
+            className={`flex items-center gap-2 text-sm text-success`}
             whileHover={{ scale: 1.05 }}
           >
             <motion.div

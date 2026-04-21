@@ -126,7 +126,7 @@ const QuickActionsPanel = ({ tickets = [] }) => {
             <button
               key={action.id}
               onClick={action.action}
-              className={`group flex items-start gap-4 p-4 bg-background border border-border rounded-lg hover:border-primary hover:shadow-elevation-2 transition-smooth ${isRtl ? 'text-right' : 'text-left'} hover-lift`}
+              className={`group flex items-start gap-4 p-4 bg-background border border-border rounded-lg hover:border-primary hover:shadow-elevation-2 transition-smooth hover-lift`}
             >
               <div className={`w-12 h-12 ${action.bgColor} rounded-lg flex items-center justify-center flex-shrink-0 transition-smooth group-hover:scale-110`}>
                 <Icon name={action.icon} size={24} color={action.color} />
@@ -199,9 +199,8 @@ const QuickActionsPanel = ({ tickets = [] }) => {
             <div
               key={activity.id}
               onClick={() => activity.backendId && navigate(`/ticket-details/${activity.backendId}`)}
-              className={`flex items-start gap-3 pb-4 cursor-pointer hover:bg-muted/30 rounded-lg px-2 transition-smooth ${
-                index !== recentActivity.length - 1 ? 'border-b border-border' : ''
-              }`}
+              className={`flex items-start gap-3 pb-4 cursor-pointer hover:bg-muted/30 rounded-lg px-2 transition-smooth ${index !== recentActivity.length - 1 ? 'border-b border-border' : ''
+                }`}
             >
               <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                 <Icon name={activity.icon} size={16} color="var(--color-primary)" />

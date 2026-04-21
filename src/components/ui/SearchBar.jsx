@@ -129,7 +129,7 @@ const SearchBar = () => {
                   onClick={() => handleQuickFilterClick(filter?.params)}
                 >
                   <Icon name={filter?.icon} size={18} color="var(--color-primary)" />
-                  <span className={`flex-1 text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+                  <span className={`flex-1 text-sm text-foreground`}>
                     {filter?.label}
                   </span>
                 </button>

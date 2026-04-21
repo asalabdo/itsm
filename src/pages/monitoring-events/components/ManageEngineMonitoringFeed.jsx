@@ -2,8 +2,13 @@ import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ManageEngineMonitoringFeed = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
@@ -16,8 +21,7 @@ const ManageEngineMonitoringFeed = () => {
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      const items = operationsRes?.data?.items || operationsRes?.data?.operations || [];
-      setAlerts(Array.isArray(items) ? items.slice(0, 5) : []);
+      setAlerts(normalizeManageEngineList(operationsRes).slice(0, 5));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);
@@ -34,36 +38,36 @@ const ManageEngineMonitoringFeed = () => {
         <div>
           <div className="flex items-center gap-2 text-primary mb-1">
             <Icon name="ServerCog" size={18} />
-            <h2 className="text-lg font-semibold text-foreground">ManageEngine Monitoring Feed</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t('manageEngineMonitoringFeed', 'ManageEngine Monitoring Feed')}</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Live OpManager alerts to compare against the event you are about to create.
+            {t('manageEngineMonitoringFeedDesc', 'Live OpManager alerts to compare against the event you are about to create.')}
           </p>
         </div>
         <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          Refresh
+          {t('refresh', 'Refresh')}
         </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="rounded-xl bg-muted/40 p-4">
-          <div className="text-xs text-muted-foreground mb-1">Live alerts</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('liveAlerts', 'Live alerts')}</div>
           <div className="text-2xl font-semibold text-foreground">{alerts.length}</div>
         </div>
         <div className="rounded-xl bg-muted/40 p-4">
-          <div className="text-xs text-muted-foreground mb-1">Sync health</div>
-          <div className="text-sm font-semibold text-foreground capitalize">{syncStatus?.status || 'idle'}</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('syncHealth', 'Sync health')}</div>
+          <div className="text-sm font-semibold text-foreground capitalize">{syncStatus?.status || t('idle', 'idle')}</div>
         </div>
       </div>
 
       <div className="space-y-3">
         {loading ? (
           <div className="rounded-xl border border-border border-dashed p-4 text-sm text-center text-muted-foreground">
-            Loading OpManager alerts...
+            {t('loadingOpManagerAlerts', 'Loading OpManager alerts...')}
           </div>
         ) : alerts.length === 0 ? (
           <div className="rounded-xl border border-border border-dashed p-4 text-sm text-center text-muted-foreground">
-            No OpManager alerts are available right now.
+            {t('noOpManagerAlerts', 'No OpManager alerts are available right now.')}
           </div>
         ) : (
           alerts.map((alert) => (
@@ -76,11 +80,11 @@ const ManageEngineMonitoringFeed = () => {
                   <div className="font-medium text-foreground mt-1">{alert.name}</div>
                 </div>
                 <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                  {alert.status || 'Active'}
+                  {alert.status || t('active', 'Active')}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                {alert.description || 'No alert description available.'}
+                {alert.description || t('noAlertDescription', 'No alert description available.')}
               </p>
             </div>
           ))

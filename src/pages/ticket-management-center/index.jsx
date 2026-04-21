@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
@@ -12,6 +12,7 @@ import SearchBar from './components/SearchBar';
 import StatsCards from './components/StatsCards';
 import CreateTicketModal from './components/CreateTicketModal';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { ticketsAPI, dashboardAPI } from '../../services/api';
 import userService from '../../services/userService';
 import { formatLocalizedValue, getLocalizedDisplayName } from '../../services/displayValue';
@@ -58,9 +59,9 @@ const TicketManagementCenter = () => {
   });
   const currentUser = userService.getCurrentUser() || { name: 'Admin User', initials: 'AU', role: 'Admin' };
   const { language, isRtl } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
 
-  const mapTicket = (t) => ({
+  const mapTicket = useCallback((t) => ({
     backendId: t.id,
     id: t.ticketNumber || `TKT-${t.id}`,
     title: t.title,
@@ -83,9 +84,9 @@ const TicketManagementCenter = () => {
     hasAttachment: false,
     department: getDepartmentLabel(t, t.assignedTo),
     description: t.description || ''
-  });
+  }), []);
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       setLoading(true);
       const [ticketsRes, summaryRes] = await Promise.all([
@@ -113,11 +114,11 @@ const TicketManagementCenter = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mapTicket]);
 
   useEffect(() => {
     fetchTickets();
-  }, []);
+  }, [fetchTickets]);
 
   useEffect(() => {
     const handleRefresh = () => {
@@ -126,13 +127,13 @@ const TicketManagementCenter = () => {
 
     window.addEventListener('itsm:refresh', handleRefresh);
     return () => window.removeEventListener('itsm:refresh', handleRefresh);
-  }, []);
+  }, [fetchTickets]);
 
   const normalizedCurrentUserName = String(currentUser?.name || '').trim().toLowerCase();
   const normalizedCurrentUserUsername = String(currentUser?.username || '').trim().toLowerCase();
   const normalizedCurrentUserId = currentUser?.id != null ? String(currentUser.id) : '';
 
-  const isCurrentUserTicket = (ticket) => {
+  const isCurrentUserTicket = useCallback((ticket) => {
     const assignedName = String(ticket?.assignee || '').trim().toLowerCase();
     const assignedId = ticket?.assignedToId != null ? String(ticket.assignedToId) : '';
     if (!assignedName && !assignedId) return false;
@@ -140,9 +141,9 @@ const TicketManagementCenter = () => {
     if (normalizedCurrentUserName && assignedName === normalizedCurrentUserName) return true;
     if (normalizedCurrentUserUsername && assignedName === normalizedCurrentUserUsername) return true;
     return false;
-  };
+  }, [normalizedCurrentUserId, normalizedCurrentUserName, normalizedCurrentUserUsername]);
 
-  const matchesAssigneeFilter = (ticket, selected) => {
+  const matchesAssigneeFilter = useCallback((ticket, selected) => {
     if (!selected || selected === 'all') return true;
     const values = Array.isArray(selected) ? selected : [selected];
     const ticketAssignee = String(ticket?.assignee || '').trim().toLowerCase();
@@ -164,7 +165,7 @@ const TicketManagementCenter = () => {
           return ticketAssignee === normalizedValue;
       }
     });
-  };
+  }, [isCurrentUserTicket]);
 
   const filteredTickets = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -222,7 +223,7 @@ const TicketManagementCenter = () => {
 
       return true;
     });
-  }, [tickets, searchQuery, searchFilters, activeFilters]);
+  }, [tickets, searchQuery, searchFilters, activeFilters, matchesAssigneeFilter]);
 
   const handleSelectTicket = (ticketId) => {
     setSelectedTickets(prev => prev?.includes(ticketId) ? prev?.filter(id => id !== ticketId) : [...prev, ticketId]);
@@ -450,7 +451,7 @@ const TicketManagementCenter = () => {
       assignee: assigneeOptions,
       savedFilters: savedFilterCounts
     };
-  }, [tickets, normalizedCurrentUserId, normalizedCurrentUserName]);
+  }, [tickets, t, isCurrentUserTicket]);
 
   const handleCreateTicket = async (newTicket) => {
     try {
@@ -507,6 +508,11 @@ const TicketManagementCenter = () => {
             </div>
 
             <StatsCards stats={stats} />
+            <ManageEngineOnPremSnapshot
+              compact
+              title={t('manageEngineTicketQueueContext', 'ManageEngine Ticket Queue Context')}
+              description={t('manageEngineTicketQueueContextDesc', 'On-prem ServiceDesk requests and OpManager alerts beside the local ticket queue.')}
+            />
             <SearchBar
               onSearch={handleSearch}
               onFilterChange={handleFilterChange}

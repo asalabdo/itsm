@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 
 const ManageEngineRequestIntake = () => {
   const [loading, setLoading] = useState(true);
@@ -16,9 +17,7 @@ const ManageEngineRequestIntake = () => {
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      const items = operationsRes?.data?.items || operationsRes?.data?.operations || [];
-
-      setRequests(Array.isArray(items) ? items.slice(0, 5) : []);
+      setRequests(normalizeManageEngineList(operationsRes).slice(0, 5));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);

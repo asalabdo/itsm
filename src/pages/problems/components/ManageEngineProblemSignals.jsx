@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -20,8 +21,8 @@ const ManageEngineProblemSignals = () => {
         manageEngineAPI.getOperations({ source: 'ServiceDesk', type: 'request' }).catch(() => ({ data: { items: [] } })),
       ]);
 
-      setAlerts(Array.isArray(alertRes?.data?.items) ? alertRes.data.items.slice(0, 4) : []);
-      setRequests(Array.isArray(requestRes?.data?.items) ? requestRes.data.items.slice(0, 4) : []);
+      setAlerts(normalizeManageEngineList(alertRes).slice(0, 4));
+      setRequests(normalizeManageEngineList(requestRes).slice(0, 4));
     } finally {
       setLoading(false);
     }

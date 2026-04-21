@@ -14,6 +14,7 @@ import CategorySelector from './components/CategorySelector';
 import EmployeeLookup from './components/EmployeeLookup';
 import FileUploader from './components/FileUploader';
 import RoutingPreview from './components/RoutingPreview';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { slaAPI, ticketsAPI } from '../../services/api';
 
 const DRAFT_KEY = 'itsm-ticket-creation-draft-v2';
@@ -417,6 +418,12 @@ const TicketCreation = () => {
                 </div>
               </div>
             </section>
+
+            <ManageEngineOnPremSnapshot
+              compact
+              title={t('manageEngineTicketIntakeContext', 'ManageEngine Ticket Intake Context')}
+              description={t('manageEngineTicketIntakeContextDesc', 'ServiceDesk catalog and OpManager alarms provide on-prem context before users submit a new ticket.')}
+            />
 
             <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] items-start">
               <aside className="space-y-6">

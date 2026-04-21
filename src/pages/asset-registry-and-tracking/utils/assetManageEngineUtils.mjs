@@ -10,13 +10,21 @@ const getAssetIdentifiers = (asset) => uniqueValues([
 ]);
 
 const getExternalIdentifiers = (item) => uniqueValues([
-  normalizeValue(item?.externalId),
+  normalizeValue(item?.assetTag),
+  normalizeValue(item?.assetId),
+  normalizeValue(item?.serialNumber),
+  normalizeValue(item?.barcode),
   normalizeValue(item?.metadata?.assetTag),
+  normalizeValue(item?.metadata?.asset_tag),
   normalizeValue(item?.metadata?.assetId),
+  normalizeValue(item?.metadata?.asset_id),
   normalizeValue(item?.metadata?.serialNumber),
+  normalizeValue(item?.metadata?.serial_number),
   normalizeValue(item?.metadata?.barcode),
   normalizeValue(item?.metadata?.deviceTag),
+  normalizeValue(item?.metadata?.device_tag),
   normalizeValue(item?.metadata?.deviceSerialNumber),
+  normalizeValue(item?.metadata?.device_serial_number),
 ]);
 
 export const itemMatchesAsset = (asset, item) => {
@@ -58,6 +66,7 @@ export const enrichAssetsWithManageEngine = (assetItems = [], monitoredItems = [
 export const buildAssetFilterOptions = (assets = []) => {
   const categories = uniqueValues(assets.map((asset) => String(asset?.category || '').trim()));
   const locations = uniqueValues(assets.map((asset) => String(asset?.location || '').trim()));
+  const ownershipTypes = uniqueValues(assets.map((asset) => String(asset?.ownershipType || '').trim()));
 
   return {
     categoryOptions: [
@@ -67,6 +76,10 @@ export const buildAssetFilterOptions = (assets = []) => {
     locationOptions: [
       { value: '', label: 'All Locations' },
       ...locations.map((location) => ({ value: location, label: location })),
+    ],
+    ownershipOptions: [
+      { value: '', label: 'All Ownership' },
+      ...ownershipTypes.map((ownershipType) => ({ value: ownershipType, label: ownershipType })),
     ],
   };
 };
@@ -90,6 +103,10 @@ export const filterAssets = (assets = [], filters = {}) => {
 
   if (filters?.location) {
     filtered = filtered.filter((asset) => asset?.location === filters.location);
+  }
+
+  if (filters?.ownershipType) {
+    filtered = filtered.filter((asset) => asset?.ownershipType === filters.ownershipType);
   }
 
   if (Array.isArray(filters?.status) && filters.status.length > 0) {

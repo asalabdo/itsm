@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
@@ -72,8 +73,9 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
       setLoadingData(true);
       setError(null);
       const response = await manageEngineAPI.getUnified(filters);
-      setCatalog(Array.isArray(response?.data?.catalog) ? response.data.catalog : []);
-      setOperations(Array.isArray(response?.data?.operations) ? response.data.operations : []);
+      const unified = normalizeManageEngineUnified(response);
+      setCatalog(unified.catalog);
+      setOperations(unified.operations);
     } catch (err) {
       setCatalog([]);
       setOperations([]);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -8,6 +8,7 @@ import { getTranslation } from '../../services/i18n';
 import changeService from '../../services/changeService';
 import { format } from 'date-fns';
 import ChangeForm from './components/ChangeForm';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 
 const ChangeManagement = () => {
     const navigate = useNavigate();
@@ -102,6 +103,13 @@ const ChangeManagement = () => {
                     />
                 )}
 
+                <div className="mb-8">
+                    <ManageEngineOnPremSnapshot
+                        title={t('manageEngineChangeContext', 'ManageEngine Change Context')}
+                        description={t('manageEngineChangeContextDesc', 'On-prem OpManager alerts and ServiceDesk requests to validate change risk before implementation.')}
+                    />
+                </div>
+
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4 overflow-x-auto">
                         {[
@@ -160,7 +168,7 @@ const ChangeManagement = () => {
                                             <div className="text-sm text-slate-500 dark:text-slate-400 truncate max-w-xs">{change.title}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm font-medium flex items-center gap-1.5 ${getRiskColor(change.riskLevel)}">
+                                            <div className={`text-sm font-medium flex items-center gap-1.5 ${getRiskColor(change.riskLevel)}`}>
                                                 <div className={`w-1.5 h-1.5 rounded-full bg-current`} />
                                                 {change.riskLevel} {t('riskLevel', 'Risk')}
                                             </div>

@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { slaAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -150,6 +151,12 @@ const EscalationsPage = () => {
             </div>
           </div>
         </section>
+
+        <ManageEngineOnPremSnapshot
+          compact
+          title={t('manageEngineEscalationSignals', 'ManageEngine Escalation Signals')}
+          description={t('manageEngineEscalationSignalsDesc', 'Correlate ServiceDesk queue pressure and OpManager alarms before deciding escalation thresholds.')}
+        />
 
         <section className="space-y-4">
           {cards.map((item, index) => {

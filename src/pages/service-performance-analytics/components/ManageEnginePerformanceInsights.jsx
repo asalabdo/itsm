@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { manageEngineAPI } from '../../../services/api';
+import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -24,11 +25,7 @@ const ManageEnginePerformanceInsights = () => {
           manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
         ]);
 
-        setSummary({
-          operations: unifiedRes?.data?.summary?.operations || 0,
-          serviceDeskRequests: unifiedRes?.data?.summary?.serviceDeskRequests || 0,
-          opManagerAlerts: unifiedRes?.data?.summary?.opManagerAlerts || 0,
-        });
+        setSummary(summarizeManageEngineUnified(unifiedRes));
         setSyncStatus(syncRes?.data || null);
       } finally {
         setLoading(false);
@@ -45,15 +42,15 @@ const ManageEnginePerformanceInsights = () => {
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className={`flex items-start justify-between gap-3 mb-5 ${isRtl ? 'flex-row-reverse' : ''}`}>
+      <div className={`flex items-start justify-between gap-3 mb-5`}>
         <div>
-          <div className={`flex items-center gap-2 text-primary mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-2 text-primary mb-2`}>
             <Icon name="ServerCog" size={18} />
             <h4 className="text-lg font-semibold text-foreground">
               {t('manageEnginePerformanceInsights', 'ManageEngine Performance Insights')}
             </h4>
           </div>
-          <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+          <p className={`text-sm text-muted-foreground`}>
             {t('manageEnginePerformanceDescription', 'Cross-check external demand and monitoring pressure beside internal service performance.')}
           </p>
         </div>
@@ -96,11 +93,11 @@ const ManageEnginePerformanceInsights = () => {
 
       {!loading && (
         <div className="mt-5 rounded-lg border border-border bg-background p-4">
-          <div className={`flex items-center gap-2 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-2 mb-2`}>
             <Icon name="TrendingUp" size={16} className="text-primary" />
             <span className="text-sm font-medium text-foreground">{t('manageEngineReadout', 'Current readout')}</span>
           </div>
-          <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+          <p className={`text-sm text-muted-foreground`}>
             {t('manageEngineReadoutText', 'The strongest external signal right now is')} <span className="font-medium text-foreground">{dominantSource}</span>.{' '}
             {summary.operations > 0
               ? t('manageEngineReadoutAction', 'Use it to validate whether current service trends are internal-only or driven by external platforms.')

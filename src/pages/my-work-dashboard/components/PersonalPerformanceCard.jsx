@@ -8,7 +8,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [timeRange, setTimeRange] = useState('week');
-  
+
   const data = useMemo(() => {
     const resolved = tickets.filter((t) => String(t.status).toLowerCase() === 'resolved');
     const weekly = Array.from({ length: 7 }, (_, index) => {
@@ -81,13 +81,13 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
     <div className="bg-card border border-border rounded-xl shadow-lg" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 via-transparent to-accent/5">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <h3 className={`text-xl font-bold text-foreground flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <h3 className={`text-xl font-bold text-foreground flex items-center gap-3`}>
             <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-md">
               <Icon name="TrendingUp" size={24} className="text-primary-foreground" />
             </div>
             <span>{t('personalPerformanceDashboard', 'Personal Performance Dashboard')}</span>
           </h3>
-          <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-3`}>
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e?.target?.value)}
@@ -106,7 +106,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
         {/* Key Performance Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
-            <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-3`}>
               <div className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon name="CheckCircle2" size={20} />
               </div>
@@ -118,7 +118,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
           </div>
 
           <div className="bg-success/10 rounded-lg p-4 border border-success/20">
-            <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-3`}>
               <div className="w-10 h-10 bg-success text-success-foreground rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon name="Clock" size={20} />
               </div>
@@ -132,7 +132,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
           </div>
 
           <div className="bg-warning/10 rounded-lg p-4 border border-warning/20">
-            <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-3`}>
               <div className="w-10 h-10 bg-warning text-warning-foreground rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon name="Star" size={20} />
               </div>
@@ -146,7 +146,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
           </div>
 
           <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/20">
-            <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-3`}>
               <div className="w-10 h-10 bg-blue-500 text-white rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon name="Target" size={20} />
               </div>
@@ -160,7 +160,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
           </div>
 
           <div className="bg-purple-500/10 rounded-lg p-4 border border-purple-500/20">
-            <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-3`}>
               <div className="w-10 h-10 bg-purple-500 text-white rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon name="Activity" size={20} />
               </div>
@@ -174,7 +174,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
           </div>
 
           <div className="bg-indigo-500/10 rounded-lg p-4 border border-indigo-500/20">
-            <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-3`}>
               <div className="w-10 h-10 bg-indigo-500 text-white rounded-lg flex items-center justify-center flex-shrink-0">
                 <Icon name="Brain" size={20} />
               </div>
@@ -197,18 +197,18 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis dataKey="day" className="text-xs" />
                 <YAxis className="text-xs" />
-                <Tooltip 
+                <Tooltip
                   labelClassName="text-foreground"
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px'
                   }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="resolved" 
-                  stroke="hsl(var(--primary))" 
+                <Line
+                  type="monotone"
+                  dataKey="resolved"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={3}
                   dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
                 />
@@ -224,17 +224,17 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis dataKey="day" className="text-xs" />
                 <YAxis className="text-xs" />
-                <Tooltip 
+                <Tooltip
                   labelClassName="text-foreground"
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px'
                   }}
                 />
-                <Bar 
-                  dataKey="avgTime" 
-                  fill="hsl(var(--warning))" 
+                <Bar
+                  dataKey="avgTime"
+                  fill="hsl(var(--warning))"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -248,7 +248,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {achievements?.map((achievement, index) => (
               <div key={index} className="bg-muted/30 rounded-lg p-4 border border-border">
-                <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-start gap-3`}>
                   <div className={`flex-shrink-0 ${achievement?.color}`}>
                     <Icon name={achievement?.icon} size={24} />
                   </div>
@@ -267,7 +267,7 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
           <h4 className="font-semibold text-foreground mb-4">{t('monthlyGoalsProgress', 'Monthly Goals Progress')}</h4>
           <div className="space-y-4">
             <div>
-              <div className={`flex justify-between text-sm mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex justify-between text-sm mb-2`}>
                 <span className="text-foreground">{t('ticketsResolvedTarget', 'Tickets Resolved (Target: 200)')}</span>
                 <span className="text-primary font-medium">165/200 (83%)</span>
               </div>
@@ -275,9 +275,9 @@ const PersonalPerformanceCard = ({ tickets = [] }) => {
                 <div className="bg-primary rounded-full h-2.5 transition-all" style={{ width: '83%' }} />
               </div>
             </div>
-            
+
             <div>
-              <div className={`flex justify-between text-sm mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex justify-between text-sm mb-2`}>
                 <span className="text-foreground">{t('employeeSatisfactionTarget', 'Employee Satisfaction (Target: 4.5)')}</span>
                 <span className="text-success font-medium">4.4/5.0 (98%)</span>
               </div>

@@ -317,7 +317,7 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.3 }}
           >
-            <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-start gap-3`}>
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.2 }}
@@ -340,21 +340,21 @@ const EmployeeLookup = ({ selectedEmployee, onEmployeeSelect }) => {
                   animate="visible"
                 >
                   <motion.p
-                    className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}
+                    className={`text-sm text-muted-foreground caption flex items-center gap-2`}
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Mail" size={14} />
                     {formatLocalizedValue(selectedEmployee?.email) || t('na', 'N/A')}
                   </motion.p>
                   <motion.p
-                    className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}
+                    className={`text-sm text-muted-foreground caption flex items-center gap-2`}
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Building2" size={14} />
                     {[formatLocalizedValue(selectedEmployee?.department), formatLocalizedValue(selectedEmployee?.jobTitle)].filter(Boolean).join(' • ') || t('noDepartment', 'No department')}
                   </motion.p>
                   <motion.p
-                    className={`text-sm text-muted-foreground caption flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}
+                    className={`text-sm text-muted-foreground caption flex items-center gap-2`}
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   >
                     <Icon name="Phone" size={14} />

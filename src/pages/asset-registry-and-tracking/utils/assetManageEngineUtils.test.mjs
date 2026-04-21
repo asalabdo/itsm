@@ -24,17 +24,17 @@ const tests = [
       {
         source: 'OpManager',
         itemType: 'service',
-        externalId: 'monitor-1',
+        externalId: 'AST-100',
         name: 'Dell Latitude 7420',
         description: 'Generic Dell laptop monitor',
-        metadata: { manufacturer: 'Dell', model: 'Latitude 7420' },
+        metadata: { manufacturer: 'Dell', model: 'Latitude 7420', assetTag: 'AST-200' },
       },
       {
         source: 'OpManager',
         itemType: 'service',
         externalId: 'monitor-2',
         name: 'Device SN-100',
-        metadata: { serialNumber: 'SN-100' },
+        metadata: { serial_number: 'SN-100' },
       },
     ];
 
@@ -46,12 +46,12 @@ const tests = [
   },
   () => {
     const assets = [
-      { category: 'Hardware', location: 'HQ - Floor 2' },
-      { category: 'Software', location: 'Remote' },
-      { category: 'Hardware', location: 'HQ - Floor 2' },
+      { category: 'Hardware', location: 'HQ - Floor 2', ownershipType: 'assigned' },
+      { category: 'Software', location: 'Remote', ownershipType: 'unassigned' },
+      { category: 'Hardware', location: 'HQ - Floor 2', ownershipType: 'assigned' },
     ];
 
-    const { categoryOptions, locationOptions } = buildAssetFilterOptions(assets);
+    const { categoryOptions, locationOptions, ownershipOptions } = buildAssetFilterOptions(assets);
 
     assert.deepEqual(
       categoryOptions.map((option) => option.value),
@@ -61,6 +61,10 @@ const tests = [
       locationOptions.map((option) => option.value),
       ['', 'HQ - Floor 2', 'Remote']
     );
+    assert.deepEqual(
+      ownershipOptions.map((option) => option.value),
+      ['', 'assigned', 'unassigned']
+    );
   },
   () => {
     const assets = [
@@ -69,6 +73,7 @@ const tests = [
         category: 'Hardware',
         location: 'HQ - Floor 2',
         status: 'active',
+        ownershipType: 'assigned',
         value: '$100.00',
         manageEngine: { isMonitored: true, alertCount: 1, requestCount: 0 },
       },
@@ -77,6 +82,7 @@ const tests = [
         category: 'Software',
         location: 'Remote',
         status: 'active',
+        ownershipType: 'unassigned',
         value: '$50.00',
         manageEngine: { isMonitored: false, alertCount: 0, requestCount: 1 },
       },
@@ -86,12 +92,24 @@ const tests = [
       category: 'Hardware',
       location: 'HQ - Floor 2',
       manageEngineStatus: 'alerts',
+      ownershipType: 'assigned',
       status: ['active'],
       valueRange: { min: '', max: '' },
       maintenanceStatus: [],
     });
 
     assert.deepEqual(filtered.map((asset) => asset.id), [1]);
+  },
+  () => {
+    const assets = [
+      { id: 1, ownershipType: 'assigned' },
+      { id: 2, ownershipType: 'unassigned' },
+    ];
+
+    assert.deepEqual(
+      filterAssets(assets, { ownershipType: 'unassigned' }).map((asset) => asset.id),
+      [2]
+    );
   },
 ];
 

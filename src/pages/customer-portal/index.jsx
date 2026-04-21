@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
@@ -9,13 +9,14 @@ import TicketCreationCard from './components/TicketCreationCard';
 import MyTicketsTable from './components/MyTicketsTable';
 import KnowledgeBaseSection from './components/KnowledgeBaseSection';
 import QuickActionsPanel from './components/QuickActionsPanel';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import Icon from '../../components/AppIcon';
 import { ticketsAPI, settingsAPI } from '../../services/api';
 
 const CustomerPortal = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   const [activeTab, setActiveTab] = useState('overview');
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
   const [stats, setStats] = useState([
@@ -36,89 +37,84 @@ const CustomerPortal = () => {
     }
   });
 
+  const fallbackProfile = useCallback(() => ({
+    displayName: currentUser?.name || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || t('portalUser', 'Portal User'),
+    role: currentUser?.role || t('employeePortal', 'Employee Portal'),
+    defaultLandingPage: '/it-operations-command-center',
+    emailNotifications: true,
+    pushNotifications: true
+  }), [currentUser?.firstName, currentUser?.lastName, currentUser?.name, currentUser?.role, t]);
+
+  const loadCustomerTickets = useCallback(async () => {
+    try {
+      setLoading(true);
+      const ticketsRes = await ticketsAPI.getAll();
+      const rawTickets = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
+      try {
+        const settingsRes = await settingsAPI.getProfile();
+        setSettingsProfile(settingsRes?.data || null);
+      } catch (settingsError) {
+        console.error('Failed to load settings profile:', settingsError);
+        setSettingsProfile(fallbackProfile());
+      }
+
+      const currentUserId = Number(currentUser?.id);
+      const matchesCurrentUser = (ticket) => {
+        if (!currentUserId) return true;
+        const candidateIds = [
+          ticket?.requestedById,
+          ticket?.assignedToId,
+          ticket?.requestedBy?.id,
+          ticket?.assignedTo?.id,
+          ticket?.requestedBy?.userId,
+          ticket?.assignedTo?.userId,
+          ticket?.ownerId,
+          ticket?.createdById,
+        ].map((value) => Number(value)).filter((value) => !Number.isNaN(value) && value > 0);
+        return candidateIds.includes(currentUserId);
+      };
+
+      const matchedTickets = currentUserId ? rawTickets.filter(matchesCurrentUser) : rawTickets;
+      const userTickets = matchedTickets.length > 0 ? matchedTickets : rawTickets.slice(0, 8);
+
+      setTickets(userTickets);
+
+      const activeTickets = userTickets.filter((ticket) => !['Resolved', 'Closed'].includes(ticket.status));
+      const resolvedThisMonth = userTickets.filter((ticket) => {
+        if (!ticket?.resolvedAt) return false;
+        const resolvedAt = new Date(ticket.resolvedAt);
+        const now = new Date();
+        return resolvedAt.getMonth() === now.getMonth() && resolvedAt.getFullYear() === now.getFullYear();
+      }).length;
+      const averageResponseHours = userTickets.length
+        ? (userTickets.reduce((sum, ticket) => {
+          const createdAt = ticket?.createdAt ? new Date(ticket.createdAt) : null;
+          const updatedAt = ticket?.updatedAt ? new Date(ticket.updatedAt) : null;
+          if (!createdAt || !updatedAt) return sum;
+          return sum + Math.max(0, (updatedAt - createdAt) / 36e5);
+        }, 0) / userTickets.length).toFixed(1)
+        : '--';
+
+      setStats([
+        { label: t('activeTickets', 'Active Tickets'), value: String(activeTickets.length), change: '', trend: 'up', icon: 'Ticket', color: 'var(--color-primary)', bgColor: 'bg-primary/10' },
+        { label: t('completedThisMonth', 'Completed This Month'), value: String(resolvedThisMonth), change: '', trend: 'up', icon: 'CheckCircle', color: 'var(--color-success)', bgColor: 'bg-success/10' },
+        { label: t('avgResponseTime', 'Avg Response Time'), value: averageResponseHours === '--' ? '--' : `${averageResponseHours}h`, change: '', trend: 'down', icon: 'Clock', color: 'var(--color-warning)', bgColor: 'bg-warning/10' },
+        { label: t('totalTickets', 'Total Tickets'), value: String(userTickets.length), change: '', trend: 'up', icon: 'Star', color: 'var(--color-accent)', bgColor: 'bg-accent/10' },
+      ]);
+    } catch (error) {
+      console.error('Failed to load customer portal data:', error);
+      setTickets([]);
+      setSettingsProfile(fallbackProfile());
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser?.id, fallbackProfile, t]);
+
   useEffect(() => {
     const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeBanner');
     if (hasSeenWelcome) setShowWelcomeBanner(false);
-
-    const loadCustomerTickets = async () => {
-      try {
-        setLoading(true);
-        const ticketsRes = await ticketsAPI.getAll();
-        const rawTickets = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
-        try {
-          const settingsRes = await settingsAPI.getProfile();
-          setSettingsProfile(settingsRes?.data || null);
-        } catch (settingsError) {
-          console.error('Failed to load settings profile:', settingsError);
-          setSettingsProfile({
-            displayName: currentUser?.name || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || t('portalUser', 'Portal User'),
-            role: currentUser?.role || t('employeePortal', 'Employee Portal'),
-            defaultLandingPage: '/it-operations-command-center',
-            emailNotifications: true,
-            pushNotifications: true
-          });
-        }
-
-        const currentUserId = Number(currentUser?.id);
-        const matchesCurrentUser = (ticket) => {
-          if (!currentUserId) return true;
-          const candidateIds = [
-            ticket?.requestedById,
-            ticket?.assignedToId,
-            ticket?.requestedBy?.id,
-            ticket?.assignedTo?.id,
-            ticket?.requestedBy?.userId,
-            ticket?.assignedTo?.userId,
-            ticket?.ownerId,
-            ticket?.createdById,
-          ].map((value) => Number(value)).filter((value) => !Number.isNaN(value) && value > 0);
-          return candidateIds.includes(currentUserId);
-        };
-
-        const matchedTickets = currentUserId ? rawTickets.filter(matchesCurrentUser) : rawTickets;
-        const userTickets = matchedTickets.length > 0 ? matchedTickets : rawTickets.slice(0, 8);
-
-        setTickets(userTickets);
-
-        const activeTickets = userTickets.filter((ticket) => !['Resolved', 'Closed'].includes(ticket.status));
-        const resolvedThisMonth = userTickets.filter((ticket) => {
-          if (!ticket?.resolvedAt) return false;
-          const resolvedAt = new Date(ticket.resolvedAt);
-          const now = new Date();
-          return resolvedAt.getMonth() === now.getMonth() && resolvedAt.getFullYear() === now.getFullYear();
-        }).length;
-        const averageResponseHours = userTickets.length
-          ? (userTickets.reduce((sum, ticket) => {
-              const createdAt = ticket?.createdAt ? new Date(ticket.createdAt) : null;
-              const updatedAt = ticket?.updatedAt ? new Date(ticket.updatedAt) : null;
-              if (!createdAt || !updatedAt) return sum;
-              return sum + Math.max(0, (updatedAt - createdAt) / 36e5);
-            }, 0) / userTickets.length).toFixed(1)
-          : '--';
-
-        setStats([
-          { label: t('activeTickets', 'Active Tickets'), value: String(activeTickets.length), change: '', trend: 'up', icon: 'Ticket', color: 'var(--color-primary)', bgColor: 'bg-primary/10' },
-          { label: t('completedThisMonth', 'Completed This Month'), value: String(resolvedThisMonth), change: '', trend: 'up', icon: 'CheckCircle', color: 'var(--color-success)', bgColor: 'bg-success/10' },
-          { label: t('avgResponseTime', 'Avg Response Time'), value: averageResponseHours === '--' ? '--' : `${averageResponseHours}h`, change: '', trend: 'down', icon: 'Clock', color: 'var(--color-warning)', bgColor: 'bg-warning/10' },
-          { label: t('totalTickets', 'Total Tickets'), value: String(userTickets.length), change: '', trend: 'up', icon: 'Star', color: 'var(--color-accent)', bgColor: 'bg-accent/10' },
-        ]);
-      } catch (error) {
-        console.error('Failed to load customer portal data:', error);
-        setTickets([]);
-        setSettingsProfile({
-          displayName: currentUser?.name || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || t('portalUser', 'Portal User'),
-          role: currentUser?.role || t('employeePortal', 'Employee Portal'),
-          defaultLandingPage: '/it-operations-command-center',
-          emailNotifications: true,
-          pushNotifications: true
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCustomerTickets();
-  }, []);
+    void loadCustomerTickets();
+  }, [loadCustomerTickets]);
 
   const handleDismissWelcome = () => {
     setShowWelcomeBanner(false);
@@ -197,7 +193,7 @@ const CustomerPortal = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
             {stats?.map((stat) => (
               <div key={stat?.label} className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 hover:shadow-elevation-3 transition-smooth" dir={isRtl ? 'rtl' : 'ltr'}>
-                <div className={`flex items-start justify-between mb-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-start justify-between mb-3`}>
                   <div className={`w-10 h-10 md:w-12 md:h-12 ${stat?.bgColor} rounded-lg flex items-center justify-center`}>
                     <Icon name={stat?.icon} size={24} color={stat?.color} />
                   </div>
@@ -205,10 +201,18 @@ const CustomerPortal = () => {
                     {stat?.change}
                   </span>
                 </div>
-                <div className={`text-2xl md:text-3xl font-semibold text-foreground mb-1 data-text ${isRtl ? 'text-right' : 'text-left'}`}>{stat?.value}</div>
-                <div className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{stat?.label}</div>
+                <div className={`text-2xl md:text-3xl font-semibold text-foreground mb-1 data-text`}>{stat?.value}</div>
+                <div className={`text-sm text-muted-foreground`}>{stat?.label}</div>
               </div>
             ))}
+          </div>
+
+          <div className="mb-6 md:mb-8">
+            <ManageEngineOnPremSnapshot
+              compact
+              title={t('manageEnginePortalContext', 'ManageEngine Service Context')}
+              description={t('manageEnginePortalContextDesc', 'Current external service demand and monitoring alerts from the on-prem ITSM platform.')}
+            />
           </div>
 
           <div className="bg-card rounded-lg shadow-elevation-2 mb-6 md:mb-8 overflow-hidden">

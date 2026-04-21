@@ -15,7 +15,7 @@ const MonitoringEvents = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
   const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
-  
+
   const severityOptions = [
     { value: 'Critical', label: t('severityCritical', 'Critical') },
     { value: 'High', label: t('severityHigh', 'High') },
@@ -243,10 +243,10 @@ const MonitoringEvents = () => {
             <ManageEngineMonitoringFeed />
 
             <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
-              <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('liveSummary', 'Live Summary')}</h2>
+              <h2 className={`text-lg font-semibold text-foreground mb-4`}>{t('liveSummary', 'Live Summary')}</h2>
               <div className="space-y-3">
                 {summaryCards.map((item) => (
-                  <div key={item.label} className={`flex items-center justify-between rounded-xl bg-muted/40 px-4 py-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                  <div key={item.label} className={`flex items-center justify-between rounded-xl bg-muted/40 px-4 py-3`}>
                     <span className="text-sm text-muted-foreground">{item.label}</span>
                     <span className="text-sm font-medium text-foreground">{item.value}</span>
                   </div>
@@ -255,12 +255,12 @@ const MonitoringEvents = () => {
             </section>
 
             <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
-              <h2 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('backendResponse', 'Backend Response')}</h2>
+              <h2 className={`text-lg font-semibold text-foreground mb-4`}>{t('backendResponse', 'Backend Response')}</h2>
               {responseTicket ? (
                 <div className="space-y-4">
                   <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
-                    <p className={`text-xs uppercase tracking-wider text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('createdTicket', 'Created Ticket')}</p>
-                    <p className={`font-medium text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{responseTicket.ticketNumber || `TKT-${responseTicket.id}`}</p>
+                    <p className={`text-xs uppercase tracking-wider text-muted-foreground`}>{t('createdTicket', 'Created Ticket')}</p>
+                    <p className={`font-medium text-foreground`}>{responseTicket.ticketNumber || `TKT-${responseTicket.id}`}</p>
                     <p className="text-sm text-muted-foreground">{responseTicket.title}</p>
                     <Button
                       className="mt-3"

@@ -126,11 +126,11 @@ const NotificationCenter = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-        <button
-          className="relative p-2 rounded-md hover:bg-muted transition-smooth"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label={t('notificationsTitle', 'Notifications')}
-        >
+      <button
+        className="relative p-2 rounded-md hover:bg-muted transition-smooth"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={t('notificationsTitle', 'Notifications')}
+      >
         <Icon name="Bell" size={20} />
         {unreadCount > 0 && (
           <span className="notification-badge">{unreadCount}</span>
@@ -175,9 +175,8 @@ const NotificationCenter = () => {
                   <button
                     key={notification?.id}
                     type="button"
-                    className={`w-full p-4 border-b border-border hover:bg-muted cursor-pointer transition-smooth ${isRtl ? 'text-right' : 'text-left'} ${
-                      !notification?.read ? 'bg-primary/10' : ''
-                    }`}
+                    className={`w-full p-4 border-b border-border hover:bg-muted cursor-pointer transition-smooth ${!notification?.read ? 'bg-primary/10' : ''
+                      }`}
                     onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex gap-3">

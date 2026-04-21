@@ -8,6 +8,7 @@ import { knowledgeBaseAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 import { getLocalizedKnowledgeBaseField } from '../../services/knowledgeBaseLocalization';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 
 const KnowledgeBase = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const KnowledgeBase = () => {
     };
     return categoryMap[category] || category;
   };
-  
+
   const [articles, setArticles] = useState([]);
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -140,6 +141,12 @@ const KnowledgeBase = () => {
             </div>
           </section>
 
+          <ManageEngineOnPremSnapshot
+            compact
+            title={t('manageEngineKnowledgeContext', 'ManageEngine Knowledge Context')}
+            description={t('manageEngineKnowledgeContextDesc', 'ServiceDesk requests and OpManager alerts that can guide article updates, runbooks, and self-service coverage.')}
+          />
+
           {loadError && (
             <div className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
               {loadError}
@@ -175,11 +182,10 @@ const KnowledgeBase = () => {
                       key={category}
                       type="button"
                       onClick={() => setSelectedCategory(category)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                        selectedCategory === category
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-muted/40 text-muted-foreground hover:bg-muted'
-                      }`}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${selectedCategory === category
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-muted/40 text-muted-foreground hover:bg-muted'
+                        }`}
                     >
                       {translateCategory(category)}
                     </button>
@@ -188,7 +194,7 @@ const KnowledgeBase = () => {
               </div>
 
               <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-                <h2 className={`text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>
+                <h2 className={`text-xl font-semibold text-foreground mb-4`}>
                   {t('allTopics', 'All Topics')}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -197,9 +203,9 @@ const KnowledgeBase = () => {
                       key={category.name}
                       type="button"
                       onClick={() => setSelectedCategory(category.name)}
-                      className={`p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors ${isRtl ? 'text-right' : 'text-left'}`}
+                      className={`p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors`}
                     >
-                      <div className={`flex items-center gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                      <div className={`flex items-center gap-3 mb-2`}>
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                           <Icon name="BookOpen" size={16} className="text-primary" />
                         </div>
@@ -218,7 +224,7 @@ const KnowledgeBase = () => {
               </div>
 
               <div className="bg-card border border-border rounded-2xl p-6 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-                <h2 className={`text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>
+                <h2 className={`text-xl font-semibold text-foreground mb-4`}>
                   {t('popularArticles', 'Popular Articles')}
                 </h2>
                 <div className="space-y-4">
@@ -259,12 +265,12 @@ const KnowledgeBase = () => {
 
             <aside className="space-y-4">
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
-                <div className={`flex items-center justify-between mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center justify-between mb-4`}>
                   <div>
-                    <h2 className={`text-lg font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <h2 className={`text-lg font-semibold text-foreground`}>
                       {t('articleDetail', 'Article Detail')}
                     </h2>
-                    <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <p className={`text-sm text-muted-foreground`}>
                       {t('openTopicToSeeArticle', 'Open a topic to see the full article.')}
                     </p>
                   </div>

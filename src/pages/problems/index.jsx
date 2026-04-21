@@ -252,10 +252,10 @@ const Problems = () => {
             <ManageEngineProblemSignals />
 
             <section className="rounded-2xl border border-border bg-card shadow-elevation-1 p-5" dir={isRtl ? 'rtl' : 'ltr'}>
-              <div className={`flex items-center justify-between gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center justify-between gap-3 mb-4`}>
                 <div>
-                  <h2 className={`text-lg font-semibold text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('problemDetail', 'Problem Detail')}</h2>
-                  <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>{t('selectedBackendRecord', 'Selected backend record')}</p>
+                  <h2 className={`text-lg font-semibold text-foreground`}>{t('problemDetail', 'Problem Detail')}</h2>
+                  <p className={`text-sm text-muted-foreground`}>{t('selectedBackendRecord', 'Selected backend record')}</p>
                 </div>
                 <Icon name="ClipboardList" size={18} className="text-primary" />
               </div>

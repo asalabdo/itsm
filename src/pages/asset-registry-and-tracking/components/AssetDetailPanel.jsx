@@ -8,6 +8,20 @@ const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [activeTab, setActiveTab] = useState('details');
+  const isArabic = language === 'ar';
+
+  const statusLabel = (status) => {
+    const key = String(status || '').toLowerCase();
+    const map = {
+      active: { en: 'Active', ar: 'نشط' },
+      retired: { en: 'Retired', ar: 'متقاعد' },
+      maintenance: { en: 'Maintenance', ar: 'الصيانة' },
+      completed: { en: 'Completed', ar: 'مكتمل' },
+      scheduled: { en: 'Scheduled', ar: 'مجدول' },
+      inactive: { en: 'Inactive', ar: 'غير نشط' },
+    };
+    return isArabic ? (map[key]?.ar || status) : (map[key]?.en || status);
+  };
 
   if (!asset) {
     return (
@@ -22,7 +36,7 @@ const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus }) => {
 
   const tabs = [
     { id: 'details', label: t('details', 'Details'), icon: 'Info' },
-    { id: 'manageEngine', label: 'ManageEngine', icon: 'ServerCog' },
+    { id: 'manageEngine', label: t('manageEngine', 'ManageEngine'), icon: 'ServerCog' },
     { id: 'relationships', label: t('relationships', 'Relationships'), icon: 'Link' },
     { id: 'history', label: t('history', 'History'), icon: 'History' },
   ];
@@ -65,7 +79,7 @@ const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus }) => {
             <p className="text-sm text-muted-foreground mt-1">{asset?.assetId}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(asset?.status)}`}>
-                {asset?.status?.charAt(0)?.toUpperCase() + asset?.status?.slice(1)}
+                {statusLabel(asset?.status)}
               </span>
               {asset?.manageEngine?.isMonitored && (
                 <span className="inline-flex items-center gap-1 rounded-md bg-sky-500/10 px-2 py-1 text-xs font-medium text-sky-700">

@@ -13,6 +13,7 @@ const AssetFilterPanel = ({
   onToggleCollapse,
   categoryOptions = [],
   locationOptions = [],
+  ownershipOptions = [],
 }) => {
   const { language } = useLanguage();
   const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
@@ -21,6 +22,7 @@ const AssetFilterPanel = ({
     searchQuery: '',
     category: '',
     location: '',
+    ownershipType: '',
     status: [],
     manageEngineStatus: '',
     valueRange: { min: '', max: '' },
@@ -41,6 +43,20 @@ const AssetFilterPanel = ({
       label: index === 0 ? t('allLocations', 'All Locations') : option.label,
     })),
     [locationOptions, t]
+  );
+
+  const localizedOwnershipOptions = useMemo(
+    () => ownershipOptions.map((option, index) => ({
+      ...option,
+      label: index === 0
+        ? t('allOwnership', 'All Ownership')
+        : option.value === 'assigned'
+          ? t('assignedAssets', 'Assigned')
+          : option.value === 'unassigned'
+            ? t('unassignedAssets', 'Unassigned')
+            : option.label,
+    })),
+    [ownershipOptions, t]
   );
 
   const manageEngineOptions = [
@@ -90,6 +106,7 @@ const AssetFilterPanel = ({
       searchQuery: '',
       category: '',
       location: '',
+      ownershipType: '',
       status: [],
       manageEngineStatus: '',
       valueRange: { min: '', max: '' },
@@ -147,6 +164,13 @@ const AssetFilterPanel = ({
           value={filters.location}
           onChange={(value) => handleFilterChange('location', value)}
           searchable
+        />
+
+        <Select
+          label={t('ownership', 'Ownership')}
+          options={localizedOwnershipOptions}
+          value={filters.ownershipType}
+          onChange={(value) => handleFilterChange('ownershipType', value)}
         />
 
         <Select

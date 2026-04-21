@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -22,8 +23,8 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      setCatalogItems(Array.isArray(catalogRes?.data?.items) ? catalogRes.data.items.slice(0, 5) : []);
-      setAlerts(Array.isArray(operationsRes?.data?.items) ? operationsRes.data.items.slice(0, 5) : []);
+      setCatalogItems(normalizeManageEngineList(catalogRes).slice(0, 5));
+      setAlerts(normalizeManageEngineList(operationsRes).slice(0, 5));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);
@@ -41,15 +42,15 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className={`flex items-start justify-between gap-3 mb-5 ${isRtl ? 'flex-row-reverse' : ''}`}>
+      <div className={`flex items-start justify-between gap-3 mb-5`}>
         <div>
-          <div className={`flex items-center gap-2 text-primary mb-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-2 text-primary mb-1`}>
             <Icon name="ServerCog" size={18} />
             <h3 className="text-lg font-semibold text-foreground">
               {t('manageEngineChangeImpact', 'ManageEngine Change Impact')}
             </h3>
           </div>
-          <p className={`text-sm text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+          <p className={`text-sm text-muted-foreground`}>
             {t('manageEngineChangeImpactDesc', 'Use OpManager services and alerts to understand current risk around planned and active changes.')}
           </p>
         </div>
@@ -87,7 +88,7 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <div className="rounded-lg border border-border p-4">
-            <div className={`flex items-center gap-2 mb-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-2 mb-3`}>
               <Icon name="Layers3" size={16} className="text-primary" />
               <h4 className="font-medium text-foreground">{t('servicesInScope', 'Services in scope')}</h4>
             </div>
@@ -106,7 +107,7 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
           </div>
 
           <div className="rounded-lg border border-border p-4">
-            <div className={`flex items-center gap-2 mb-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-2 mb-3`}>
               <Icon name="AlertTriangle" size={16} className="text-warning" />
               <h4 className="font-medium text-foreground">{t('alertsAroundChanges', 'Alerts around changes')}</h4>
             </div>
@@ -116,7 +117,7 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
               ) : (
                 alerts.map((alert) => (
                   <div key={`${alert.source}-${alert.externalId}`} className="rounded-lg border border-border bg-muted/10 p-3">
-                    <div className={`flex items-start justify-between gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex items-start justify-between gap-3`}>
                       <div>
                         <div className="font-medium text-foreground">{alert.name}</div>
                         <div className="text-xs text-muted-foreground mt-1">{alert.description || t('noDescriptionAvailable', 'No description available.')}</div>

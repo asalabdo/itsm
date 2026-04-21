@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { usersAPI, sessionAPI, organizationUnitAPI } from '../../services/api';
 import { formatLocalizedValue, getLocalizedDisplayName, getNameParts, getPreferredLanguage } from '../../services/displayValue';
 import { ORG_UNIT_SOURCES, groupByOrganizationUnit, getOrganizationUnitLabel } from '../../services/organizationUnits';
@@ -567,6 +568,12 @@ const UserManagement = () => {
           </div>
         )}
 
+        <ManageEngineOnPremSnapshot
+          compact
+          title={t('manageEngineUserContext', 'ManageEngine User Context')}
+          description={t('manageEngineUserContextDesc', 'Keep user administration aligned with ServiceDesk requester demand and OpManager operational ownership.')}
+        />
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="text-sm text-muted-foreground">{t('totalUsers', 'Total Users')}</div>
@@ -688,7 +695,7 @@ const UserManagement = () => {
                   </tr>
                 ) : (
                   groupedUsers.map((group) => (
-                    <React.Fragment key={group.key}>
+                    <Fragment key={group.key}>
                       <tr className="bg-muted/40">
                         <td colSpan="6" className="px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                           {group.label}
@@ -742,7 +749,7 @@ const UserManagement = () => {
                           </td>
                         </tr>
                       ))}
-                    </React.Fragment>
+                    </Fragment>
                   ))
                 )}
               </tbody>

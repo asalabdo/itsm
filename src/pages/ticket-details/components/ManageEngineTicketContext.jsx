@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { manageEngineAPI } from '../../../services/api';
+import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import ExternalSystemBadge from '../../../components/ui/ExternalSystemBadge';
 
 const ManageEngineTicketContext = ({ ticket }) => {
@@ -17,8 +18,7 @@ const ManageEngineTicketContext = ({ ticket }) => {
           manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
         ]);
 
-        const operations = Array.isArray(unifiedRes?.data?.operations) ? unifiedRes.data.operations : [];
-        const catalog = Array.isArray(unifiedRes?.data?.catalog) ? unifiedRes.data.catalog : [];
+        const { operations, catalog } = normalizeManageEngineUnified(unifiedRes);
         const searchable = [...operations, ...catalog];
         const title = String(ticket?.title || '').toLowerCase();
         const description = String(ticket?.description || '').toLowerCase();

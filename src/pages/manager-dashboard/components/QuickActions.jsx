@@ -45,7 +45,7 @@ const QuickActions = () => {
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-elevation-1 p-4 md:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
-      <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>
+      <h2 className={`text-lg md:text-xl font-semibold text-foreground mb-4`}>
         {t('quickActions', 'Quick Actions')}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -62,8 +62,8 @@ const QuickActions = () => {
               <Icon name={action?.icon} size={20} color={action?.color} className="md:w-6 md:h-6" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className={`text-sm md:text-base font-medium text-foreground mb-0.5 ${isRtl ? 'text-right' : 'text-left'}`}>{action?.title}</h3>
-              <p className={`text-xs md:text-sm text-muted-foreground caption ${isRtl ? 'text-right' : 'text-left'}`}>{action?.description}</p>
+              <h3 className={`text-sm md:text-base font-medium text-foreground mb-0.5`}>{action?.title}</h3>
+              <p className={`text-xs md:text-sm text-muted-foreground caption`}>{action?.description}</p>
             </div>
             <Icon name={isRtl ? 'ChevronLeft' : 'ChevronRight'} size={18} color="var(--color-muted-foreground)" className="flex-shrink-0" />
           </button>

@@ -246,8 +246,8 @@ const ReportingAndAnalyticsHub = () => {
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
             <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className={`text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white ${isRtl ? 'text-right' : 'text-left'}`}>Reporting & Analytics Hub</h1>
-                <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1 ${isRtl ? 'text-right' : 'text-left'}`}>Real-time visibility into backend reporting, SLA health, and performance trends</p>
+                <h1 className={`text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white`}>Reporting & Analytics Hub</h1>
+                <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1`}>Real-time visibility into backend reporting, SLA health, and performance trends</p>
               </div>
               <QuickActionsBar onRefresh={handleRefresh} onExport={handleExport} lastUpdated={lastUpdated} />
             </div>
@@ -295,53 +295,53 @@ const ReportingAndAnalyticsHub = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <div className="bg-card border border-border rounded-lg p-4 sm:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
-                <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-3 mb-4`}>
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                     <Icon name="Ticket" size={20} color="var(--color-primary)" />
                   </div>
                   <div>
-                    <h3 className={`font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>Ticket Summary</h3>
-                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Last 30 days</p>
+                    <h3 className={`font-semibold`}>Ticket Summary</h3>
+                    <p className={`text-xs text-muted-foreground`}>Last 30 days</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('totalTickets', 'Total Tickets')}</span><span className="font-semibold">{analytics?.slaCompliance?.totalTickets ?? '--'}</span></div>
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved within SLA')}</span><span className="font-semibold text-success">{analytics?.slaCompliance?.resolvedWithinSla ?? '--'}</span></div>
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('slaPercent', 'SLA Breaches')}</span><span className="font-semibold text-error">{analytics?.slaCompliance?.breachedSla ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('totalTickets', 'Total Tickets')}</span><span className="font-semibold">{analytics?.slaCompliance?.totalTickets ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved within SLA')}</span><span className="font-semibold text-success">{analytics?.slaCompliance?.resolvedWithinSla ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('slaPercent', 'SLA Breaches')}</span><span className="font-semibold text-error">{analytics?.slaCompliance?.breachedSla ?? '--'}</span></div>
                 </div>
               </div>
 
               <div className="bg-card border border-border rounded-lg p-4 sm:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
-                <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-3 mb-4`}>
                   <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
                     <Icon name="TrendingUp" size={20} color="var(--color-success)" />
                   </div>
                   <div>
-                    <h3 className={`font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>SLA Performance</h3>
-                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Compliance rate</p>
+                    <h3 className={`font-semibold`}>SLA Performance</h3>
+                    <p className={`text-xs text-muted-foreground`}>Compliance rate</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('slaPercent', 'Compliance %')}</span><span className="font-semibold">{analytics?.slaCompliance?.compliancePercentage != null ? `${Number(analytics.slaCompliance.compliancePercentage).toFixed(1)}%` : '--'}</span></div>
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('activeTechnicians', 'Top Technicians')}</span><span className="font-semibold">{analytics?.topPerformers?.length ?? '--'}</span></div>
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('category', 'Categories')}</span><span className="font-semibold">{analytics?.categoryBreakdown?.length ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('slaPercent', 'Compliance %')}</span><span className="font-semibold">{analytics?.slaCompliance?.compliancePercentage != null ? `${Number(analytics.slaCompliance.compliancePercentage).toFixed(1)}%` : '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('activeTechnicians', 'Top Technicians')}</span><span className="font-semibold">{analytics?.topPerformers?.length ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('category', 'Categories')}</span><span className="font-semibold">{analytics?.categoryBreakdown?.length ?? '--'}</span></div>
                 </div>
               </div>
 
               <div className="bg-card border border-border rounded-lg p-4 sm:p-6" dir={isRtl ? 'rtl' : 'ltr'}>
-                <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-3 mb-4`}>
                   <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
                     <Icon name="Users" size={20} color="var(--color-warning)" />
                   </div>
                   <div>
-                    <h3 className={`font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>Top Performer</h3>
-                    <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Best resolution time</p>
+                    <h3 className={`font-semibold`}>Top Performer</h3>
+                    <p className={`text-xs text-muted-foreground`}>Best resolution time</p>
                   </div>
                 </div>
-                  <div className="space-y-3">
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('technician', 'Name')}</span><span className="font-semibold">{topPerformer?.technicianName ?? '--'}</span></div>
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('avgResolution', 'Avg Resolution')}</span><span className="font-semibold">{topPerformer?.avgResolutionTimeHours != null ? `${Number(topPerformer.avgResolutionTimeHours).toFixed(1)}h` : '--'}</span></div>
-                  <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved')}</span><span className="font-semibold text-success">{topPerformer?.resolvedCount ?? '--'}</span></div>
+                <div className="space-y-3">
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('technician', 'Name')}</span><span className="font-semibold">{topPerformer?.technicianName ?? '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('avgResolution', 'Avg Resolution')}</span><span className="font-semibold">{topPerformer?.avgResolutionTimeHours != null ? `${Number(topPerformer.avgResolutionTimeHours).toFixed(1)}h` : '--'}</span></div>
+                  <div className={`flex items-center justify-between`}><span className="text-sm text-muted-foreground">{t('resolved', 'Resolved')}</span><span className="font-semibold text-success">{topPerformer?.resolvedCount ?? '--'}</span></div>
                 </div>
               </div>
             </div>

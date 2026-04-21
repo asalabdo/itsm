@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -6,6 +6,7 @@ import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import serviceRequestService from '../../services/serviceRequestService';
 import { manageEngineAPI } from '../../services/api';
+import { normalizeManageEngineList } from '../../services/manageEngineDataUtils';
 import DynamicFormRenderer from '../../components/ui/DynamicFormRenderer';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -39,14 +40,14 @@ const ServiceCatalogHub = () => {
     return category === 'hardware' || name === 'macbook pro m3';
   };
 
-  const localizeText = (value, map = {}) => {
+  const localizeText = useCallback((value, map = {}) => {
     const raw = String(value || '').trim();
     return getLocalizedField({ value: raw, valueAr: map[raw.toLowerCase()] }, 'value', map, language) || raw;
-  };
+  }, [language]);
 
-  const localizeName = (item) => getLocalizedField(item, 'name', CATALOG_SERVICE_NAMES_AR, language);
+  const localizeName = useCallback((item) => getLocalizedField(item, 'name', CATALOG_SERVICE_NAMES_AR, language), [language]);
 
-  const localizeDescription = (item) => getLocalizedField(item, 'description', CATALOG_SERVICE_DESCRIPTIONS_AR, language);
+  const localizeDescription = useCallback((item) => getLocalizedField(item, 'description', CATALOG_SERVICE_DESCRIPTIONS_AR, language), [language]);
 
   useEffect(() => {
     fetchCatalog();
@@ -67,7 +68,7 @@ const ServiceCatalogHub = () => {
       ]);
 
       setCatalog(internalCatalog);
-      setExternalCatalog(Array.isArray(externalResponse?.data) ? externalResponse.data : []);
+      setExternalCatalog(normalizeManageEngineList(externalResponse));
     } catch (error) {
       console.error('Error fetching catalog:', error);
     } finally {
@@ -137,7 +138,7 @@ const ServiceCatalogHub = () => {
       const cat = localizeText(item?.category, CATALOG_CATEGORY_LABELS_AR);
       return [name, desc, cat].join(' ').toLowerCase().includes(query);
     });
-  }, [catalog, externalCatalog, searchQuery, language]);
+  }, [catalog, externalCatalog, searchQuery, localizeDescription, localizeName, localizeText]);
   const filteredCategories = [...new Set(filteredCatalog.map(item => {
     return localizeText(item.category, CATALOG_CATEGORY_LABELS_AR);
   }))];

@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 import { manageEngineAPI } from '../../services/api';
+import { normalizeManageEngineList } from '../../services/manageEngineDataUtils';
 import QuickStatsBar from './components/QuickStatsBar';
 import BulkOperationsToolbar from './components/BulkOperationsToolbar';
 import AssetFilterPanel from './components/AssetFilterPanel';
@@ -20,22 +21,6 @@ import {
   enrichAssetsWithManageEngine,
   filterAssets,
 } from './utils/assetManageEngineUtils.mjs';
-
-const normalizeManageEngineItems = (payload) => {
-  if (Array.isArray(payload?.data)) {
-    return payload.data;
-  }
-
-  if (Array.isArray(payload?.data?.items)) {
-    return payload.data.items;
-  }
-
-  if (Array.isArray(payload?.items)) {
-    return payload.items;
-  }
-
-  return [];
-};
 
 const AssetRegistryAndTracking = () => {
   const navigate = useNavigate();
@@ -73,6 +58,8 @@ const AssetRegistryAndTracking = () => {
         description: asset.name,
         category: asset.assetType,
         currentOwner: asset.owner ? `${asset.owner.username}` : t('unassigned', 'Unassigned'),
+        ownerId: asset.owner?.id || asset.ownerId || null,
+        ownershipType: asset.ownershipType || (asset.owner || asset.ownerId ? 'assigned' : 'unassigned'),
         location: asset.location,
         status: (asset.status || t('active', 'Active')).toLowerCase(),
         value: asset.costAmount ? `$${asset.costAmount.toLocaleString()}` : '$0.00',
@@ -85,8 +72,8 @@ const AssetRegistryAndTracking = () => {
         barcode: `BC-${asset.assetTag}`,
       }));
 
-      const monitoredItems = normalizeManageEngineItems(catalogRes);
-      const operationItems = normalizeManageEngineItems(operationsRes);
+      const monitoredItems = normalizeManageEngineList(catalogRes);
+      const operationItems = normalizeManageEngineList(operationsRes);
       const enrichedAssets = enrichAssetsWithManageEngine(mappedAssets, monitoredItems, operationItems);
 
       setAssets(enrichedAssets);
@@ -306,6 +293,7 @@ const AssetRegistryAndTracking = () => {
             <AssetFilterPanel
               categoryOptions={filterOptions.categoryOptions}
               locationOptions={filterOptions.locationOptions}
+              ownershipOptions={filterOptions.ownershipOptions}
               onFilterChange={setFilters}
               isCollapsed={isFilterCollapsed}
               onToggleCollapse={() => setIsFilterCollapsed(!isFilterCollapsed)}

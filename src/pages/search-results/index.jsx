@@ -6,6 +6,7 @@ import Icon from '../../components/AppIcon';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 import { ticketsAPI } from '../../services/api';
@@ -120,6 +121,14 @@ const SearchResults = () => {
             </div>
           </div>
         </form>
+
+        <div className="mb-6">
+          <ManageEngineOnPremSnapshot
+            compact
+            title={t('manageEngineSearchContext', 'ManageEngine Search Context')}
+            description={t('manageEngineSearchContextDesc', 'Use ServiceDesk and OpManager activity as live context while searching local tickets.')}
+          />
+        </div>
 
         {error && (
           <div className="mb-6 rounded-lg border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">

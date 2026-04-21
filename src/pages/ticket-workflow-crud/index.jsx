@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import Header from '../../components/ui/Header';
@@ -6,6 +6,7 @@ import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import DashboardCard from '../../components/ui/DashboardCard';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { getStoredWorkflowOverrides } from '../../services/workflowStages';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -85,6 +86,12 @@ const TicketWorkflowCrud = () => {
                 <Icon name="GitBranch" size={20} className="text-primary" />
               </DashboardCard>
             </div>
+
+            <ManageEngineOnPremSnapshot
+              compact
+              title={t('manageEngineWorkflowContext', 'ManageEngine Workflow Context')}
+              description={t('manageEngineWorkflowContextDesc', 'Tune ticket workflow definitions using live ServiceDesk request volume and OpManager alert pressure.')}
+            />
 
             <section className="rounded-2xl border border-border bg-card p-5 md:p-6">
               <div className="flex items-center justify-between gap-3 mb-4">

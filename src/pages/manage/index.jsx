@@ -4,6 +4,7 @@ import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import entities from '../../crud/entities';
 import schemas from '../../crud/schemas';
 import { useLanguage } from '../../context/LanguageContext';
@@ -60,6 +61,14 @@ const ManageIndex = () => {
               </Button>
             </div>
           </section>
+
+          <div className="mt-6">
+            <ManageEngineOnPremSnapshot
+              compact
+              title={t('manageEngineAdminData', 'ManageEngine Admin Data')}
+              description={t('manageEngineAdminDataDesc', 'Review live ServiceDesk and OpManager context while maintaining local SLA, priority, workflow, and reference data.')}
+            />
+          </div>
 
           <section className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {entities.map((entity) => {

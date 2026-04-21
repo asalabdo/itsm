@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import ComponentPalette from './components/ComponentPalette';
@@ -8,11 +8,12 @@ import TemplateLibrary from './components/TemplateLibrary';
 import ValidationPanel from './components/ValidationPanel';
 import WorkflowToolbar from './components/WorkflowToolbar';
 import WorkflowStatusStrip from '../../components/ui/WorkflowStatusStrip';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const WorkflowBuilderStudio = () => {
-  const { language, isRtl } = useLanguage();
+  const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   
   const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
@@ -184,6 +185,14 @@ const WorkflowBuilderStudio = () => {
       <Header />
       <BreadcrumbTrail />
       <div className="pt-16 h-screen flex flex-col">
+        <div className="px-4 py-3 md:px-6 lg:px-8">
+          <ManageEngineOnPremSnapshot
+            compact
+            title={t('manageEngineWorkflowBuilderSignals', 'ManageEngine Workflow Builder Signals')}
+            description={t('manageEngineWorkflowBuilderSignalsDesc', 'Use ServiceDesk and OpManager integration signals while designing automation paths.')}
+          />
+        </div>
+
         <WorkflowToolbar
           workflowName={workflowName}
           onSave={handleSave}

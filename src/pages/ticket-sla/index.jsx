@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
@@ -6,7 +6,7 @@ import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 import Button from '../../components/ui/Button';
-import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { slaAPI } from '../../services/api';
 
 const TicketSlaPage = () => {
@@ -62,6 +62,12 @@ const TicketSlaPage = () => {
             </div>
           </div>
         </section>
+
+        <ManageEngineOnPremSnapshot
+          compact
+          title={t('manageEngineSlaContext', 'ManageEngine SLA Context')}
+          description={t('manageEngineSlaContextDesc', 'External ServiceDesk demand and OpManager alerts that can affect SLA risk.')}
+        />
 
         <section className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">
           <div className="p-4 border-b border-border flex items-center justify-between">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -7,26 +7,30 @@ import AssetLifecycleFunnel from './components/AssetLifecycleFunnel';
 import PriorityAlertsPanel from './components/PriorityAlertsPanel';
 import DepartmentAssetDistribution from './components/DepartmentAssetDistribution';
 import AssetFiltersHeader from './components/AssetFiltersHeader';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { assetsAPI, dashboardAPI, ticketsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
 import { useLanguage } from '../../context/LanguageContext';
+import { getTranslation } from '../../services/i18n';
 
 const AssetLifecycleManagement = () => {
   const navigate = useNavigate();
-  const { isRtl } = useLanguage();
+  const { isRtl, language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = language === 'ar';
   const [filters, setFilters] = useState({
     search: '',
     category: 'all',
     location: 'all',
     stage: 'all'
   });
-  const [selectedStage, setSelectedStage] = useState(null);
+  const [, setSelectedStage] = useState(null);
   const [alertCount, setAlertCount] = useState(0);
   const [metricsData, setMetricsData] = useState([]);
   const [lifecycleData, setLifecycleData] = useState([]);
   const [alertsData, setAlertsData] = useState([]);
   const [departmentData, setDepartmentData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // Fetch metrics data from API
   useEffect(() => {
@@ -41,13 +45,13 @@ const AssetLifecycleManagement = () => {
         const data = metricsRes.data || {};
         const assets = Array.isArray(assetsRes.data) ? assetsRes.data : [];
         const tickets = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
-        
+
         if (data.metrics && Array.isArray(data.metrics)) {
           setMetricsData(data.metrics);
         } else {
           setMetricsData([]);
         }
-        
+
         if (data.alertCount) {
           setAlertCount(data.alertCount);
         }
@@ -164,10 +168,10 @@ const AssetLifecycleManagement = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className={`text-3xl font-bold text-foreground mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>
+                <h1 className={`text-3xl font-bold text-foreground mb-2`}>
                   إدارة دورة حياة الأصول
                 </h1>
-                <p className={`text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+                <p className={`text-muted-foreground`}>
                   Comprehensive asset tracking with lifecycle visibility and compliance monitoring
                 </p>
               </div>
@@ -183,10 +187,21 @@ const AssetLifecycleManagement = () => {
           </div>
 
           {/* Filters Header */}
-          <AssetFiltersHeader 
+          <AssetFiltersHeader
             onFiltersChange={handleFiltersChange}
             alertCount={alertCount}
           />
+
+          <div className="mb-8">
+            <ManageEngineOnPremSnapshot
+              compact
+              title={t('manageEngineAssetLifecycleContext', 'ManageEngine Asset Lifecycle Context')}
+              description={t(
+                'manageEngineAssetLifecycleContextDesc',
+                'On-prem OpManager and ServiceDesk signals that can affect asset maintenance, retirement, and lifecycle risk.'
+              )}
+            />
+          </div>
 
           {/* Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -225,12 +240,12 @@ const AssetLifecycleManagement = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Quick Actions */}
             <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
-              <h3 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>إجراءات سريعة</h3>
+              <h3 className={`text-lg font-semibold text-foreground mb-4`}>إجراءات سريعة</h3>
               <div className="space-y-3">
                 <button
                   type="button"
                   onClick={() => navigate('/asset-registry-and-tracking')}
-                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors ${isRtl ? 'flex-row-reverse' : ''}`}
+                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors`}
                 >
                   <span className="text-sm font-medium">تعيين الأصول دفعة واحدة</span>
                   <span className="text-xs text-muted-foreground">→</span>
@@ -238,7 +253,7 @@ const AssetLifecycleManagement = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/reports-analytics')}
-                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors ${isRtl ? 'flex-row-reverse' : ''}`}
+                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors`}
                 >
                   <span className="text-sm font-medium">إنشاء تقرير امتثال</span>
                   <span className="text-xs text-muted-foreground">→</span>
@@ -246,7 +261,7 @@ const AssetLifecycleManagement = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/asset-registry-and-tracking')}
-                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors ${isRtl ? 'flex-row-reverse' : ''}`}
+                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors`}
                 >
                   <span className="text-sm font-medium">جدولة الصيانة</span>
                   <span className="text-xs text-muted-foreground">→</span>
@@ -254,7 +269,7 @@ const AssetLifecycleManagement = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/asset-registry-and-tracking')}
-                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors ${isRtl ? 'flex-row-reverse' : ''}`}
+                  className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors`}
                 >
                   <span className="text-sm font-medium">تخطيط إخراج الأصول من الخدمة</span>
                   <span className="text-xs text-muted-foreground">→</span>
@@ -264,34 +279,34 @@ const AssetLifecycleManagement = () => {
 
             {/* Recent Activity */}
             <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
-              <h3 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>النشاط الأخير</h3>
+              <h3 className={`text-lg font-semibold text-foreground mb-4`}>النشاط الأخير</h3>
               <div className="space-y-4">
-                <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-start gap-3`}>
                   <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                   <div>
-                     <p className={`text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>تم نشر خادم جديد</p>
-                     <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>Dell PowerEdge R750 - منذ دقيقتين</p>
+                    <p className={`text-sm text-foreground`}>تم نشر خادم جديد</p>
+                    <p className={`text-xs text-muted-foreground`}>Dell PowerEdge R750 - منذ دقيقتين</p>
                   </div>
                 </div>
-                <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-start gap-3`}>
                   <div className="w-2 h-2 bg-warning rounded-full mt-2"></div>
                   <div>
-                     <p className={`text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>الضمان سينتهي قريبًا</p>
-                     <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>HP ProLiant DL380 - منذ 15 دقيقة</p>
+                    <p className={`text-sm text-foreground`}>الضمان سينتهي قريبًا</p>
+                    <p className={`text-xs text-muted-foreground`}>HP ProLiant DL380 - منذ 15 دقيقة</p>
                   </div>
                 </div>
-                <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-start gap-3`}>
                   <div className="w-2 h-2 bg-error rounded-full mt-2"></div>
                   <div>
-                     <p className={`text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>تجديد الترخيص مطلوب</p>
-                     <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>VMware vSphere - منذ ساعة</p>
+                    <p className={`text-sm text-foreground`}>تجديد الترخيص مطلوب</p>
+                    <p className={`text-xs text-muted-foreground`}>VMware vSphere - منذ ساعة</p>
                   </div>
                 </div>
-                <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-start gap-3`}>
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                     <p className={`text-sm text-foreground ${isRtl ? 'text-right' : 'text-left'}`}>تم نقل الأصل</p>
-                     <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>تم نقل جهاز محمول إلى الهندسة - منذ ساعتين</p>
+                    <p className={`text-sm text-foreground`}>تم نقل الأصل</p>
+                    <p className={`text-xs text-muted-foreground`}>تم نقل جهاز محمول إلى الهندسة - منذ ساعتين</p>
                   </div>
                 </div>
               </div>
@@ -299,39 +314,39 @@ const AssetLifecycleManagement = () => {
 
             {/* System Status */}
             <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
-              <h3 className={`text-lg font-semibold text-foreground mb-4 ${isRtl ? 'text-right' : 'text-left'}`}>حالة النظام</h3>
+              <h3 className={`text-lg font-semibold text-foreground mb-4`}>حالة النظام</h3>
               <div className="space-y-4">
-                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-sm text-foreground">قاعدة بيانات الأصول</span>
-                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center justify-between`}>
+                  <span className="text-sm text-foreground">قاعدة بيانات الأصول</span>
+                  <div className={`flex items-center gap-2`}>
                     <div className="w-2 h-2 bg-success rounded-full"></div>
-                     <span className="text-xs text-success">متصل</span>
+                    <span className="text-xs text-success">متصل</span>
                   </div>
                 </div>
-                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-sm text-foreground">مزامنة CMDB</span>
-                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center justify-between`}>
+                  <span className="text-sm text-foreground">مزامنة CMDB</span>
+                  <div className={`flex items-center gap-2`}>
                     <div className="w-2 h-2 bg-success rounded-full"></div>
-                     <span className="text-xs text-success">متزامن</span>
+                    <span className="text-xs text-success">متزامن</span>
                   </div>
                 </div>
-                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-sm text-foreground">خادم التراخيص</span>
-                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center justify-between`}>
+                  <span className="text-sm text-foreground">خادم التراخيص</span>
+                  <div className={`flex items-center gap-2`}>
                     <div className="w-2 h-2 bg-warning rounded-full"></div>
-                     <span className="text-xs text-warning">متراجع</span>
+                    <span className="text-xs text-warning">متراجع</span>
                   </div>
                 </div>
-                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-sm text-foreground">حالة النسخ الاحتياطي</span>
-                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center justify-between`}>
+                  <span className="text-sm text-foreground">حالة النسخ الاحتياطي</span>
+                  <div className={`flex items-center gap-2`}>
                     <div className="w-2 h-2 bg-success rounded-full"></div>
-                     <span className="text-xs text-success">مكتمل</span>
+                    <span className="text-xs text-success">مكتمل</span>
                   </div>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-border">
-                <p className={`text-xs text-muted-foreground ${isRtl ? 'text-right' : 'text-left'}`}>
+                <p className={`text-xs text-muted-foreground`}>
                   النسخ الاحتياطي التالي المجدول: اليوم الساعة 11:00 مساءً
                 </p>
               </div>

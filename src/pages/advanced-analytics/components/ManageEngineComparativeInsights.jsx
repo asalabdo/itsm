@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { manageEngineAPI } from '../../../services/api';
+import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 
 const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
   const [loading, setLoading] = useState(true);
@@ -15,11 +16,7 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
       try {
         setLoading(true);
         const response = await manageEngineAPI.getUnified().catch(() => ({ data: { summary: {} } }));
-        setSummary({
-          operations: response?.data?.summary?.operations || 0,
-          serviceDeskRequests: response?.data?.summary?.serviceDeskRequests || 0,
-          opManagerAlerts: response?.data?.summary?.opManagerAlerts || 0,
-        });
+        setSummary(summarizeManageEngineUnified(response));
       } finally {
         setLoading(false);
       }

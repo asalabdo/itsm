@@ -1,7 +1,7 @@
-import React from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
+import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 
 const coreFields = [
   'TicketID',
@@ -179,6 +179,14 @@ const ServiceDeskBlueprint = () => {
               </div>
             </div>
           </section>
+
+          <div className="mt-10">
+            <ManageEngineOnPremSnapshot
+              compact
+              title="ManageEngine On-Prem Operating Model"
+              description="Live ServiceDesk Plus 15.1 API v3 and OpManager signals mapped into the blueprint so the target model stays tied to real integration health."
+            />
+          </div>
 
           <section className="mt-10">
             <div className="mb-5 flex items-center gap-3">

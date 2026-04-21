@@ -32,6 +32,7 @@ backend/backend.stderr.log
 backend/bin-apphost/
 backend/bin-temp/
 backend/bin-erpfix*/
+backend/bin-onprem-v3-verify*/
 backend/bin-verification/
 backend/obj-apphost/
 backend/obj/

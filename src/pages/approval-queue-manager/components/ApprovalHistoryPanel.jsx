@@ -33,8 +33,8 @@ const ApprovalHistoryPanel = () => {
       const mapped = (res.data || []).map((item) => ({
         id: item.id,
         decision: String(item.status || '').toLowerCase() === 'approved' ? 'approved' : 'denied',
-        type: item.itemType || item.title || 'Approval Request',
-        requester: item.requestedBy?.fullName || item.requestedBy?.username || 'Unknown requester',
+        type: item.itemType || item.title || t('approvalRequest', 'Approval Request'),
+        requester: item.requestedBy?.fullName || item.requestedBy?.username || t('unknownRequester', 'Unknown requester'),
         decisionAt: item.resolvedAt || item.createdAt,
         decisionDate: item.resolvedAt ? new Date(item.resolvedAt).toLocaleString() : new Date(item.createdAt).toLocaleString(),
         comment: item.approvalNotes || item.description || '',
@@ -75,20 +75,20 @@ const ApprovalHistoryPanel = () => {
     <div className="h-full flex flex-col bg-card">
       <div className="p-4 md:p-6 border-b border-border">
         <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">
-          Approval History
+          {t('approvalHistory', 'Approval History')}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Select
             options={timeOptions}
             value={timeFilter}
             onChange={setTimeFilter}
-            placeholder="Select time period"
+            placeholder={t('selectTimePeriod', 'Select time period')}
           />
           <Select
             options={statusOptions}
             value={statusFilter}
             onChange={setStatusFilter}
-            placeholder="Select status"
+            placeholder={t('selectStatus', 'Select status')}
           />
         </div>
       </div>
@@ -143,7 +143,7 @@ const ApprovalHistoryPanel = () => {
       </div>
       <div className="p-4 md:p-6 border-t border-border">
         <Button variant="outline" iconName="Download" iconPosition="left" fullWidth>
-          Export History Report
+          {t('exportHistoryReport', 'Export History Report')}
         </Button>
       </div>
     </div>

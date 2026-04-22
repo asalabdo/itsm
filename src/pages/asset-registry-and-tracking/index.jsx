@@ -20,6 +20,8 @@ import {
   buildAssetFilterOptions,
   enrichAssetsWithManageEngine,
   filterAssets,
+  mergeManageEngineItemIntoAsset,
+  normalizeAssetStatus,
 } from './utils/assetManageEngineUtils.mjs';
 
 const AssetRegistryAndTracking = () => {
@@ -34,6 +36,7 @@ const AssetRegistryAndTracking = () => {
   const [filters, setFilters] = useState({});
   const [showDetailPanel, setShowDetailPanel] = useState(false);
   const [manageEngineLoading, setManageEngineLoading] = useState(true);
+  const [syncingAssetId, setSyncingAssetId] = useState(null);
   const [assets, setAssets] = useState([]);
   const [filteredAssets, setFilteredAssets] = useState([]);
   const [feedback, setFeedback] = useState(null);
@@ -61,17 +64,20 @@ const AssetRegistryAndTracking = () => {
         ownerId: asset.owner?.id || asset.ownerId || null,
         ownershipType: asset.ownershipType || (asset.owner || asset.ownerId ? 'assigned' : 'unassigned'),
         location: asset.location,
-        status: (asset.status || t('active', 'Active')).toLowerCase(),
+        status: normalizeAssetStatus(asset.status),
         value: asset.costAmount ? `$${asset.costAmount.toLocaleString()}` : '$0.00',
         costAmount: asset.costAmount,
         manufacturer: asset.manufacturer,
         model: asset.model,
         serialNumber: asset.serialNumber,
         purchaseDate: asset.purchaseDate,
+        decommissionDate: asset.decommissionDate,
         icon: asset.assetType === 'Hardware' ? 'Laptop' : asset.assetType === 'Software' ? 'FileText' : 'Package',
         barcode: `BC-${asset.assetTag}`,
       }));
 
+      // ManageEngine enrichment must only attach by exact asset identity metadata.
+      // Display fields such as manufacturer/model/name are intentionally ignored.
       const monitoredItems = normalizeManageEngineList(catalogRes);
       const operationItems = normalizeManageEngineList(operationsRes);
       const enrichedAssets = enrichAssetsWithManageEngine(mappedAssets, monitoredItems, operationItems);
@@ -155,6 +161,35 @@ const AssetRegistryAndTracking = () => {
       message: `${t('executed', 'Executed')} ${action} ${t('on', 'on')} ${selectedAssets.length} ${t('assets', 'assets')}.`,
     });
   };
+
+  const handleSyncAssetToManageEngine = useCallback(async (asset) => {
+    if (!asset?.id) return;
+
+    setSyncingAssetId(asset.id);
+    try {
+      const response = await manageEngineAPI.syncAsset(asset.id);
+      const item = response?.data?.item || null;
+      const message = response?.data?.message || t('assetSyncedToManageEngine', 'Asset sync request sent to ManageEngine.');
+
+      setAssets((prev) => prev.map((candidate) => (
+        candidate.id === asset.id ? mergeManageEngineItemIntoAsset(candidate, item) : candidate
+      )));
+      setFilteredAssets((prev) => prev.map((candidate) => (
+        candidate.id === asset.id ? mergeManageEngineItemIntoAsset(candidate, item) : candidate
+      )));
+      setSelectedAsset((prev) => (
+        prev?.id === asset.id ? mergeManageEngineItemIntoAsset(prev, item) : prev
+      ));
+      setFeedback({ type: 'success', message });
+    } catch (error) {
+      setFeedback({
+        type: 'error',
+        message: error?.response?.data?.error || t('assetSyncFailed', 'Failed to sync asset to ManageEngine.'),
+      });
+    } finally {
+      setSyncingAssetId(null);
+    }
+  }, [t]);
 
   const handleExport = () => {
     const rows = filteredAssets.map((asset) => ([
@@ -316,6 +351,8 @@ const AssetRegistryAndTracking = () => {
               <AssetDetailPanel
                 asset={selectedAsset}
                 syncStatus={manageEngineSyncStatus}
+                onSyncAsset={handleSyncAssetToManageEngine}
+                isSyncingAsset={syncingAssetId === selectedAsset?.id}
                 onClose={() => {
                   setShowDetailPanel(false);
                   setSelectedAsset(null);

@@ -1,49 +1,63 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Select from '../../../components/ui/Select';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
+import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../services/organizationUnits';
 
 const FilterPanel = ({ filters, onFilterChange, onClearFilters }) => {
-  const departmentOptions = [
-    { value: 'all', label: 'All Departments' },
-    { value: 'it', label: 'Information Technology' },
-    { value: 'hr', label: 'Human Resources' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'operations', label: 'Operations' },
-    { value: 'marketing', label: 'Marketing' }
-  ];
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const [erpDepartments, setErpDepartments] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) setErpDepartments(Array.isArray(departments) ? departments : []);
+      })
+      .catch(() => {
+        if (mounted) setErpDepartments([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments, t), [erpDepartments, t]);
 
   const requestTypeOptions = [
-    { value: 'all', label: 'All Types' },
-    { value: 'purchase', label: 'Purchase Request' },
-    { value: 'travel', label: 'Travel Authorization' },
-    { value: 'budget', label: 'Budget Reallocation' },
-    { value: 'hiring', label: 'Hiring Request' },
-    { value: 'equipment', label: 'Equipment Procurement' }
+    { value: 'all', label: t('allTypes', 'All Types') },
+    { value: 'purchase', label: t('purchaseRequest', 'Purchase Request') },
+    { value: 'travel', label: t('travelAuthorization', 'Travel Authorization') },
+    { value: 'budget', label: t('budgetReallocation', 'Budget Reallocation') },
+    { value: 'hiring', label: t('hiringRequest', 'Hiring Request') },
+    { value: 'equipment', label: t('equipmentProcurement', 'Equipment Procurement') }
   ];
 
   const urgencyOptions = [
-    { value: 'all', label: 'All Urgency Levels' },
-    { value: 'critical', label: 'Critical' },
-    { value: 'high', label: 'High' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'low', label: 'Low' }
+    { value: 'all', label: t('allUrgencyLevels', 'All Urgency Levels') },
+    { value: 'critical', label: t('critical', 'Critical') },
+    { value: 'high', label: t('high', 'High') },
+    { value: 'medium', label: t('medium', 'Medium') },
+    { value: 'low', label: t('low', 'Low') }
   ];
 
   const statusOptions = [
-    { value: 'all', label: 'All Status' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'denied', label: 'Denied' }
+    { value: 'all', label: t('allStatus', 'All Status') },
+    { value: 'pending', label: t('pending', 'Pending') },
+    { value: 'approved', label: t('approved', 'Approved') },
+    { value: 'denied', label: t('denied', 'Denied') }
   ];
 
   const agingOptions = [
-    { value: 'all', label: 'All Ages' },
-    { value: 'today', label: 'Today' },
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
-    { value: 'overdue', label: 'Overdue' }
+    { value: 'all', label: t('allAges', 'All Ages') },
+    { value: 'today', label: t('today', 'Today') },
+    { value: 'week', label: t('thisWeek', 'This Week') },
+    { value: 'month', label: t('thisMonth', 'This Month') },
+    { value: 'overdue', label: t('overdue', 'Overdue') }
   ];
 
   return (
@@ -51,7 +65,7 @@ const FilterPanel = ({ filters, onFilterChange, onClearFilters }) => {
       <div className="flex items-center justify-between">
         <h3 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
           <Icon name="Filter" size={20} />
-          Advanced Filters
+          {t('advancedFilters', 'Advanced Filters')}
         </h3>
         <Button
           variant="ghost"
@@ -59,47 +73,47 @@ const FilterPanel = ({ filters, onFilterChange, onClearFilters }) => {
           iconName="X"
           onClick={onClearFilters}
         >
-          Clear All
+          {t('clearAll', 'Clear All')}
         </Button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Select
-          label="Department"
+          label={t('department', 'Department')}
           options={departmentOptions}
           value={filters?.department}
           onChange={(value) => onFilterChange('department', value)}
         />
 
         <Select
-          label="Request Type"
+          label={t('requestType', 'Request Type')}
           options={requestTypeOptions}
           value={filters?.requestType}
           onChange={(value) => onFilterChange('requestType', value)}
         />
 
         <Select
-          label="Urgency"
+          label={t('urgency', 'Urgency')}
           options={urgencyOptions}
           value={filters?.urgency}
           onChange={(value) => onFilterChange('urgency', value)}
         />
 
         <Select
-          label="Status"
+          label={t('status', 'Status')}
           options={statusOptions}
           value={filters?.status}
           onChange={(value) => onFilterChange('status', value)}
         />
 
         <Select
-          label="Age"
+          label={t('age', 'Age')}
           options={agingOptions}
           value={filters?.aging}
           onChange={(value) => onFilterChange('aging', value)}
         />
 
         <Input
-          label="Min Value ($)"
+          label={t('minValue', 'Min Value ($)')}
           type="number"
           placeholder="0"
           value={filters?.minValue}
@@ -107,7 +121,7 @@ const FilterPanel = ({ filters, onFilterChange, onClearFilters }) => {
         />
 
         <Input
-          label="Max Value ($)"
+          label={t('maxValue', 'Max Value ($)')}
           type="number"
           placeholder="100000"
           value={filters?.maxValue}
@@ -115,17 +129,17 @@ const FilterPanel = ({ filters, onFilterChange, onClearFilters }) => {
         />
 
         <Input
-          label="Requester"
+          label={t('requester', 'Requester')}
           type="text"
-          placeholder="Search by name"
+          placeholder={t('searchByName', 'Search by name')}
           value={filters?.requester}
           onChange={(e) => onFilterChange('requester', e?.target?.value)}
         />
 
         <Input
-          label="Request ID"
+          label={t('requestId', 'Request ID')}
           type="text"
-          placeholder="APR-XXXX"
+          placeholder={t('requestIdPlaceholder', 'APR-XXXX')}
           value={filters?.requestId}
           onChange={(e) => onFilterChange('requestId', e?.target?.value)}
         />

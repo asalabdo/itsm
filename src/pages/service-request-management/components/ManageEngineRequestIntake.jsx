@@ -3,8 +3,12 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
 import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ManageEngineRequestIntake = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
@@ -35,37 +39,57 @@ const ManageEngineRequestIntake = () => {
     return () => window.removeEventListener('itsm:refresh', handleRefresh);
   }, []);
 
+  const syncStateLabel = (value) => {
+    const normalized = String(value || '').toLowerCase();
+    if (normalized === 'synced') return t('synced', 'Synced');
+    if (normalized === 'failed') return t('failed', 'Failed');
+    return value || t('idle', 'idle');
+  };
+
+  const sourceLabel = (value) => {
+    const normalized = String(value || '').toLowerCase();
+    if (normalized === 'servicedesk') return t('serviceDesk', 'ServiceDesk');
+    if (normalized === 'opmanager') return t('opManager', 'OpManager');
+    return value || '';
+  };
+
+  const requestStatusLabel = (value) => {
+    const normalized = String(value || '').toLowerCase();
+    if (normalized === 'open') return t('openRequest', 'Open');
+    return value || t('openRequest', 'Open');
+  };
+
   return (
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow">
       <div className="flex items-start justify-between gap-3 mb-5">
         <div>
           <div className="flex items-center gap-2 text-primary mb-2">
             <Icon name="ServerCog" size={18} />
-            <h3 className="text-lg font-semibold text-foreground">ManageEngine ServiceDesk Intake</h3>
+            <h3 className="text-lg font-semibold text-foreground">{t('manageEngineServiceDeskIntake', 'ManageEngine ServiceDesk Intake')}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Live external service requests flowing from ServiceDesk into the fulfillment workspace.
+            {t('manageEngineServiceDeskIntakeDesc', 'Live external service requests flowing from ServiceDesk into the fulfillment workspace.')}
           </p>
         </div>
         <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          Refresh
+          {t('refresh', 'Refresh')}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
         <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">External requests</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('serviceDeskRequests', 'External requests')}</div>
           <div className="text-2xl font-semibold text-foreground">{requests.length}</div>
         </div>
         <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">Imported locally</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('importedLocally', 'Imported locally')}</div>
           <div className="text-2xl font-semibold text-foreground">{syncStatus?.createdCount || 0}</div>
         </div>
         <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">Sync state</div>
-          <div className="text-sm font-semibold text-foreground capitalize">{syncStatus?.status || 'idle'}</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('syncState', 'Sync state')}</div>
+          <div className="text-sm font-semibold text-foreground capitalize">{syncStateLabel(syncStatus?.status)}</div>
           <div className="text-xs text-muted-foreground mt-2">
-            {syncStatus?.message || 'Waiting for the next ManageEngine sync.'}
+            {syncStatus?.message || t('waitingForManageEngineSync', 'Waiting for the next ManageEngine sync.')}
           </div>
         </div>
       </div>
@@ -73,11 +97,11 @@ const ManageEngineRequestIntake = () => {
       <div className="space-y-3">
         {loading ? (
           <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
-            Loading ServiceDesk intake...
+            {t('loadingServiceDeskIntake', 'Loading ServiceDesk intake...')}
           </div>
         ) : requests.length === 0 ? (
           <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
-            No external ServiceDesk requests are available right now.
+            {t('noServiceDeskRequests', 'No external ServiceDesk requests are available right now.')}
           </div>
         ) : (
           requests.map((request) => (
@@ -85,16 +109,16 @@ const ManageEngineRequestIntake = () => {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {request.source} {request.itemType}
+                    {sourceLabel(request.source)} {t('request', request.itemType)}
                   </div>
                   <div className="font-medium text-foreground mt-1">{request.name}</div>
                 </div>
                 <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                  {request.status || 'Open'}
+                  {requestStatusLabel(request.status)}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                {request.description || 'No request description provided.'}
+                {request.description || t('noRequestDescription', 'No request description provided.')}
               </p>
             </div>
           ))

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
@@ -16,6 +16,7 @@ import FileUploader from './components/FileUploader';
 import RoutingPreview from './components/RoutingPreview';
 import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { slaAPI, ticketsAPI } from '../../services/api';
+import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../services/organizationUnits';
 
 const DRAFT_KEY = 'itsm-ticket-creation-draft-v2';
 
@@ -94,6 +95,7 @@ const TicketCreation = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const [erpDepartments, setErpDepartments] = useState([]);
   
   // Dynamic option arrays using translations
   const priorityOptions = [
@@ -101,16 +103,6 @@ const TicketCreation = () => {
     { value: 'high', label: t('high', 'High') },
     { value: 'medium', label: t('medium', 'Medium') },
     { value: 'low', label: t('low', 'Low') },
-  ];
-
-  const departmentOptions = [
-    { value: 'it', label: t('itSupport', 'IT Support') },
-    { value: 'network', label: t('networkOperations', 'Network Operations') },
-    { value: 'security', label: t('securityTeam', 'Security Team') },
-    { value: 'application', label: t('applicationSupport', 'Application Support') },
-    { value: 'hr', label: t('humanResources', 'Human Resources') },
-    { value: 'finance', label: t('finance', 'Finance') },
-    { value: 'facilities', label: t('facilities', 'Facilities') },
   ];
 
   const impactOptions = [
@@ -143,10 +135,49 @@ const TicketCreation = () => {
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [showRecentTickets, setShowRecentTickets] = useState(false);
 
+  useEffect(() => {
+    let mounted = true;
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) setErpDepartments(Array.isArray(departments) ? departments : []);
+      })
+      .catch((error) => {
+        console.error('Failed to load ERP departments:', error);
+        if (mounted) setErpDepartments([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments, t), [erpDepartments, t]);
+
+  const resolveDepartmentLabel = (departmentKey) => {
+    const normalized = String(departmentKey || '').trim().toLowerCase();
+    if (!normalized) return '';
+    const match = erpDepartments.find((department) => {
+      const label = String(department?.label || '').toLowerCase();
+      if (normalized === String(department?.value || '').toLowerCase()) return true;
+      if (normalized === String(department?.id || '').toLowerCase()) return true;
+      const keywords = {
+        it: ['it', 'information', 'digital'],
+        network: ['network', 'infrastructure', 'operations'],
+        security: ['security'],
+        application: ['application', 'digital', 'solutions'],
+        hr: ['human', 'hr'],
+        finance: ['finance'],
+        facilities: ['facility', 'operations', 'infrastructure'],
+      }[normalized] || [normalized];
+      return keywords.some((keyword) => label.includes(keyword));
+    });
+
+    return match?.label || departmentOptions.find((option) => option.value === normalized)?.label || String(departmentKey || '').trim();
+  };
+
   const selectedPriorityLabel = priorityOptions.find((option) => option.value === formData.priority)?.label || '-';
   const selectedImpactLabel = impactOptions.find((option) => option.value === formData.impact)?.label || '-';
   const selectedUrgencyLabel = urgencyOptions.find((option) => option.value === formData.urgency)?.label || '-';
-  const selectedDepartmentLabel = departmentOptions.find((option) => option.value === formData.department)?.label || '-';
+  const selectedDepartmentLabel = departmentOptions.find((option) => option.value === formData.department)?.label || resolveDepartmentLabel(formData.department) || '-';
 
   useEffect(() => {
     const raw = localStorage.getItem(DRAFT_KEY);
@@ -229,7 +260,7 @@ const TicketCreation = () => {
       priority: defaults?.priority || prev.priority,
       impact: defaults?.impact || prev.impact,
       urgency: defaults?.urgency || prev.urgency,
-      department: defaults?.department || prev.department,
+      department: resolveDepartmentLabel(defaults?.department) || prev.department,
     }));
     setErrors((prev) => ({ ...prev, service: '' }));
   };
@@ -245,7 +276,7 @@ const TicketCreation = () => {
       priority: preset.priority,
       impact: preset.impact,
       urgency: preset.urgency,
-      department: preset.department,
+      department: resolveDepartmentLabel(preset.department) || preset.department,
     });
     setErrors({});
     setCurrentStep(3);
@@ -330,6 +361,7 @@ const TicketCreation = () => {
         description: formData.description.trim(),
         priority: priorityLabelMap[formData.priority] || 'Medium',
         category: formData.category,
+        department: formData.department || selectedDepartmentLabel || resolveDepartmentLabel('it'),
         dueDate: formData.dueDate || null,
         requestedById: formData.employee?.id ? Number(formData.employee.id) : null,
         urgency,

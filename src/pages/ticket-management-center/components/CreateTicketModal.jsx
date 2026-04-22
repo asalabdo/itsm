@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -7,6 +7,7 @@ import assetService from '../../../services/assetService';
 import { formatLocalizedValue } from '../../../services/displayValue';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../services/organizationUnits';
 
 const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
   const { language, isRtl } = useLanguage();
@@ -29,30 +30,40 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
     message: ''
   });
   const [requiresAsset, setRequiresAsset] = useState(false);
+  const [erpDepartments, setErpDepartments] = useState([]);
 
   const priorityOptions = [
-    { value: 'critical', label: formatLocalizedValue('Critical') },
-    { value: 'high', label: formatLocalizedValue('High') },
-    { value: 'medium', label: formatLocalizedValue('Medium') },
-    { value: 'low', label: formatLocalizedValue('Low') }
+    { value: 'critical', label: t('critical', 'Critical') },
+    { value: 'high', label: t('high', 'High') },
+    { value: 'medium', label: t('medium', 'Medium') },
+    { value: 'low', label: t('low', 'Low') }
   ];
 
-  const departmentOptions = [
-    { value: 'it', label: formatLocalizedValue('IT Support') },
-    { value: 'hr', label: formatLocalizedValue('Human Resources') },
-    { value: 'finance', label: formatLocalizedValue('Finance') },
-    { value: 'operations', label: formatLocalizedValue('Operations') },
-    { value: 'facilities', label: formatLocalizedValue('Facilities') }
-  ];
+  useEffect(() => {
+    let mounted = true;
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) setErpDepartments(Array.isArray(departments) ? departments : []);
+      })
+      .catch((error) => {
+        console.error('Failed to load ERP departments:', error);
+        if (mounted) setErpDepartments([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments, t), [erpDepartments, t]);
 
   const categoryOptions = [
-    { value: 'hardware-issue', label: formatLocalizedValue('Hardware Issue'), requiresAsset: true },
-    { value: 'software-issue', label: formatLocalizedValue('Software Issue'), requiresAsset: true },
-    { value: 'asset-request', label: formatLocalizedValue('Asset Request'), requiresAsset: false },
-    { value: 'access-request', label: formatLocalizedValue('Access Request'), requiresAsset: false },
-    { value: 'general-inquiry', label: formatLocalizedValue('General Inquiry'), requiresAsset: false },
-    { value: 'maintenance', label: formatLocalizedValue('Maintenance'), requiresAsset: true },
-    { value: 'replacement', label: formatLocalizedValue('Replacement Request'), requiresAsset: true }
+    { value: 'hardware-issue', label: t('hardwareIssue', 'Hardware Issue'), requiresAsset: true },
+    { value: 'software-issue', label: t('softwareIssue', 'Software Issue'), requiresAsset: true },
+    { value: 'asset-request', label: t('assetRequest', 'Asset Request'), requiresAsset: false },
+    { value: 'access-request', label: t('accessRequest', 'Access Request'), requiresAsset: false },
+    { value: 'general-inquiry', label: t('generalInquiry', 'General Inquiry'), requiresAsset: false },
+    { value: 'maintenance', label: t('maintenance', 'Maintenance'), requiresAsset: true },
+    { value: 'replacement', label: t('replacementRequest', 'Replacement Request'), requiresAsset: true }
   ];
 
   // Validate asset ownership when category changes
@@ -69,7 +80,7 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
           checking: false,
           hasAssets: true,
           assets: [],
-          message: formatLocalizedValue('Asset selection not required for this category')
+          message: t('assetSelectionNotRequiredForThisCategory', 'Asset selection not required for this category')
         });
         setFormData(prev => ({ ...prev, assetId: '' }));
       }
@@ -98,15 +109,15 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
           checking: false,
           hasAssets: true,
           assets: userAssets,
-        message: `${userAssets?.length} ${formatLocalizedValue('assigned asset(s) available') || 'assigned asset(s) available'}`
-      });
+          message: t('assignedAssetsAvailable', '{count} assigned asset(s) available').replace('{count}', String(userAssets?.length))
+        });
       } else {
         setAssetValidation({
           checking: false,
           hasAssets: false,
           assets: [],
-        message: formatLocalizedValue('No active assigned assets found. Please contact administration.')
-      });
+          message: t('noActiveAssignedAssetsFound', 'No active assigned assets found. Please contact administration.')
+        });
       }
     } catch (error) {
       console.error('Error fetching user assets:', error);
@@ -114,7 +125,7 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
         checking: false,
         hasAssets: false,
         assets: [],
-        message: formatLocalizedValue('Error verifying assets. Please try again.')
+        message: t('errorVerifyingAssets', 'Error verifying assets. Please try again.')
       });
     }
   };
@@ -130,31 +141,31 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
     const newErrors = {};
 
     if (!formData?.title?.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = t('titleIsRequired', 'Title is required');
     }
 
     if (!formData?.description?.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = t('descriptionIsRequired', 'Description is required');
     }
 
     if (!formData?.priority) {
-      newErrors.priority = 'Priority is required';
+      newErrors.priority = t('priorityIsRequired', 'Priority is required');
     }
 
     if (!formData?.department) {
-      newErrors.department = 'Department is required';
+      newErrors.department = t('departmentIsRequired', 'Department is required');
     }
 
     if (!formData?.category) {
-      newErrors.category = 'Category is required';
+      newErrors.category = t('categoryIsRequired', 'Category is required');
     }
 
     // Asset validation for asset-required categories
     if (requiresAsset) {
       if (!assetValidation?.hasAssets) {
-        newErrors.asset = 'You must have an assigned asset to create this type of ticket';
+        newErrors.asset = t('assignedAssetRequired', 'You must have an assigned asset to create this type of ticket');
       } else if (!formData?.assetId) {
-        newErrors.asset = 'Please select an asset for this ticket';
+        newErrors.asset = t('selectAssetForTicket', 'Please select an asset for this ticket');
       }
     }
 
@@ -172,12 +183,12 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
       const newTicket = {
         id: `TKT-${Math.floor(Math.random() * 10000)}`,
         ...formData,
-        requester: currentUser?.name || 'Current User',
+        requester: currentUser?.name || t('currentUser', 'Current User'),
         requesterInitials: currentUser?.initials || 'CU',
         status: 'open',
         statusLabel: 'Open',
         priorityLabel: priorityOptions?.find(p => p?.value === formData?.priority)?.label,
-        lastActivity: 'Just now',
+        lastActivity: t('justNow', 'Just now'),
         hasAttachment: false,
         createdAt: new Date()?.toISOString(),
         assetLinked: requiresAsset && formData?.assetId ? true : false
@@ -194,22 +205,22 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
   };
 
   const logAuditTrail = (ticket) => {
-    const auditEntry = {
-      id: `AUD-${Date.now()}`,
-      timestamp: new Date()?.toISOString(),
-      userName: currentUser?.name || 'Current User',
-      userRole: currentUser?.role || 'Employee',
-      action: 'Created support ticket',
-      actionType: 'create',
+      const auditEntry = {
+        id: `AUD-${Date.now()}`,
+        timestamp: new Date()?.toISOString(),
+        userName: currentUser?.name || t('currentUser', 'Current User'),
+        userRole: currentUser?.role || t('employee', 'Employee'),
+        action: t('createdSupportTicket', 'Created support ticket'),
+        actionType: 'create',
       objectType: 'Ticket',
       objectId: ticket?.id,
       severity: 'low',
       success: true,
       complianceCategory: 'Data Access',
       changes: [
-        { field: 'Ticket ID', oldValue: null, newValue: ticket?.id },
-        { field: 'Category', oldValue: null, newValue: ticket?.category },
-        { field: 'Asset Linked', oldValue: null, newValue: ticket?.assetLinked ? 'Yes' : 'No' }
+        { field: t('ticketIdHeader', 'Ticket ID'), oldValue: null, newValue: ticket?.id },
+        { field: t('category', 'Category'), oldValue: null, newValue: ticket?.category },
+        { field: t('assetLinked', 'Asset Linked'), oldValue: null, newValue: ticket?.assetLinked ? t('yes', 'Yes') : t('no', 'No') }
       ]
     };
 
@@ -318,7 +329,7 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
                   />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">
-                      {assetValidation?.checking ? 'Validating asset ownership...' : requiresAsset ?'Asset Validation' : 'Asset Not Required'}
+                      {assetValidation?.checking ? t('validatingAssetOwnership', 'Validating asset ownership...') : requiresAsset ? t('assetValidation', 'Asset Validation') : t('assetNotRequired', 'Asset Not Required')}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       {assetValidation?.message}
@@ -331,8 +342,8 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
             {/* Asset Selection (only if required and assets available) */}
             {requiresAsset && assetValidation?.hasAssets && (
               <Select
-                label="Select Asset"
-                placeholder="Choose the asset related to this ticket"
+                label={t('selectAsset', 'Select Asset')}
+                placeholder={t('chooseAssetRelatedToTicket', 'Choose the asset related to this ticket')}
                 options={assetOptions}
                 value={formData?.assetId}
                 onChange={(value) => handleInputChange('assetId', value)}
@@ -345,8 +356,8 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
             {/* Priority and Department */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select
-                label="Priority"
-                placeholder="Select priority level"
+                label={t('priority', 'Priority')}
+                placeholder={t('selectPriorityLevel', 'Select priority level')}
                 options={priorityOptions}
                 value={formData?.priority}
                 onChange={(value) => handleInputChange('priority', value)}
@@ -355,8 +366,8 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
               />
 
               <Select
-                label="Department"
-                placeholder="Select department"
+                label={t('department', 'Department')}
+                placeholder={t('selectDepartment', 'Select department')}
                 options={departmentOptions}
                 value={formData?.department}
                 onChange={(value) => handleInputChange('department', value)}
@@ -368,12 +379,12 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
             {/* Description */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Description <span className="text-destructive">*</span>
+                {t('description', 'Description')} <span className="text-destructive">*</span>
               </label>
               <textarea
                 value={formData?.description}
                 onChange={(e) => handleInputChange('description', e?.target?.value)}
-                placeholder="Provide detailed information about your request..."
+                placeholder={t('provideDetailedInformation', 'Provide detailed information about your request...')}
                 rows={5}
                 className="w-full px-4 py-3 bg-background border border-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
               />
@@ -387,9 +398,9 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
               <div className="flex items-start gap-3">
                 <Icon name="Shield" size={20} className="text-primary mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">Governance & Compliance</p>
+                  <p className="text-sm font-medium text-foreground">{t('governanceCompliance', 'Governance & Compliance')}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    This ticket will be logged in the audit trail. Asset-related tickets are validated against your assigned assets to ensure compliance.
+                    {t('ticketAuditTrailNotice', 'This ticket will be logged in the audit trail. Asset-related tickets are validated against your assigned assets to ensure compliance.')}
                   </p>
                 </div>
               </div>
@@ -405,7 +416,7 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
                 className="flex-1"
                 disabled={loading}
               >
-                Cancel
+                {t('cancel', 'Cancel')}
               </Button>
               <Button
                 variant="default"
@@ -416,7 +427,7 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
                 loading={loading}
                 disabled={loading || (requiresAsset && !assetValidation?.hasAssets)}
               >
-                {loading ? 'Creating...' : 'Create Ticket'}
+                {loading ? t('creating', 'Creating...') : t('createTicket', 'Create Ticket')}
               </Button>
             </div>
           </div>

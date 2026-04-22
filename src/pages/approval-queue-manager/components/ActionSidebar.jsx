@@ -133,7 +133,7 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
           <div className="space-y-6">
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-3">
-                Approval Templates
+                {t('approvalTemplates', 'Approval Templates')}
               </h3>
               <div className="space-y-2">
                 {approvalTemplates?.map((template) => (
@@ -161,7 +161,7 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
 
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-3">
-                Denial Templates
+                {t('denialTemplates', 'Denial Templates')}
               </h3>
               <div className="space-y-2">
                 {denialTemplates?.map((template) => (
@@ -196,26 +196,26 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
                 <Icon name="Info" size={20} className="text-primary flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-foreground mb-1">
-                    Temporary Delegation
+                    {t('temporaryDelegation', 'Temporary Delegation')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Transfer approval authority temporarily while maintaining full audit trail
+                    {t('temporaryDelegationDesc', 'Transfer approval authority temporarily while maintaining full audit trail')}
                   </p>
                 </div>
               </div>
             </div>
 
             <Select
-              label="Delegate To"
+              label={t('delegateTo', 'Delegate To')}
               options={delegateOptions}
               value={delegateUser}
               onChange={setDelegateUser}
-              placeholder="Select user"
+              placeholder={t('selectUser', 'Select user')}
               required
             />
 
             <Input
-              label="Start Date"
+              label={t('startDate', 'Start Date')}
               type="date"
               value={delegateStartDate}
               onChange={(e) => setDelegateStartDate(e?.target?.value)}
@@ -223,7 +223,7 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
             />
 
             <Input
-              label="End Date"
+              label={t('endDate', 'End Date')}
               type="date"
               value={delegateEndDate}
               onChange={(e) => setDelegateEndDate(e?.target?.value)}
@@ -236,16 +236,16 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
               iconPosition="left"
               fullWidth
             >
-              Activate Delegation
+              {t('activateDelegation', 'Activate Delegation')}
             </Button>
 
             <div className="pt-4 border-t border-border">
               <h3 className="text-sm font-semibold text-foreground mb-3">
-                Active Delegations
+                {t('activeDelegations', 'Active Delegations')}
               </h3>
               <div className="p-3 bg-muted/50 rounded-lg border border-border">
                 <p className="text-xs text-muted-foreground text-center">
-                  No active delegations
+                  {t('noActiveDelegations', 'No active delegations')}
                 </p>
               </div>
             </div>
@@ -259,12 +259,12 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
                 <Icon name="AlertTriangle" size={20} className="text-warning flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-foreground mb-1">
-                    Bulk Operations
+                    {t('bulkOperations', 'Bulk Operations')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {selectedCount > 0 
-                      ? `${selectedCount} request${selectedCount !== 1 ? 's' : ''} selected`
-                      : 'Select requests to enable bulk actions'}
+                      ? t('requestsSelected', '{count} request(s) selected').replace('{count}', String(selectedCount))
+                      : t('selectRequestsBulk', 'Select requests to enable bulk actions')}
                   </p>
                 </div>
               </div>
@@ -279,7 +279,7 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
                 disabled={selectedCount === 0}
                 onClick={onBulkApprove}
               >
-                Bulk Approve ({selectedCount})
+                {t('bulkApprove', 'Bulk Approve')} ({selectedCount})
               </Button>
 
               <Button
@@ -290,7 +290,7 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
                 disabled={selectedCount === 0}
                 onClick={onBulkDeny}
               >
-                Bulk Deny ({selectedCount})
+                {t('bulkDeny', 'Bulk Deny')} ({selectedCount})
               </Button>
 
               <Button
@@ -301,21 +301,21 @@ const ActionSidebar = ({ selectedCount, onBulkApprove, onBulkDeny, onExportSelec
                 disabled={selectedCount === 0}
                 onClick={onExportSelected}
               >
-                Export Selected
+                {t('exportSelected', 'Export Selected')}
               </Button>
             </div>
 
             <div className="pt-4 border-t border-border">
               <h3 className="text-sm font-semibold text-foreground mb-3">
-                Keyboard Shortcuts
+                {t('keyboardShortcuts', 'Keyboard Shortcuts')}
               </h3>
               <div className="space-y-2">
                 {[
-                  { key: 'j / k', action: 'Navigate up/down' },
-                  { key: 'a', action: 'Approve selected' },
-                  { key: 'd', action: 'Deny selected' },
-                  { key: 'Tab', action: 'Next request' },
-                  { key: 'Space', action: 'Select/deselect' }
+                  { key: 'j / k', action: t('navigateUpDown', 'Navigate up/down') },
+                  { key: 'a', action: t('approveSelected', 'Approve selected') },
+                  { key: 'd', action: t('denySelected', 'Deny selected') },
+                  { key: 'Tab', action: t('nextRequest', 'Next request') },
+                  { key: 'Space', action: t('selectDeselect', 'Select/deselect') }
                 ]?.map((shortcut, index) => (
                   <div key={index} className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">{shortcut?.action}</span>

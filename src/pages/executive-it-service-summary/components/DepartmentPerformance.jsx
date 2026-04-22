@@ -1,34 +1,48 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { loadErpDepartmentDirectory, matchOrganizationUnitLabel } from '../../../services/organizationUnits';
 
 const DepartmentPerformance = ({ data = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const isArabic = language === 'ar';
+  const [erpDepartments, setErpDepartments] = useState([]);
 
-  const departmentMap = {
-    engineering: 'الهندسة',
-    operations: 'العمليات',
-    hr: 'الموارد البشرية',
-    finance: 'المالية',
-    marketing: 'التسويق',
-    sales: 'المبيعات',
-  };
+  useEffect(() => {
+    let mounted = true;
+
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) {
+          setErpDepartments(Array.isArray(departments) ? departments : []);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load ERP departments:', error);
+        if (mounted) {
+          setErpDepartments([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const departmentData = useMemo(() => {
     if (!data.length) return [];
       return data.map((d) => ({
-      department: d.metricName,
+      department: matchOrganizationUnitLabel(d.metricName, erpDepartments) || d.metricName,
       satisfaction: Number(d.value),
       incidents: Math.max(1, Math.round(10 - Number(d.value || 0))),
       resolution: Number(Math.max(0.7, 3 - Number(d.value || 0) / 2).toFixed(1)),
       users: Math.max(50, Math.round(Number(d.value || 0) * 60)),
       ticketVolume: Math.max(5, Math.round(Number(d.value || 0) * 8)),
     }));
-  }, [data]);
+  }, [data, erpDepartments]);
 
   const getPerformanceStatus = (satisfaction) => {
     if (satisfaction >= 4.5) return { color: 'text-success', bg: 'bg-success/10' };
@@ -83,7 +97,7 @@ const DepartmentPerformance = ({ data = [] }) => {
                   <span className={`text-sm font-bold ${performance.color}`}>{dept.department?.charAt(0)}</span>
                 </div>
                 <div>
-                  <h4 className="font-medium text-foreground">{isArabic ? (departmentMap[String(dept.department || '').toLowerCase()] || dept.department) : dept.department}</h4>
+                  <h4 className="font-medium text-foreground">{dept.department}</h4>
                   <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                     <span>{dept.users} {isArabic ? 'مستخدم' : t('users', 'users')}</span>
                     <span>•</span>

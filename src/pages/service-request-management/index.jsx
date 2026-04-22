@@ -11,9 +11,11 @@ import ApprovalWorkflowCards from './components/ApprovalWorkflowCards';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import ManageEngineRequestIntake from './components/ManageEngineRequestIntake';
 import FilterControls from './components/FilterControls';
+import DepartmentServiceOwnershipPanel from './components/DepartmentServiceOwnershipPanel';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import { serviceRequestsAPI } from '../../services/api';
+import { loadErpDepartmentDirectory } from '../../services/organizationUnits';
 
 const ServiceRequestManagement = () => {
   const location = useLocation();
@@ -26,6 +28,9 @@ const ServiceRequestManagement = () => {
   const [viewMode, setViewMode] = useState('overview'); // overview, catalog, requests, approvals, metrics
   const [showWizard, setShowWizard] = useState(false);
   const [serviceRequests, setServiceRequests] = useState([]);
+  const [departmentFocus, setDepartmentFocus] = useState('all');
+  const [serviceFocus, setServiceFocus] = useState('all');
+  const [erpDepartments, setErpDepartments] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -71,6 +76,27 @@ const ServiceRequestManagement = () => {
     fetchServiceRequests();
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) {
+          setErpDepartments(Array.isArray(departments) ? departments : []);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load ERP departments:', error);
+        if (mounted) {
+          setErpDepartments([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleRefresh = async () => {
     setRefreshing(true);
     window.dispatchEvent(new CustomEvent('itsm:refresh'));
@@ -82,6 +108,12 @@ const ServiceRequestManagement = () => {
   const handleFiltersChange = (filters) => {
     setActiveFilters(filters);
     // Apply filters to all components
+  };
+
+  const handleOpenDepartment = (bucket) => {
+    setDepartmentFocus(bucket?.department || 'all');
+    setServiceFocus(bucket?.services?.[0]?.name || 'all');
+    setViewMode('requests');
   };
 
   const handleExport = (format) => {
@@ -143,6 +175,7 @@ const ServiceRequestManagement = () => {
 
     const serviceTypeValues = serviceRequests.map((request) => request?.catalogItemName || request?.serviceType || request?.title).filter(Boolean);
     const departmentValues = serviceRequests.map((request) => request?.requestedBy?.department || request?.department || request?.requestedByDepartment).filter(Boolean);
+    const erpDepartmentValues = erpDepartments.map((department) => department?.label).filter(Boolean);
     const statusValues = serviceRequests.map((request) => request?.status).filter(Boolean);
     const priorityValues = serviceRequests.map((request) => request?.priority).filter(Boolean);
     const assigneeValues = serviceRequests.map((request) => {
@@ -155,12 +188,12 @@ const ServiceRequestManagement = () => {
 
     return {
       serviceTypeOptions: asOptionList(serviceTypeValues),
-      departmentOptions: asOptionList(departmentValues),
+      departmentOptions: asOptionList([...erpDepartmentValues, ...departmentValues]),
       statusOptions: asOptionList(statusValues),
       priorityOptions: asOptionList(priorityValues),
       assigneeOptions: asOptionList(assigneeValues),
     };
-  }, [isArabic, serviceRequests]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isArabic, serviceRequests, erpDepartments]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const slaAlert = useMemo(() => {
     const now = new Date();
@@ -285,12 +318,20 @@ const ServiceRequestManagement = () => {
                   <ServiceCatalog onRequestService={handleRequestService} />
                 </div>
                 <div>
-                  <ActiveRequestsDashboard />
+                  <ActiveRequestsDashboard departmentFilter={departmentFocus} serviceFilter={serviceFocus} />
                 </div>
               </div>
 
               <div>
                 <ManageEngineRequestIntake />
+              </div>
+
+              <div>
+                <DepartmentServiceOwnershipPanel
+                  serviceRequests={serviceRequests}
+                  onOpenDepartment={handleOpenDepartment}
+                  onRefresh={handleRefresh}
+                />
               </div>
 
               {/* Middle Section: Approval Workflow Cards */}
@@ -314,7 +355,16 @@ const ServiceRequestManagement = () => {
           {viewMode === 'requests' && (
             <div className="space-y-8">
               <ManageEngineRequestIntake />
-              <ActiveRequestsDashboard expanded={true} />
+              <DepartmentServiceOwnershipPanel
+                serviceRequests={serviceRequests}
+                onOpenDepartment={handleOpenDepartment}
+                onRefresh={handleRefresh}
+              />
+              <ActiveRequestsDashboard
+                expanded={true}
+                departmentFilter={departmentFocus}
+                serviceFilter={serviceFocus}
+              />
             </div>
           )}
 

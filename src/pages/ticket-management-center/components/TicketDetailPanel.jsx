@@ -4,13 +4,20 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import WorkflowStatusStrip from '../../../components/ui/WorkflowStatusStrip';
+import { ticketsAPI, usersAPI } from '../../../services/api';
 import { resolveWorkflowPresentationForTicket } from '../../../services/workflowStages';
 import { formatLocalizedValue, getLocalizedDisplayName } from '../../../services/displayValue';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [activeTab, setActiveTab] = useState('details');
   const [comment, setComment] = useState('');
   const [workflowPresentation, setWorkflowPresentation] = useState(null);
+  const [technicians, setTechnicians] = useState([]);
+  const [assigning, setAssigning] = useState(false);
 
   if (!ticket) return null;
 
@@ -39,7 +46,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
   ];
 
   const assigneeOptions = [
-    { value: ticket?.assignedToId ? String(ticket.assignedToId) : 'unassigned', label: getLocalizedDisplayName(ticket?.assignedTo) || formatLocalizedValue(ticket?.assignee) || formatLocalizedValue('Unassigned') },
+    { value: ticket?.assignedToId ? String(ticket.assignedToId) : 'unassigned', label: getLocalizedDisplayName(ticket?.assignedTo) || t(ticket?.assignee, ticket?.assignee) || formatLocalizedValue('Unassigned') },
     { value: 'unassigned', label: formatLocalizedValue('Unassigned') }
   ];
 
@@ -49,16 +56,16 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
       type: 'created',
       user: getLocalizedDisplayName(ticket?.requestedBy) || ticket?.requester || formatLocalizedValue('Requester'),
       userInitials: String(getLocalizedDisplayName(ticket?.requestedBy) || ticket?.requester || 'U').split(' ').map((part) => part?.[0]).filter(Boolean).join('').slice(0, 2).toUpperCase(),
-      action: formatLocalizedValue('Created'),
-      timestamp: ticket?.createdAt ? new Date(ticket.createdAt).toLocaleString() : 'N/A'
+      action: t('createdAction', 'Created'),
+      timestamp: ticket?.createdAt ? new Date(ticket.createdAt).toLocaleString() : t('notAvailable', 'N/A')
     },
     {
       id: 2,
       type: 'status',
       user: getLocalizedDisplayName(ticket?.assignedTo) || ticket?.assignee || formatLocalizedValue('Unassigned'),
       userInitials: String(getLocalizedDisplayName(ticket?.assignedTo) || ticket?.assignee || 'U').split(' ').map((part) => part?.[0]).filter(Boolean).join('').slice(0, 2).toUpperCase(),
-      action: `${formatLocalizedValue('Current') || 'Current'} ${formatLocalizedValue('status') || 'status'} ${formatLocalizedValue('is') || 'is'} ${formatLocalizedValue(ticket?.statusLabel || ticket?.status || 'Open')}`,
-      timestamp: ticket?.slaDeadline || 'N/A'
+      action: `${t('currentStatusIs', 'Current status is')} ${formatLocalizedValue(ticket?.statusLabel || ticket?.status || 'Open')}`,
+      timestamp: ticket?.slaDeadline || t('notAvailable', 'N/A')
     }
   ];
 
@@ -109,11 +116,65 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
     };
   }, [ticket]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const loadTechnicians = async () => {
+      try {
+        const res = await usersAPI.getByRole('Technician');
+        if (!cancelled) {
+          setTechnicians(Array.isArray(res?.data) ? res.data : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setTechnicians([]);
+        }
+      }
+    };
+
+    void loadTechnicians();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const workflowSteps = workflowPresentation?.steps || ticket?.workflowSteps || [];
   const workflowActiveStep = workflowPresentation?.activeStep ?? 0;
-  const workflowService = workflowPresentation?.name || ticket?.category || 'Ticket workflow';
-  const workflowOrganization = workflowPresentation?.organizationKey || ticket?.assigneeDepartment || ticket?.department || 'Organization routing';
-  const workflowLastAction = workflowPresentation?.lastAction || ticket?.statusLabel || ticket?.status || 'Waiting for next action';
+  const workflowService = workflowPresentation?.name || t(ticket?.category, ticket?.category) || t('ticketWorkflowFallback', 'Ticket workflow');
+  const workflowOrganization = workflowPresentation?.organizationKey || t(ticket?.assigneeDepartment, ticket?.assigneeDepartment) || t(ticket?.department, ticket?.department) || t('organizationRoutingFallback', 'Organization routing');
+  const workflowLastAction = workflowPresentation?.lastAction || ticket?.statusLabel || ticket?.status || t('waitingForNextAction', 'Waiting for next action');
+
+  const handleClaimNext = async () => {
+    if (!ticket?.backendId) return;
+    const currentUser = (() => {
+      try {
+        return JSON.parse(localStorage.getItem('user') || '{}');
+      } catch {
+        return {};
+      }
+    })();
+
+    if (!currentUser?.id) {
+      window.dispatchEvent(new CustomEvent('itsm:toast', {
+      detail: { type: 'warning', message: t('pleaseLogInToClaimTickets', 'Please log in to claim tickets.') }
+      }));
+      return;
+    }
+
+    try {
+      setAssigning(true);
+      await ticketsAPI.assign(ticket.backendId, { assignedToId: currentUser.id });
+      window.dispatchEvent(new CustomEvent('itsm:toast', {
+      detail: { type: 'success', message: t('ticketClaimedSuccessfully', 'Ticket claimed successfully.') }
+      }));
+      window.dispatchEvent(new CustomEvent('itsm:refresh'));
+    } catch (error) {
+      window.dispatchEvent(new CustomEvent('itsm:toast', {
+      detail: { type: 'error', message: t('failedToClaimTicket', 'Failed to claim ticket.') }
+      }));
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   return (
     <>
@@ -128,8 +189,8 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
           isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         } flex flex-col`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="font-semibold text-base">{formatLocalizedValue('Ticket Details')}</h2>
+                <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="font-semibold text-base">{t('ticketDetailsTitle', 'Ticket Details')}</h2>
           <button
             onClick={onClose}
             className="lg:hidden p-1 rounded hover:bg-muted transition-smooth"
@@ -146,7 +207,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                 activeTab === 'details' ?'text-primary border-b-2 border-primary' :'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {formatLocalizedValue('Details')}
+              {t('detailsTab', 'Details')}
             </button>
             <button
               onClick={() => setActiveTab('activity')}
@@ -154,7 +215,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                 activeTab === 'activity' ?'text-primary border-b-2 border-primary' :'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {formatLocalizedValue('Activity')}
+              {t('activityTab', 'Activity')}
             </button>
           </div>
         </div>
@@ -163,15 +224,35 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
           {activeTab === 'details' && (
             <div className="space-y-6">
               <WorkflowStatusStrip
-                title={formatLocalizedValue('Ticket Workflow')}
-                subtitle={formatLocalizedValue('Follow the current routing path for this ticket from intake to close.')}
+                title={t('ticketWorkflowTitle', 'Ticket Workflow')}
+                subtitle={t('followRoutingPath', 'Follow the current routing path for this ticket from intake to close.')}
                 service={workflowService}
                 organization={workflowOrganization}
-                mode={formatLocalizedValue('Drawer view')}
+                mode={t('drawerView', 'Drawer view')}
                 lastAction={workflowLastAction}
                 activeStep={workflowActiveStep}
                 steps={workflowSteps.length > 0 ? workflowSteps : undefined}
               />
+
+              <div className="rounded-lg border border-border bg-muted/20 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {t('departmentRouting', 'Department routing')}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('claimOrReassignTicket', 'Claim or reassign this ticket to the responsible technician.')}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleClaimNext} disabled={assigning}>
+                    {assigning ? t('claiming', 'Claiming...') : t('claimNext', 'Claim next')}
+                  </Button>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div>{t('technicians', 'Technicians')}: {technicians.length}</div>
+                  <div>{t('currentAssignee', 'Current assignee')}: {ticket?.assignee || formatLocalizedValue('Unassigned')}</div>
+                </div>
+              </div>
 
               <div>
                 <div className="flex items-start justify-between mb-2">
@@ -181,48 +262,48 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                     ticket?.priority === 'high' ? 'text-warning bg-warning/10' :
                     ticket?.priority === 'medium'? 'text-primary bg-primary/10' : 'text-muted-foreground bg-muted'
                   }`}>
-                    {ticket?.priorityLabel}
+                    {t(ticket?.priorityLabel || ticket?.priority, ticket?.priorityLabel || ticket?.priority)}
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold mb-3">{ticket?.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                  {ticket?.description || formatLocalizedValue('No description provided for this ticket.')}
+                  {ticket?.description || t('noDescriptionProvidedForThisTicket', 'No description provided for this ticket.')}
                 </p>
               </div>
 
               <div className="space-y-4">
                   <Select
-                  label={formatLocalizedValue('Status')}
+                  label={t('status', 'Status')}
                   options={statusOptions}
                   value={ticket?.status}
                   onChange={() => {}}
                 />
 
                   <Select
-                  label={formatLocalizedValue('Priority')}
+                  label={t('priority', 'Priority')}
                   options={priorityOptions}
                   value={ticket?.priority}
                   onChange={() => {}}
                 />
 
                   <Select
-                  label={formatLocalizedValue('Assignee')}
+                  label={t('assignee', 'Assignee')}
                   options={assigneeOptions}
                   value={ticket?.assignedToId ? String(ticket.assignedToId) : 'unassigned'}
                   onChange={() => {}}
-                  placeholder={formatLocalizedValue('Select assignee')}
+                  placeholder={t('selectAssignee', 'Select assignee')}
                 />
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">{formatLocalizedValue('Department')}</label>
+                  <label className="block text-sm font-medium mb-2">{t('department', 'Department')}</label>
           <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-md">
             <Icon name="Building" size={16} />
-            <span className="text-sm">{ticket?.department || 'Unassigned'}</span>
+            <span className="text-sm">{t(ticket?.department, ticket?.department) || formatLocalizedValue('Unassigned')}</span>
           </div>
         </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">{formatLocalizedValue('SLA Status')}</label>
+                  <label className="block text-sm font-medium mb-2">{t('slaStatus', 'SLA Status')}</label>
                   <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-md">
                     <Icon name="Clock" size={16} className={
                       ticket?.slaHours < 0 ? 'text-error' :
@@ -232,9 +313,9 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                       ticket?.slaHours < 0 ? 'text-error' :
                       ticket?.slaHours < 4 ? 'text-warning': 'text-success'
                     }`}>
-                      {ticket?.slaHours < 0 ? `${Math.abs(ticket?.slaHours)}h ${formatLocalizedValue('overdue') || 'overdue'}` :
-                       ticket?.slaHours < 24 ? `${ticket?.slaHours}h ${formatLocalizedValue('remaining') || 'remaining'}` :
-                       `${Math.floor(ticket?.slaHours / 24)}d ${formatLocalizedValue('remaining') || 'remaining'}`}
+                      {ticket?.slaHours < 0 ? `${Math.abs(ticket?.slaHours)}h ${t('overdue', 'overdue')}` :
+                       ticket?.slaHours < 24 ? `${ticket?.slaHours}h ${t('remaining', 'remaining')}` :
+                       `${Math.floor(ticket?.slaHours / 24)}d ${t('remaining', 'remaining')}`}
                     </span>
                   </div>
                 </div>
@@ -249,9 +330,9 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm font-semibold text-foreground">{formatLocalizedValue('Linked Asset')}</p>
+                      <p className="text-sm font-semibold text-foreground">{t('linkedAsset', 'Linked Asset')}</p>
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
-                          {linkedAsset?.status}
+                          {t(linkedAsset?.status, linkedAsset?.status)}
                         </span>
                       </div>
                       <p className="text-sm text-foreground font-medium">{linkedAsset?.assetId}</p>
@@ -262,12 +343,12 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
                           <span className="text-foreground font-medium">{linkedAsset?.serialNumber}</span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">Owner</span>
-                          <span className="text-foreground font-medium">{linkedAsset?.currentOwner}</span>
-                        </div>
+                          <span className="text-muted-foreground">{t('owner', 'Owner')}</span>
+                        <span className="text-foreground font-medium">{linkedAsset?.currentOwner}</span>
                       </div>
+                    </div>
                       <p className="text-xs text-muted-foreground mt-3 italic">
-                        Asset details visible only within this ticket context
+                        {t('assetDetailsVisibleOnlyWithinThisTicketContext', 'Asset details visible only within this ticket context')}
                       </p>
                     </div>
                   </div>
@@ -276,7 +357,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
 
               {attachments?.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium mb-3">Attachments</label>
+                  <label className="block text-sm font-medium mb-3">{t('attachments', 'Attachments')}</label>
                   <div className="space-y-2">
                     {attachments?.map(attachment => (
                       <div
@@ -331,7 +412,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
 
         <div className="p-4 border-t border-border space-y-3">
           <Input
-            placeholder="Add a comment..."
+            placeholder={t('addCommentPlaceholder', 'Add a comment...')}
             value={comment}
             onChange={(e) => setComment(e?.target?.value)}
             multiline
@@ -344,7 +425,7 @@ const TicketDetailPanel = ({ ticket, isOpen, onClose }) => {
               iconName="Send"
               iconPosition="right"
             >
-              Comment
+              {t('comment', 'Comment')}
             </Button>
             <Button
               variant="outline"

@@ -11,11 +11,13 @@ import BulkActionToolbar from './components/BulkActionToolbar';
 import SearchBar from './components/SearchBar';
 import StatsCards from './components/StatsCards';
 import CreateTicketModal from './components/CreateTicketModal';
+import TicketOwnershipPanel from './components/TicketOwnershipPanel';
 import Icon from '../../components/AppIcon';
 import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
 import { ticketsAPI, dashboardAPI } from '../../services/api';
 import userService from '../../services/userService';
 import { formatLocalizedValue, getLocalizedDisplayName } from '../../services/displayValue';
+import { loadErpDepartmentDirectory, matchOrganizationUnitLabel } from '../../services/organizationUnits';
 
 const normalizeText = (value) => String(value || '').trim().toLowerCase();
 const slugify = (value) => normalizeText(value).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -57,6 +59,7 @@ const TicketManagementCenter = () => {
   const [stats, setStats] = useState({
     total: '--', open: '--', inProgress: '--', resolved: '--', overdue: '--', avgResponse: '--'
   });
+  const [erpDepartments, setErpDepartments] = useState([]);
   const currentUser = userService.getCurrentUser() || { name: 'Admin User', initials: 'AU', role: 'Admin' };
   const { language, isRtl } = useLanguage();
   const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
@@ -119,6 +122,27 @@ const TicketManagementCenter = () => {
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) {
+          setErpDepartments(Array.isArray(departments) ? departments : []);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load ERP departments:', error);
+        if (mounted) {
+          setErpDepartments([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handleRefresh = () => {
@@ -282,8 +306,20 @@ const TicketManagementCenter = () => {
       setSearchFilters((prev) => ({ ...prev, status: 'all', priority: 'high', department: 'all', assignee: 'all', dateRange: 'all', slaStatus: 'all' }));
     }
   };
+  const handleOpenDepartment = (bucket) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      department: slugify(bucket?.department || 'all'),
+      assignee: 'all',
+      status: 'all',
+      priority: 'all',
+      dateRange: 'all',
+      slaStatus: 'all',
+    }));
+    setFilterSidebarOpen(true);
+  };
   const handleSaveFilter = ({ query, filters }) => {
-    const filterName = window.prompt('Save this filter as', 'My Saved Filter');
+    const filterName = window.prompt(t('saveThisFilterAs', 'Save this filter as'), t('mySavedFilter', 'My Saved Filter'));
     if (!filterName) return;
 
     const savedFilter = {
@@ -298,7 +334,15 @@ const TicketManagementCenter = () => {
     localStorage.setItem(storageKey, JSON.stringify([savedFilter, ...existing].slice(0, 10)));
   };
   const downloadCsv = (rows, filename) => {
-    const header = ['Ticket ID', 'Title', 'Requester', 'Assignee', 'Status', 'Priority', 'Last Activity'];
+    const header = [
+      t('ticketIdHeader', 'Ticket ID'),
+      t('titleHeader', 'Title'),
+      t('requesterHeader', 'Requester'),
+      t('assigneeHeader', 'Assignee'),
+      t('statusHeader', 'Status'),
+      t('priorityHeader', 'Priority'),
+      t('lastActivityHeader', 'Last Activity')
+    ];
     const csvRows = [
       header.join(','),
       ...rows.map((ticket) => [
@@ -333,7 +377,9 @@ const TicketManagementCenter = () => {
       }
 
       if (action === 'delete') {
-        const shouldDelete = window.confirm(`Delete ${selectedRows.length} selected ticket(s)?`);
+        const shouldDelete = window.confirm(
+          t('deleteSelectedTicketsConfirm', 'Delete {count} selected ticket(s)?').replace('{count}', String(selectedRows.length))
+        );
         if (!shouldDelete) return;
         await Promise.all(selectedRows.map((ticket) => ticketsAPI.delete(ticket.backendId || ticket.id)));
       }
@@ -347,7 +393,7 @@ const TicketManagementCenter = () => {
       }
 
       if (action === 'assign') {
-        const assigneeId = window.prompt('Enter assignee user ID for the selected tickets:');
+        const assigneeId = window.prompt(t('enterAssigneeUserIdPrompt', 'Enter assignee user ID for the selected tickets:'));
         if (!assigneeId) return;
         const numericAssigneeId = Number(assigneeId);
         if (Number.isNaN(numericAssigneeId)) return;
@@ -356,7 +402,7 @@ const TicketManagementCenter = () => {
 
       await fetchTickets();
     } catch (err) {
-      console.error('Bulk action failed:', err);
+      console.error(t('bulkActionFailed', 'Bulk action failed:'), err);
     } finally {
       setSelectedTickets([]);
     }
@@ -392,7 +438,23 @@ const TicketManagementCenter = () => {
 
     const statusCounts = countBy((ticket) => ticket.status);
     const priorityCounts = countBy((ticket) => ticket.priority);
-    const departmentCounts = countBy((ticket) => ticket.department);
+    const departmentCounts = tickets.reduce((acc, ticket) => {
+      const department = matchOrganizationUnitLabel(
+        ticket?.department ||
+        ticket?.requestedBy?.department ||
+        ticket?.requestedBy?.organizationUnitName ||
+        ticket?.organizationUnitName ||
+        ticket?.organizationUnit?.displayName,
+        erpDepartments
+      ) || ticket?.department || ticket?.category;
+
+      if (!department) {
+        return acc;
+      }
+
+      acc[department] = (acc[department] || 0) + 1;
+      return acc;
+    }, {});
     const assigneeMap = tickets.reduce((acc, ticket) => {
       const isUnassigned = !ticket.assignedToId || normalizeText(ticket.assignee) === 'unassigned';
       if (isUnassigned) {
@@ -451,14 +513,14 @@ const TicketManagementCenter = () => {
       assignee: assigneeOptions,
       savedFilters: savedFilterCounts
     };
-  }, [tickets, t, isCurrentUserTicket]);
+  }, [tickets, t, isCurrentUserTicket, erpDepartments]);
 
   const handleCreateTicket = async (newTicket) => {
     try {
       const res = await ticketsAPI.create(newTicket);
       if (res.data) setTickets(prev => [mapTicket(res.data), ...prev]);
     } catch (err) {
-      console.error('Failed to create ticket:', err);
+      console.error(t('failedToCreateTicket', 'Failed to create ticket:'), err);
     }
   };
 
@@ -508,6 +570,9 @@ const TicketManagementCenter = () => {
             </div>
 
             <StatsCards stats={stats} />
+            <div className="mb-6 md:mb-8">
+              <TicketOwnershipPanel tickets={tickets} onOpenDepartment={handleOpenDepartment} />
+            </div>
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEngineTicketQueueContext', 'ManageEngine Ticket Queue Context')}

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import Input from '../../../components/ui/Input';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../services/organizationUnits';
 
 const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
   const { language } = useLanguage();
@@ -15,6 +16,7 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
   const [priority, setPriority] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [erpDepartments, setErpDepartments] = useState([]);
 
   const dateRangeOptions = [
     { value: 'today', label: t('today', 'Today') },
@@ -27,13 +29,21 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
     { value: 'custom', label: t('customRange', 'Custom Range') },
   ];
 
-  const departmentOptions = [
-    { value: 'all', label: t('allDepartments', 'All Departments') },
-    { value: 'technical', label: t('technicalSupport', 'Technical Support') },
-    { value: 'billing', label: t('billing', 'Billing') },
-    { value: 'sales', label: t('sales', 'Sales') },
-    { value: 'general', label: t('generalInquiry', 'General Inquiry') },
-  ];
+  useEffect(() => {
+    let mounted = true;
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) setErpDepartments(Array.isArray(departments) ? departments : []);
+      })
+      .catch(() => {
+        if (mounted) setErpDepartments([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments, t), [erpDepartments, t]);
 
   const ticketTypeOptions = [
     { value: 'all', label: t('allTypes', 'All Types') },

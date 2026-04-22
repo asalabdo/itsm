@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../services/organizationUnits';
 
 const FilterPanel = ({ onFiltersChange, onExport, lastUpdated }) => {
   const { language } = useLanguage();
@@ -12,6 +13,7 @@ const FilterPanel = ({ onFiltersChange, onExport, lastUpdated }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedService, setSelectedService] = useState('all');
   const [comparisonMode, setComparisonMode] = useState(false);
+  const [erpDepartments, setErpDepartments] = useState([]);
 
   const timeRangeOptions = [
     { value: '7d', label: t('last7Days', 'Last 7 days') },
@@ -23,14 +25,21 @@ const FilterPanel = ({ onFiltersChange, onExport, lastUpdated }) => {
     { value: 'yearly', label: t('yearly2024', 'Year 2024') },
   ];
 
-  const departmentOptions = [
-    { value: 'all', label: t('allDepartments', 'All Departments') },
-    { value: 'it', label: t('itServices', 'IT Services') },
-    { value: 'hr', label: t('humanResources', 'Human Resources') },
-    { value: 'finance', label: t('finance', 'Finance') },
-    { value: 'operations', label: t('operations', 'Operations') },
-    { value: 'sales', label: t('salesAndMarketing', 'Sales & Marketing') },
-  ];
+  useEffect(() => {
+    let mounted = true;
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) setErpDepartments(Array.isArray(departments) ? departments : []);
+      })
+      .catch(() => {
+        if (mounted) setErpDepartments([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments, t), [erpDepartments, t]);
 
   const serviceOptions = [
     { value: 'all', label: t('allServices', 'All Services') },

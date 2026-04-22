@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 import { ticketsAPI } from '../../../services/api';
+import { loadErpDepartmentDirectory, getErpDepartmentOptions } from '../../../services/organizationUnits';
 
 const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assignmentGroupOptions = [] }) => {
   const { language } = useLanguage();
@@ -10,6 +11,7 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
   const isArabic = language === 'ar';
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [erpDepartments, setErpDepartments] = useState([]);
   const [formData, setFormData] = useState({
     // Step 1: Basic Information
     title: '',
@@ -48,16 +50,39 @@ const IncidentCreationWizard = ({ onIncidentCreated, categoryOptions = [], assig
 
   const categoryItems = useMemo(() => categoryOptions || [], [categoryOptions]);
   const assignmentGroupItems = useMemo(() => assignmentGroupOptions || [], [assignmentGroupOptions]);
+  const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments, t), [erpDepartments, t]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) {
+          setErpDepartments(Array.isArray(departments) ? departments : []);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load ERP departments:', error);
+        if (mounted) {
+          setErpDepartments([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Auto-populate caller info when email is entered
     if (field === 'reportedBy' && value?.includes('@')) {
+      const financeDepartment = departmentOptions.find((option) => String(option?.label || '').toLowerCase().includes('finance'))?.label || (isArabic ? 'المالية' : 'Finance');
       // Simulate caller lookup
       setCallerInfo({
         name: isArabic ? 'جون سميث' : 'John Smith',
-        department: isArabic ? 'المالية' : 'Finance',
+        department: financeDepartment,
         location: isArabic ? 'المبنى A، الطابق 2' : 'Building A, Floor 2',
         phone: '+1 555-0123',
         manager: isArabic ? 'جين دو' : 'Jane Doe'

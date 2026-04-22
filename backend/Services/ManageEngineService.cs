@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using ITSMBackend.Data;
+using ITSMBackend.DTOs;
 using ITSMBackend.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
@@ -81,6 +82,13 @@ namespace ITSMBackend.Services
         public int ServiceDeskCount { get; set; }
         public int OpManagerCount { get; set; }
         public string Message { get; set; } = "No sync has been run yet.";
+    }
+
+    public class ManageEngineAssetSyncResult
+    {
+        public bool Created { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public ManageEngineNormalizedItem? Item { get; set; }
     }
 
     public class ManageEngineRuntimeSettings
@@ -312,6 +320,99 @@ namespace ITSMBackend.Services
             var endpoint = $"{TrimLeadingSlash(serviceDesk.RequestsEndpoint)}/{incidentId}";
             var result = await SendJsonAsync(serviceDesk, endpoint, HttpMethod.Put, payload, ManageEngineAuthMode.ServiceDesk);
             return result != null;
+        }
+
+        public async Task<ManageEngineAssetSyncResult> SyncAssetToServiceDeskAsync(AssetDto asset)
+        {
+            var existingItem = await FindExistingAssetItemAsync(asset);
+            if (existingItem != null)
+            {
+                return new ManageEngineAssetSyncResult
+                {
+                    Created = false,
+                    Item = existingItem,
+                    Message = "Asset already has an exact ManageEngine identity match."
+                };
+            }
+
+            var serviceDesk = await BuildServiceDeskSettingsAsync();
+            var metadata = BuildAssetIdentityMetadata(asset);
+            var subject = $"Asset sync: {FirstNonEmpty(asset.AssetTag, asset.Name, $"Asset {asset.Id}")}";
+            var description = string.Join(Environment.NewLine, new[]
+            {
+                "Create/link this asset in ManageEngine using the exact identity metadata below.",
+                $"Asset Tag: {asset.AssetTag}",
+                $"Serial Number: {asset.SerialNumber}",
+                $"Name: {asset.Name}",
+                $"Type: {asset.AssetType}",
+                $"Location: {asset.Location}",
+                $"Manufacturer: {asset.Manufacturer}",
+                $"Model: {asset.Model}"
+            }.Where(value => !string.IsNullOrWhiteSpace(value)));
+
+            var payload = new
+            {
+                request = new
+                {
+                    subject,
+                    description,
+                    priority = "Medium",
+                    status = "Open",
+                    category = "Asset",
+                    subcategory = "Asset Sync",
+                    udf_fields = metadata,
+                    asset_tag = metadata.GetValueOrDefault("asset_tag"),
+                    asset_id = metadata.GetValueOrDefault("asset_id"),
+                    serial_number = metadata.GetValueOrDefault("serial_number"),
+                    barcode = metadata.GetValueOrDefault("barcode")
+                }
+            };
+
+            var document = await SendJsonAsync(serviceDesk, serviceDesk.RequestsEndpoint, HttpMethod.Post, payload, ManageEngineAuthMode.ServiceDesk);
+            if (document == null)
+            {
+                return new ManageEngineAssetSyncResult
+                {
+                    Created = false,
+                    Message = "ServiceDesk request could not be created."
+                };
+            }
+
+            var createdRoot = ExtractArray(document.RootElement).FirstOrDefault();
+            var createdItem = createdRoot.ValueKind == JsonValueKind.Undefined
+                ? null
+                : MapServiceDeskRequest(createdRoot, serviceDesk.BaseUrl);
+
+            createdItem ??= new ManageEngineNormalizedItem
+            {
+                Source = "ServiceDesk",
+                ItemType = "request",
+                ExternalId = FirstNonEmpty(GetString(document.RootElement, "id"), GetString(document.RootElement, "request_id")),
+                Name = subject,
+                Description = description,
+                Status = "Open",
+                Priority = "Medium",
+                Category = "Asset",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            foreach (var pair in metadata)
+            {
+                createdItem.Metadata[pair.Key] = pair.Value;
+            }
+
+            if (string.IsNullOrWhiteSpace(createdItem.ExternalUrl) && !string.IsNullOrWhiteSpace(createdItem.ExternalId))
+            {
+                createdItem.ExternalUrl = BuildExternalUrl(serviceDesk.BaseUrl, "requests", createdItem.ExternalId);
+            }
+
+            return new ManageEngineAssetSyncResult
+            {
+                Created = true,
+                Item = createdItem,
+                Message = "Created a ServiceDesk asset sync request with exact identity metadata."
+            };
         }
 
         public async Task<bool> ValidateWebhookSignatureAsync(string? signature, string payload)
@@ -965,13 +1066,91 @@ namespace ITSMBackend.Services
             var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var key in keys)
             {
-                var value = FirstNonEmpty(GetString(element, key), GetNestedDisplayValue(element, key));
+                var value = FirstNonEmpty(
+                    GetString(element, key),
+                    GetNestedDisplayValue(element, key),
+                    GetNestedMetadataValue(element, "udf_fields", key),
+                    GetNestedMetadataValue(element, "metadata", key));
                 if (!string.IsNullOrWhiteSpace(value))
                 {
                     metadata[key] = value;
                 }
             }
             return metadata;
+        }
+
+        private async Task<ManageEngineNormalizedItem?> FindExistingAssetItemAsync(AssetDto asset)
+        {
+            var assetIdentifiers = BuildAssetIdentityMetadata(asset)
+                .Values
+                .Select(NormalizeIdentifier)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (assetIdentifiers.Count == 0)
+            {
+                return null;
+            }
+
+            var candidates = (await GetCatalogItemsAsync()).Concat(await GetOperationalItemsAsync());
+            return candidates.FirstOrDefault(item => ItemHasAssetIdentity(item, assetIdentifiers));
+        }
+
+        private static bool ItemHasAssetIdentity(ManageEngineNormalizedItem item, ISet<string> assetIdentifiers)
+        {
+            var externalIdentifiers = new[]
+            {
+                item.Metadata.GetValueOrDefault("assetTag"),
+                item.Metadata.GetValueOrDefault("asset_tag"),
+                item.Metadata.GetValueOrDefault("assetId"),
+                item.Metadata.GetValueOrDefault("asset_id"),
+                item.Metadata.GetValueOrDefault("serialNumber"),
+                item.Metadata.GetValueOrDefault("serial_number"),
+                item.Metadata.GetValueOrDefault("barcode"),
+                item.Metadata.GetValueOrDefault("deviceTag"),
+                item.Metadata.GetValueOrDefault("device_tag"),
+                item.Metadata.GetValueOrDefault("deviceSerialNumber"),
+                item.Metadata.GetValueOrDefault("device_serial_number")
+            }
+                .Select(NormalizeIdentifier)
+                .Where(value => !string.IsNullOrWhiteSpace(value));
+
+            return externalIdentifiers.Any(assetIdentifiers.Contains);
+        }
+
+        private static Dictionary<string, string> BuildAssetIdentityMetadata(AssetDto asset)
+        {
+            var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            AddIfPresent(metadata, "asset_tag", asset.AssetTag);
+            AddIfPresent(metadata, "asset_id", asset.AssetTag);
+            AddIfPresent(metadata, "serial_number", asset.SerialNumber);
+            AddIfPresent(metadata, "barcode", string.IsNullOrWhiteSpace(asset.AssetTag) ? string.Empty : $"BC-{asset.AssetTag}");
+            return metadata;
+        }
+
+        private static void AddIfPresent(Dictionary<string, string> metadata, string key, string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                metadata[key] = value.Trim();
+            }
+        }
+
+        private static string NormalizeIdentifier(string? value)
+        {
+            return (value ?? string.Empty).Trim().ToLowerInvariant();
+        }
+
+        private static string GetNestedMetadataValue(JsonElement element, string objectName, string key)
+        {
+            if (element.ValueKind != JsonValueKind.Object
+                || !element.TryGetProperty(objectName, out var nested)
+                || nested.ValueKind != JsonValueKind.Object)
+            {
+                return string.Empty;
+            }
+
+            return FirstNonEmpty(GetString(nested, key), GetNestedDisplayValue(nested, key));
         }
 
         private static string BuildExternalUrl(string baseUrl, string area, string externalId)

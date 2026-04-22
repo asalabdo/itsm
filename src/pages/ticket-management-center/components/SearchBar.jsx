@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../services/organizationUnits';
 
 const defaultFilters = {
   status: 'all',
@@ -20,6 +21,7 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [erpDepartments, setErpDepartments] = useState([]);
 
   const statusOptions = [
     { value: 'all', label: t('allStatus', 'All Status') },
@@ -38,14 +40,19 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
     { value: 'low', label: t('low', 'Low') }
   ];
 
-  const fallbackDepartmentOptions = [
-    { value: 'all', label: t('allDepartments', 'All Departments') },
-    { value: 'it', label: t('itSupport', 'IT Support') },
-    { value: 'hr', label: t('humanResources', 'Human Resources') },
-    { value: 'finance', label: t('finance', 'Finance') },
-    { value: 'operations', label: t('operations', 'Operations') },
-    { value: 'facilities', label: t('facilities', 'Facilities') }
-  ];
+  useEffect(() => {
+    let mounted = true;
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) setErpDepartments(Array.isArray(departments) ? departments : []);
+      })
+      .catch(() => {
+        if (mounted) setErpDepartments([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const dateRangeOptions = [
     { value: 'all', label: t('allTime', 'All Time') },
@@ -62,9 +69,12 @@ const SearchBar = ({ onSearch, onFilterChange, filters = defaultFilters, onQuick
   };
 
   const currentFilters = { ...defaultFilters, ...filters };
-  const resolvedDepartmentOptions = Array.isArray(departmentOptions) && departmentOptions.length > 0
-    ? [{ value: 'all', label: t('allDepartments', 'All Departments') }, ...departmentOptions]
-    : fallbackDepartmentOptions;
+  const resolvedDepartmentOptions = useMemo(() => {
+    if (Array.isArray(departmentOptions) && departmentOptions.length > 0) {
+      return [{ value: 'all', label: t('allDepartments', 'All Departments') }, ...departmentOptions];
+    }
+    return getErpDepartmentOptions(erpDepartments, t);
+  }, [departmentOptions, erpDepartments, t]);
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">

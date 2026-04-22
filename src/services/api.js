@@ -143,4 +143,5 @@ export const manageEngineAPI = {
   getOperations: (params = {}) => apiClient.get('/manageengine/operations', { params }),
   getUnified: (params = {}) => apiClient.get('/manageengine/unified', { params }),
   getSyncStatus: () => apiClient.get('/manageengine/sync-status'),
+  syncAsset: (assetId) => apiClient.post(`/manageengine/assets/${assetId}/sync`),
 };

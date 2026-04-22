@@ -78,7 +78,6 @@ const AssetFilterPanel = ({
     { id: 'due', label: t('maintenanceDueSoon', 'Due soon') },
     { id: 'overdue', label: t('maintenanceOverdue', 'Overdue') },
     { id: 'scheduled', label: t('maintenanceScheduled', 'Scheduled') },
-    { id: 'completed', label: t('maintenanceCompleted', 'Recently completed') },
   ];
 
   const handleFilterChange = (key, value) => {

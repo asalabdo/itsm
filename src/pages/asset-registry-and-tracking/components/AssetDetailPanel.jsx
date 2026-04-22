@@ -5,7 +5,7 @@ import Button from '../../../components/ui/Button';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
-const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus }) => {
+const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus, onSyncAsset, isSyncingAsset }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
@@ -182,6 +182,21 @@ const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus }) => {
                 <Icon name="ExternalLink" size={16} />
                 {t('openInSourceSystem', 'Open in source system')}
               </a>
+            )}
+
+            {!asset?.manageEngine?.externalUrl && (
+              <Button
+                variant="outline"
+                iconName="UploadCloud"
+                iconPosition="left"
+                fullWidth
+                onClick={() => onSyncAsset?.(asset)}
+                disabled={isSyncingAsset}
+              >
+                {isSyncingAsset
+                  ? t('creatingInManageEngine', 'Creating in ManageEngine...')
+                  : t('createInManageEngine', 'Create in ManageEngine')}
+              </Button>
             )}
 
             <div className="space-y-3">

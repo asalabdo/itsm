@@ -10,15 +10,18 @@ namespace ITSMBackend.Controllers
     {
         private readonly ManageEngineService _manageEngineService;
         private readonly TicketService _ticketService;
+        private readonly IAssetService _assetService;
         private readonly ILogger<ManageEngineController> _logger;
 
         public ManageEngineController(
             ManageEngineService manageEngineService,
             TicketService ticketService,
+            IAssetService assetService,
             ILogger<ManageEngineController> logger)
         {
             _manageEngineService = manageEngineService;
             _ticketService = ticketService;
+            _assetService = assetService;
             _logger = logger;
         }
 
@@ -262,6 +265,32 @@ namespace ITSMBackend.Controllers
             {
                 _logger.LogError(ex, "Error fetching ManageEngine sync status");
                 return StatusCode(500, new { error = "Failed to fetch sync status", details = ex.Message });
+            }
+        }
+
+        [HttpPost("assets/{assetId:int}/sync")]
+        public async Task<IActionResult> SyncAssetToServiceDesk(int assetId)
+        {
+            try
+            {
+                var asset = await _assetService.GetAssetByIdAsync(assetId);
+                if (asset == null)
+                {
+                    return NotFound(new { error = "Asset not found" });
+                }
+
+                var result = await _manageEngineService.SyncAssetToServiceDeskAsync(asset);
+                if (!result.Created && result.Item == null)
+                {
+                    return StatusCode(502, result);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error syncing asset {AssetId} to ManageEngine ServiceDesk", assetId);
+                return StatusCode(500, new { error = "Failed to sync asset to ManageEngine", details = ex.Message });
             }
         }
 

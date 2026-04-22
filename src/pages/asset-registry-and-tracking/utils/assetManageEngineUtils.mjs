@@ -2,6 +2,33 @@ const normalizeValue = (value) => String(value || '').trim().toLowerCase();
 
 const uniqueValues = (values) => Array.from(new Set(values.filter(Boolean))).sort((left, right) => left.localeCompare(right));
 
+export const normalizeAssetStatus = (status) => {
+  const normalized = normalizeValue(status);
+  if (!normalized) return 'active';
+  if (normalized.includes('maint')) return 'maintenance';
+  if (normalized.includes('retir') || normalized.includes('decommission')) return 'retired';
+  if (normalized.includes('lost')) return 'lost';
+  if (normalized.includes('inactive')) return 'inactive';
+  if (normalized.includes('available') || normalized.includes('active')) return 'active';
+  return normalized.replace(/\s+/g, '-');
+};
+
+const uniqueOptions = (values) => {
+  const byNormalizedValue = new Map();
+
+  values.forEach((value) => {
+    const label = String(value || '').trim();
+    const normalized = normalizeValue(label);
+    if (!normalized || byNormalizedValue.has(normalized)) {
+      return;
+    }
+
+    byNormalizedValue.set(normalized, { value: normalized, label });
+  });
+
+  return Array.from(byNormalizedValue.values()).sort((left, right) => left.label.localeCompare(right.label));
+};
+
 const getAssetIdentifiers = (asset) => uniqueValues([
   normalizeValue(asset?.assetTag),
   normalizeValue(asset?.assetId),
@@ -10,6 +37,8 @@ const getAssetIdentifiers = (asset) => uniqueValues([
 ]);
 
 const getExternalIdentifiers = (item) => uniqueValues([
+  // These are explicit asset identity fields from normalized ManageEngine payloads,
+  // not broad text fields such as name, description, manufacturer, or model.
   normalizeValue(item?.assetTag),
   normalizeValue(item?.assetId),
   normalizeValue(item?.serialNumber),
@@ -63,23 +92,60 @@ export const enrichAssetsWithManageEngine = (assetItems = [], monitoredItems = [
   })
 );
 
+export const mergeManageEngineItemIntoAsset = (asset, item) => {
+  if (!item) return asset;
+
+  const itemType = normalizeValue(item.itemType);
+  const current = asset.manageEngine || {};
+  const services = current.services || [];
+  const alerts = current.alerts || [];
+  const requests = current.requests || [];
+  const hasExistingItem = (items = []) => items.some((existing) => (
+    existing?.source === item.source && existing?.externalId === item.externalId
+  ));
+  const isService = itemType === 'service';
+  const isAlert = itemType === 'alert';
+  const isRequest = itemType === 'request';
+  const shouldAddService = isService && !hasExistingItem(services);
+  const shouldAddAlert = isAlert && !hasExistingItem(alerts);
+  const shouldAddRequest = isRequest && !hasExistingItem(requests);
+  const nextAlerts = shouldAddAlert ? [...alerts, item] : alerts;
+  const nextRequests = shouldAddRequest ? [...requests, item] : requests;
+
+  return {
+    ...asset,
+    manageEngine: {
+      ...current,
+      isMonitored: current.isMonitored || isService,
+      alertCount: nextAlerts.length,
+      requestCount: nextRequests.length,
+      services: shouldAddService ? [...services, item] : services,
+      alerts: nextAlerts,
+      requests: nextRequests,
+      externalUrl: current.externalUrl || item.externalUrl || null,
+      sourceStatus: current.sourceStatus || item.status || null,
+      sourceOwner: current.sourceOwner || item.owner || null,
+    },
+  };
+};
+
 export const buildAssetFilterOptions = (assets = []) => {
-  const categories = uniqueValues(assets.map((asset) => String(asset?.category || '').trim()));
-  const locations = uniqueValues(assets.map((asset) => String(asset?.location || '').trim()));
-  const ownershipTypes = uniqueValues(assets.map((asset) => String(asset?.ownershipType || '').trim()));
+  const categories = uniqueOptions(assets.map((asset) => asset?.category));
+  const locations = uniqueOptions(assets.map((asset) => asset?.location));
+  const ownershipTypes = uniqueOptions(assets.map((asset) => asset?.ownershipType));
 
   return {
     categoryOptions: [
       { value: '', label: 'All Categories' },
-      ...categories.map((category) => ({ value: category, label: category })),
+      ...categories,
     ],
     locationOptions: [
       { value: '', label: 'All Locations' },
-      ...locations.map((location) => ({ value: location, label: location })),
+      ...locations,
     ],
     ownershipOptions: [
       { value: '', label: 'All Ownership' },
-      ...ownershipTypes.map((ownershipType) => ({ value: ownershipType, label: ownershipType })),
+      ...ownershipTypes,
     ],
   };
 };
@@ -98,19 +164,19 @@ export const filterAssets = (assets = [], filters = {}) => {
   }
 
   if (filters?.category) {
-    filtered = filtered.filter((asset) => asset?.category === filters.category);
+    filtered = filtered.filter((asset) => normalizeValue(asset?.category) === normalizeValue(filters.category));
   }
 
   if (filters?.location) {
-    filtered = filtered.filter((asset) => asset?.location === filters.location);
+    filtered = filtered.filter((asset) => normalizeValue(asset?.location) === normalizeValue(filters.location));
   }
 
   if (filters?.ownershipType) {
-    filtered = filtered.filter((asset) => asset?.ownershipType === filters.ownershipType);
+    filtered = filtered.filter((asset) => normalizeValue(asset?.ownershipType) === normalizeValue(filters.ownershipType));
   }
 
   if (Array.isArray(filters?.status) && filters.status.length > 0) {
-    filtered = filtered.filter((asset) => filters.status.includes(asset?.status));
+    filtered = filtered.filter((asset) => filters.status.includes(normalizeAssetStatus(asset?.status)));
   }
 
   if (filters?.valueRange?.min) {

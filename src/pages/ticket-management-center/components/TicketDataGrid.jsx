@@ -190,7 +190,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                       <div className="min-w-0">
                         <span className="block text-sm font-medium truncate max-w-[140px]">{ticket?.assignee}</span>
                         <span className="block text-xs text-muted-foreground truncate max-w-[140px]">
-                          {ticket?.assigneeDepartment || ticket?.department || t('unassigned', 'Unassigned')}
+                          {t(ticket?.assigneeDepartment || ticket?.department, ticket?.assigneeDepartment || ticket?.department) || t('unassigned', 'Unassigned')}
                         </span>
                       </div>
                     </div>
@@ -200,12 +200,12 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(ticket?.status)}`}>
-                    {ticket?.statusLabel}
+                    {t(ticket?.statusLabel || ticket?.status, ticket?.statusLabel || ticket?.status)}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(ticket?.priority)}`}>
-                    {ticket?.priorityLabel}
+                    {t(ticket?.priorityLabel || ticket?.priority, ticket?.priorityLabel || ticket?.priority)}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -217,7 +217,7 @@ const TicketDataGrid = ({ tickets, selectedTickets, onSelectTicket, onSelectAll,
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-sm text-muted-foreground">{ticket?.lastActivity}</span>
+                  <span className="text-sm text-muted-foreground">{t(ticket?.lastActivity, ticket?.lastActivity)}</span>
                 </td>
               </tr>
             ))}

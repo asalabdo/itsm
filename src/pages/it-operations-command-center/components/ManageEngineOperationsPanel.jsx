@@ -3,8 +3,12 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { manageEngineAPI } from '../../../services/api';
 import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ManageEngineOperationsPanel = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [connection, setConnection] = useState({
     serviceDeskConnected: false,
@@ -45,6 +49,18 @@ const ManageEngineOperationsPanel = () => {
 
   const serviceDeskCount = operations.filter((item) => item.source === 'ServiceDesk').length;
   const opManagerCount = operations.filter((item) => item.source === 'OpManager').length;
+  const connectionLabel = (value) => (value ? t('connected', 'Connected') : t('offline', 'Offline'));
+  const sourceLabel = (value) => {
+    const normalized = String(value || '').toLowerCase();
+    if (normalized === 'servicedesk') return t('serviceDesk', 'ServiceDesk');
+    if (normalized === 'opmanager') return t('opManager', 'OpManager');
+    return value || '';
+  };
+  const itemStatusLabel = (value) => {
+    const normalized = String(value || '').toLowerCase();
+    if (normalized === 'active') return t('active', 'Active');
+    return value || t('active', 'Active');
+  };
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow h-full">
@@ -52,33 +68,33 @@ const ManageEngineOperationsPanel = () => {
         <div>
           <div className="flex items-center gap-2 text-primary mb-2">
             <Icon name="ServerCog" size={18} />
-            <h3 className="text-lg font-semibold text-foreground">ManageEngine Live Operations</h3>
+            <h3 className="text-lg font-semibold text-foreground">{t('manageEngineLiveOperations', 'ManageEngine Live Operations')}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            ServiceDesk requests and OpManager alerts in one live operational feed.
+            {t('manageEngineLiveOperationsDesc', 'ServiceDesk requests and OpManager alerts in one live operational feed.')}
           </p>
         </div>
         <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          Refresh
+          {t('refresh', 'Refresh')}
         </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-5">
         <div className="rounded-lg border border-border bg-muted/30 p-4">
-          <div className="text-xs text-muted-foreground mb-1">ServiceDesk</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('serviceDesk', 'ServiceDesk')}</div>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-semibold text-foreground">{serviceDeskCount}</span>
             <span className={`text-xs font-medium ${connection.serviceDeskConnected ? 'text-success' : 'text-error'}`}>
-              {connection.serviceDeskConnected ? 'Connected' : 'Offline'}
+              {connectionLabel(connection.serviceDeskConnected)}
             </span>
           </div>
         </div>
         <div className="rounded-lg border border-border bg-muted/30 p-4">
-          <div className="text-xs text-muted-foreground mb-1">OpManager</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('opManager', 'OpManager')}</div>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-semibold text-foreground">{opManagerCount}</span>
             <span className={`text-xs font-medium ${connection.opManagerConnected ? 'text-success' : 'text-error'}`}>
-              {connection.opManagerConnected ? 'Connected' : 'Offline'}
+              {connectionLabel(connection.opManagerConnected)}
             </span>
           </div>
         </div>
@@ -87,11 +103,11 @@ const ManageEngineOperationsPanel = () => {
       <div className="space-y-3">
         {loading ? (
           <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
-            Loading ManageEngine operations...
+            {t('loadingManageEngineOperations', 'Loading ManageEngine operations...')}
           </div>
         ) : operations.length === 0 ? (
           <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
-            No external operational events are available right now.
+            {t('noOperationalEvents', 'No external operational events are available right now.')}
           </div>
         ) : (
           operations.map((item) => (
@@ -99,16 +115,16 @@ const ManageEngineOperationsPanel = () => {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {item.source} {item.itemType}
+                    {sourceLabel(item.source)} {t('event', item.itemType)}
                   </div>
                   <div className="font-medium text-foreground mt-1">{item.name}</div>
                 </div>
                 <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                  {item.status || 'Active'}
+                  {itemStatusLabel(item.status)}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                {item.description || 'No description available.'}
+                {item.description || t('noAlertDescription', 'No description available.')}
               </p>
             </div>
           ))

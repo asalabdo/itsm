@@ -6,7 +6,7 @@ import { serviceRequestsAPI } from '../../../services/api';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
-const ActiveRequestsDashboard = ({ expanded = false }) => {
+const ActiveRequestsDashboard = ({ expanded = false, departmentFilter = 'all', serviceFilter = 'all' }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
@@ -69,9 +69,14 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
     { value: 'rejected', label: t('rejected', 'Rejected'), count: requests?.filter(r => r?.status === 'rejected')?.length }
   ];
 
-  const filteredRequests = requests?.filter(request => 
-    selectedStatus === 'all' || request?.status === selectedStatus
-  );
+  const filteredRequests = requests?.filter((request) => {
+    const matchesStatus = selectedStatus === 'all' || request?.status === selectedStatus;
+    const matchesDepartment = departmentFilter === 'all'
+      || String(request?.department || '').toLowerCase() === String(departmentFilter || '').toLowerCase();
+    const matchesService = serviceFilter === 'all'
+      || String(request?.service || '').toLowerCase() === String(serviceFilter || '').toLowerCase();
+    return matchesStatus && matchesDepartment && matchesService;
+  });
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -153,6 +158,20 @@ const ActiveRequestsDashboard = ({ expanded = false }) => {
           <p className="text-sm text-muted-foreground mt-1">
             {filteredRequests?.length} {t('requestsWithTracking', 'requests with real-time tracking')}
           </p>
+          {(departmentFilter !== 'all' || serviceFilter !== 'all') && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {departmentFilter !== 'all' && (
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  {t('department', 'Department')}: {departmentFilter}
+                </span>
+              )}
+              {serviceFilter !== 'all' && (
+                <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                  {t('service', 'Service')}: {serviceFilter}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <Button variant="outline" size="sm">
           <Icon name="Filter" size={16} />

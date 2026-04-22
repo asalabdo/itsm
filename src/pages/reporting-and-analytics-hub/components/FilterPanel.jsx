@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import Input from '../../../components/ui/Input';
 import { Checkbox } from '../../../components/ui/Checkbox';
+import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../services/organizationUnits';
 
 const getTodayDate = () => new Date();
 
@@ -26,6 +27,7 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
   const [selectedMetrics, setSelectedMetrics] = useState(['tickets', 'assets', 'workflows']);
   const [dataGranularity, setDataGranularity] = useState('daily');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [erpDepartments, setErpDepartments] = useState([]);
 
   const dateRangeOptions = [
     { value: 'today', label: 'Today' },
@@ -40,15 +42,21 @@ const FilterPanel = ({ onApplyFilters, onResetFilters }) => {
     { value: 'custom', label: 'Custom Range' }
   ];
 
-  const departmentOptions = [
-    { value: 'all', label: 'All Departments' },
-    { value: 'it', label: 'IT Department' },
-    { value: 'hr', label: 'Human Resources' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'operations', label: 'Operations' },
-    { value: 'sales', label: 'Sales' },
-    { value: 'marketing', label: 'Marketing' }
-  ];
+  useEffect(() => {
+    let mounted = true;
+    loadErpDepartmentDirectory()
+      .then((departments) => {
+        if (mounted) setErpDepartments(Array.isArray(departments) ? departments : []);
+      })
+      .catch(() => {
+        if (mounted) setErpDepartments([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments), [erpDepartments]);
 
   const granularityOptions = [
     { value: 'hourly', label: 'Hourly' },

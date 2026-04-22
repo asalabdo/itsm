@@ -3,6 +3,8 @@ import {
   buildAssetFilterOptions,
   enrichAssetsWithManageEngine,
   filterAssets,
+  mergeManageEngineItemIntoAsset,
+  normalizeAssetStatus,
 } from './assetManageEngineUtils.mjs';
 
 const tests = [
@@ -48,18 +50,18 @@ const tests = [
     const assets = [
       { category: 'Hardware', location: 'HQ - Floor 2', ownershipType: 'assigned' },
       { category: 'Software', location: 'Remote', ownershipType: 'unassigned' },
-      { category: 'Hardware', location: 'HQ - Floor 2', ownershipType: 'assigned' },
+      { category: ' hardware ', location: ' hq - floor 2 ', ownershipType: 'Assigned' },
     ];
 
     const { categoryOptions, locationOptions, ownershipOptions } = buildAssetFilterOptions(assets);
 
     assert.deepEqual(
       categoryOptions.map((option) => option.value),
-      ['', 'Hardware', 'Software']
+      ['', 'hardware', 'software']
     );
     assert.deepEqual(
       locationOptions.map((option) => option.value),
-      ['', 'HQ - Floor 2', 'Remote']
+      ['', 'hq - floor 2', 'remote']
     );
     assert.deepEqual(
       ownershipOptions.map((option) => option.value),
@@ -70,10 +72,10 @@ const tests = [
     const assets = [
       {
         id: 1,
-        category: 'Hardware',
-        location: 'HQ - Floor 2',
+        category: ' Hardware ',
+        location: 'HQ - Floor 2 ',
         status: 'active',
-        ownershipType: 'assigned',
+        ownershipType: 'Assigned',
         value: '$100.00',
         manageEngine: { isMonitored: true, alertCount: 1, requestCount: 0 },
       },
@@ -110,6 +112,49 @@ const tests = [
       filterAssets(assets, { ownershipType: 'unassigned' }).map((asset) => asset.id),
       [2]
     );
+  },
+  () => {
+    assert.equal(normalizeAssetStatus('In Maintenance'), 'maintenance');
+    assert.equal(normalizeAssetStatus('Available'), 'active');
+    assert.equal(normalizeAssetStatus('Decommissioned'), 'retired');
+
+    const assets = [
+      { id: 1, status: 'In Maintenance' },
+      { id: 2, status: 'Active' },
+    ];
+
+    assert.deepEqual(
+      filterAssets(assets, { status: ['maintenance'] }).map((asset) => asset.id),
+      [1]
+    );
+  },
+  () => {
+    const asset = {
+      id: 1,
+      manageEngine: {
+        isMonitored: false,
+        alertCount: 0,
+        requestCount: 0,
+        services: [],
+        alerts: [],
+        requests: [],
+      },
+    };
+
+    const service = { source: 'OpManager', itemType: 'service', externalId: 'device-1' };
+    const catalog = { source: 'ServiceDesk', itemType: 'catalog', externalId: 'template-1' };
+    const request = { source: 'ServiceDesk', itemType: 'request', externalId: 'request-1' };
+
+    const withService = mergeManageEngineItemIntoAsset(asset, service);
+    const withCatalog = mergeManageEngineItemIntoAsset(withService, catalog);
+    const withRequest = mergeManageEngineItemIntoAsset(withCatalog, request);
+    const duplicateRequest = mergeManageEngineItemIntoAsset(withRequest, request);
+
+    assert.equal(withService.manageEngine.isMonitored, true);
+    assert.equal(withService.manageEngine.alertCount, 0);
+    assert.equal(withCatalog.manageEngine.requestCount, 0);
+    assert.equal(withRequest.manageEngine.requestCount, 1);
+    assert.equal(duplicateRequest.manageEngine.requestCount, 1);
   },
 ];
 

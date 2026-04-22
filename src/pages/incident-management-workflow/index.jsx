@@ -204,7 +204,7 @@ const IncidentManagementWorkflow = () => {
     <>
       <Helmet>
         <title>{t('incidentManagementWorkflow', 'Incident Management Workflow')} - ITSM Hub</title>
-        <meta name="description" content="Comprehensive incident lifecycle management interface enabling service desk teams to create, track, and resolve incidents through structured step-by-step workflows." />
+        <meta name="description" content={t('incidentManagementWorkflowDesc', 'Comprehensive incident lifecycle management interface enabling service desk teams to create, track, and resolve incidents through structured step-by-step workflows.')} />
         <meta name="keywords" content="incident management, workflow, ticket tracking, SLA monitoring, root cause analysis" />
       </Helmet>
       <div className="min-h-screen bg-background">
@@ -267,7 +267,9 @@ const IncidentManagementWorkflow = () => {
               service={selectedIncident?.ticketNumber || t('incidentLifecycle', 'Incident lifecycle')}
               organization={selectedIncident?.assignmentGroup || selectedIncident?.department || t('operations', 'Operations')}
               mode={currentView === 'integration' ? t('integrationView', 'Integration view') : currentView === 'create' ? t('createView', 'Create view') : t('operationalView', 'Operational view')}
-              lastAction={selectedIncident ? `${selectedIncident?.status || 'Open'} • ${selectedIncident?.title || 'Selected incident'}` : `${filteredIncidents.length} incidents currently visible`}
+              lastAction={selectedIncident
+                ? `${selectedIncident?.status || t('open', 'Open')} • ${selectedIncident?.title || t('selectedIncident', 'Selected incident')}`
+                : t('incidentsVisible', '{count} incidents currently visible').replace('{count}', String(filteredIncidents.length))}
               activeStep={activeWorkflowStep}
               steps={workflowSteps}
               onShowAll={() => setCurrentView('dashboard')}
@@ -385,7 +387,7 @@ const IncidentManagementWorkflow = () => {
                             <div className="flex-1">
                               <div className="flex items-center space-x-3 mb-3">
                                 <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityColor(incident?.priority)}`}>
-                                  {incident?.priority} Priority
+                                  {incident?.priority} {t('priorityLabel', 'Priority')}
                                 </span>
                                 <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(incident?.status)}`}>
                                   {incident?.status}

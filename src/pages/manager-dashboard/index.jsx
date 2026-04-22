@@ -9,7 +9,8 @@ import WorkloadBalancer from './components/WorkloadBalancer';
 import PerformanceChart from './components/PerformanceChart';
 import QuickActions from './components/QuickActions';
 import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
-import { dashboardAPI, usersAPI, ticketsAPI } from '../../services/api';
+import DepartmentServiceOwnershipPanel from '../service-request-management/components/DepartmentServiceOwnershipPanel';
+import { dashboardAPI, usersAPI, ticketsAPI, serviceRequestsAPI } from '../../services/api';
 import { downloadCsv } from '../../services/exportUtils';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -23,6 +24,7 @@ const ManagerDashboard = () => {
   const [teamData, setTeamData] = useState([]);
   const [, setSlaAlerts] = useState([]);
   const [allTickets, setAllTickets] = useState([]);
+  const [serviceRequests, setServiceRequests] = useState([]);
   const [, setChartData] = useState([]);
   const [, setPendingTickets] = useState([]);
 
@@ -58,10 +60,11 @@ const ManagerDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [summaryRes, usersRes, ticketsRes] = await Promise.all([
+        const [summaryRes, usersRes, ticketsRes, serviceRequestsRes] = await Promise.all([
           dashboardAPI.getSummary(),
           usersAPI.getAll(),
-          ticketsAPI.getAll()
+          ticketsAPI.getAll(),
+          serviceRequestsAPI.getAll().catch(() => ({ data: [] })),
         ]);
 
         const s = summaryRes?.data;
@@ -81,7 +84,9 @@ const ManagerDashboard = () => {
 
         const users = usersRes?.data || [];
         const tickets = ticketsRes?.data || [];
+        const requests = Array.isArray(serviceRequestsRes?.data) ? serviceRequestsRes.data : [];
         setAllTickets(tickets);
+        setServiceRequests(requests);
         setPendingTickets(tickets.filter(t => !t.assignedToId && !['Resolved', 'Closed'].includes(String(t.status || ''))));
         
         const mappedTeam = users.map((u) => ({
@@ -141,6 +146,13 @@ const ManagerDashboard = () => {
       }
     };
     fetchData();
+
+    const handleRefresh = () => {
+      fetchData();
+    };
+
+    window.addEventListener('itsm:refresh', handleRefresh);
+    return () => window.removeEventListener('itsm:refresh', handleRefresh);
   }, [t, locale, formatTimeRemaining, translateCategory]);
 
   const rangeToDays = (range) => {
@@ -302,6 +314,10 @@ const ManagerDashboard = () => {
             title={t('manageEngineManagerContext', 'ManageEngine Manager Context')}
             description={t('manageEngineManagerContextDesc', 'External ServiceDesk demand and OpManager monitoring pressure alongside team workload.')}
           />
+        </div>
+
+        <div className="mb-6 md:mb-8">
+          <DepartmentServiceOwnershipPanel serviceRequests={serviceRequests} />
         </div>
 
         <div className="mb-6 md:mb-8">

@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { manageEngineAPI } from '../../../services/api';
 import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
+import { useLanguage } from '../../../context/LanguageContext';
+import { getTranslation } from '../../../services/i18n';
 
 const ManageEngineReportingSnapshot = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
     catalog: 0,
@@ -34,46 +38,54 @@ const ManageEngineReportingSnapshot = () => {
     void loadData();
   }, []);
 
+  const syncStatusLabel = (value) => {
+    const normalized = String(value || '').toLowerCase();
+    if (normalized === 'idle') return t('idle', 'idle');
+    if (normalized === 'synced') return t('synced', 'Synced');
+    if (normalized === 'failed') return t('failed', 'Failed');
+    return value || t('idle', 'idle');
+  };
+
   return (
     <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <div className="flex items-center gap-2 text-primary mb-1">
             <Icon name="ServerCog" size={18} />
-            <h3 className="font-semibold text-foreground">ManageEngine Reporting Snapshot</h3>
+            <h3 className="font-semibold text-foreground">{t('manageEngineReportingSnapshot', 'ManageEngine Reporting Snapshot')}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            External service demand and monitoring data ready for reporting.
+            {t('manageEngineReportingSnapshotDesc', 'External service demand and monitoring data ready for reporting.')}
           </p>
         </div>
         <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-          {syncStatus?.status || 'idle'}
+          {syncStatusLabel(syncStatus?.status)}
         </span>
       </div>
 
       {loading ? (
         <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
-          Loading ManageEngine reporting metrics...
+          {t('loadingManageEngineReportingMetrics', 'Loading ManageEngine reporting metrics...')}
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">External catalog</div>
+              <div className="text-xs text-muted-foreground mb-1">{t('externalCatalog', 'External catalog')}</div>
               <div className="text-2xl font-semibold text-foreground">{summary.catalog}</div>
               <div className="text-xs text-muted-foreground mt-2">
                 {summary.serviceDeskCatalog} ServiceDesk + {summary.opManagerCatalog} OpManager
               </div>
             </div>
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">Operational feed</div>
+              <div className="text-xs text-muted-foreground mb-1">{t('operationalFeed', 'Operational feed')}</div>
               <div className="text-2xl font-semibold text-foreground">{summary.operations}</div>
               <div className="text-xs text-muted-foreground mt-2">
                 {summary.serviceDeskRequests} requests + {summary.opManagerAlerts} alerts
               </div>
             </div>
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">Imported tickets</div>
+              <div className="text-xs text-muted-foreground mb-1">{t('importedTickets', 'Imported tickets')}</div>
               <div className="text-2xl font-semibold text-foreground">
                 {(syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0)}
               </div>
@@ -82,12 +94,12 @@ const ManageEngineReportingSnapshot = () => {
               </div>
             </div>
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">Last sync</div>
+              <div className="text-xs text-muted-foreground mb-1">{t('lastSync', 'Last sync')}</div>
               <div className="text-sm font-semibold text-foreground">
-                {syncStatus?.lastSyncAt ? new Date(syncStatus.lastSyncAt).toLocaleString() : 'Not run yet'}
+                {syncStatus?.lastSyncAt ? new Date(syncStatus.lastSyncAt).toLocaleString() : t('notRunYet', 'Not run yet')}
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                {syncStatus?.message || 'Ready for downstream reporting and export.'}
+                {syncStatus?.message || t('readyForDownstreamReporting', 'Ready for downstream reporting and export.')}
               </div>
             </div>
           </div>
@@ -95,11 +107,13 @@ const ManageEngineReportingSnapshot = () => {
           <div className="rounded-lg border border-border bg-background p-4">
             <div className="flex items-center gap-2 mb-2">
               <Icon name="LineChart" size={16} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">Reporting hint</span>
+              <span className="text-sm font-medium text-foreground">{t('reportingHint', 'Reporting hint')}</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Use this snapshot to explain how much of the current operational load is coming from external
-              service requests versus monitoring events before exporting reports to stakeholders.
+              {t(
+                'reportingHintDescription',
+                'Use this snapshot to explain how much of the current operational load is coming from external service requests versus monitoring events before exporting reports to stakeholders.'
+              )}
             </p>
           </div>
         </>

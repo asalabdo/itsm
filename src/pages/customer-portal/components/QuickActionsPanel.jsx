@@ -145,7 +145,7 @@ const QuickActionsPanel = ({ tickets = [] }) => {
         </div>
       </div>
 
-      <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
+      <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8" hidden>
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h3 className="text-lg md:text-xl font-semibold text-foreground">
             {t('notificationPreferences', 'Notification Preferences')}

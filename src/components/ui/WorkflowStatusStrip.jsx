@@ -64,7 +64,7 @@ const WorkflowStatusStrip = ({
               <p className="text-sm font-semibold text-foreground">{service}</p>
             </div>
             <div className="px-3 py-2 rounded-xl bg-background border border-border">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t('unassignedOrganization', 'Organization')}</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t('organizationUnassigned', 'Organization')}</p>
               <p className="text-sm font-semibold text-foreground">{organization}</p>
             </div>
             <div className="px-3 py-2 rounded-xl bg-background border border-border">

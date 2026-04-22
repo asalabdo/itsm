@@ -8,7 +8,7 @@ import { formatLocalizedValue } from '../../../services/displayValue';
 const TopIssuesTable = ({ tickets = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const [sortBy, setSortBy] = useState('frequency');
   const [sortOrder, setSortOrder] = useState('desc');
 

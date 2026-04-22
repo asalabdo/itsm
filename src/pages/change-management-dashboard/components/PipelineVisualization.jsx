@@ -7,7 +7,7 @@ import { getTranslation } from '../../../services/i18n';
 const PipelineVisualization = ({ changes = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [viewMode, setViewMode] = useState('current');
 

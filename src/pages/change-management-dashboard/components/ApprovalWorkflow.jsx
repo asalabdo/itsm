@@ -7,7 +7,7 @@ import { getTranslation } from '../../../services/i18n';
 const ApprovalWorkflow = ({ changes = [] }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [timeRange, setTimeRange] = useState('7d');
 

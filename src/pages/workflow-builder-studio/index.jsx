@@ -15,6 +15,7 @@ import { getTranslation } from '../../services/i18n';
 const WorkflowBuilderStudio = () => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   
   const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
   const [isPropertiesCollapsed, setIsPropertiesCollapsed] = useState(false);
@@ -167,7 +168,14 @@ const WorkflowBuilderStudio = () => {
     }
   };
 
-  const workflowSteps = [
+  const workflowSteps = isArabic ? [
+    'الاستقبال',
+    'مطابقة الخدمة والمنظمة',
+    'مراجعة المدير',
+    'توزيع ERP',
+    'إرسال الطرف الثالث',
+    'الإغلاق'
+  ] : [
     t('intake', 'Intake'),
     t('serviceOrgMatch', 'Service + org match'),
     t('managerReview', 'Manager review'),
@@ -188,8 +196,8 @@ const WorkflowBuilderStudio = () => {
         <div className="px-4 py-3 md:px-6 lg:px-8">
           <ManageEngineOnPremSnapshot
             compact
-            title={t('manageEngineWorkflowBuilderSignals', 'ManageEngine Workflow Builder Signals')}
-            description={t('manageEngineWorkflowBuilderSignalsDesc', 'Use ServiceDesk and OpManager integration signals while designing automation paths.')}
+            title={isArabic ? 'إشارات منشئ سير العمل في ManageEngine' : t('manageEngineWorkflowBuilderSignals', 'ManageEngine Workflow Builder Signals')}
+            description={isArabic ? 'استخدم إشارات تكامل ServiceDesk وOpManager أثناء تصميم مسارات الأتمتة.' : t('manageEngineWorkflowBuilderSignalsDesc', 'Use ServiceDesk and OpManager integration signals while designing automation paths.')}
           />
         </div>
 
@@ -208,12 +216,12 @@ const WorkflowBuilderStudio = () => {
 
         <div className="px-4 md:px-6 pt-4">
           <WorkflowStatusStrip
-            title={t('workflowBuilderStudio', 'Workflow Builder')}
-            subtitle={t('workflowBuilderDescription', 'Design the route that matches service, organization, manager review, and ERP dispatch.')}
+            title={isArabic ? 'منشئ سير العمل' : t('workflowBuilderStudio', 'Workflow Builder')}
+            subtitle={isArabic ? 'صمم مساراً ينسجم مع الخدمة والمنظمة ومراجعة المدير وتوزيع ERP.' : t('workflowBuilderDescription', 'Design the route that matches service, organization, manager review, and ERP dispatch.')}
             service={workflowName}
-            organization={t('organizationAwareRouting', 'Organization-aware routing')}
-            mode={t('builderMode', 'Builder mode')}
-            lastAction={isSaving ? t('savingWorkflow', 'Saving workflow changes') : t('canvasContains', `Canvas contains ${nodes.length} node(s) and ${connections.length} connection(s)`)}
+            organization={isArabic ? 'منظمة غير معينة' : t('organizationAwareRouting', 'Organization-aware routing')}
+            mode={isArabic ? 'وضع المنشئ' : t('builderMode', 'Builder mode')}
+            lastAction={isSaving ? (isArabic ? 'جارٍ حفظ تغييرات سير العمل' : t('savingWorkflow', 'Saving workflow changes')) : (isArabic ? `تحتوي اللوحة على ${nodes.length} عقدة و${connections.length} اتصال` : t('canvasContains', `Canvas contains ${nodes.length} node(s) and ${connections.length} connection(s)`))}
             activeStep={activeWorkflowStep}
             steps={workflowSteps}
           />

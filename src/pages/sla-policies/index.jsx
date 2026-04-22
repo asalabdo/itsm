@@ -378,8 +378,8 @@ const SlaPoliciesPage = () => {
 
         <ManageEngineOnPremSnapshot
           compact
-          title={isArabic ? 'Ø³ÙŠØ§Ù‚ ManageEngine Ù„Ù…Ø³ØªÙˆÙ‰ Ø§Ù„Ø®Ø¯Ù…Ø©' : t('manageEngineSlaPolicyContext', 'ManageEngine SLA Policy Context')}
-          description={isArabic ? 'Ø·Ù„Ø¨Ø§Øª ServiceDesk ÙˆØªÙ†Ø¨ÙŠÙ‡Ø§Øª OpManager Ø§Ù„ØªÙŠ Ù‚Ø¯ ØªØ¤Ø«Ø± Ø¹Ù„Ù‰ Ø£Ù‡Ø¯Ø§Ù Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø© ÙˆØ§Ù„Ø­Ù„.' : t('manageEngineSlaPolicyContextDesc', 'On-prem ServiceDesk requests and OpManager alerts that can affect response and resolution targets.')}
+          title={t('manageEngineSlaPolicyContext', 'ManageEngine SLA Policy Context')}
+          description={t('manageEngineSlaPolicyContextDesc', 'On-prem ServiceDesk requests and OpManager alerts that can affect response and resolution targets.')}
         />
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">

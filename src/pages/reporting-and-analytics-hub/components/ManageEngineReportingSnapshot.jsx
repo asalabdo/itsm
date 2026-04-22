@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
 import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -18,6 +19,11 @@ const ManageEngineReportingSnapshot = () => {
     opManagerAlerts: 0,
   });
   const [syncStatus, setSyncStatus] = useState(null);
+  const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: summary.catalog },
+    { value: summary.operations },
+    { value: (syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0) },
+  ]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -58,9 +64,12 @@ const ManageEngineReportingSnapshot = () => {
             {t('manageEngineReportingSnapshotDesc', 'External service demand and monitoring data ready for reporting.')}
           </p>
         </div>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-          {syncStatusLabel(syncStatus?.status)}
-        </span>
+        <div className="flex items-center gap-2">
+          {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} /> : null}
+          <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+            {syncStatusLabel(syncStatus?.status)}
+          </span>
+        </div>
       </div>
 
       {loading ? (
@@ -70,29 +79,24 @@ const ManageEngineReportingSnapshot = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
-            <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">{t('externalCatalog', 'External catalog')}</div>
-              <div className="text-2xl font-semibold text-foreground">{summary.catalog}</div>
-              <div className="text-xs text-muted-foreground mt-2">
-                {summary.serviceDeskCatalog} ServiceDesk + {summary.opManagerCatalog} OpManager
-              </div>
-            </div>
-            <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">{t('operationalFeed', 'Operational feed')}</div>
-              <div className="text-2xl font-semibold text-foreground">{summary.operations}</div>
-              <div className="text-xs text-muted-foreground mt-2">
-                {summary.serviceDeskRequests} requests + {summary.opManagerAlerts} alerts
-              </div>
-            </div>
-            <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">{t('importedTickets', 'Imported tickets')}</div>
-              <div className="text-2xl font-semibold text-foreground">
-                {(syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0)}
-              </div>
-              <div className="text-xs text-muted-foreground mt-2">
-                {syncStatus?.createdCount || 0} created / {syncStatus?.updatedCount || 0} updated
-              </div>
-            </div>
+            <ManageEngineMetricCard
+              label={t('externalCatalog', 'External catalog')}
+              value={summary.catalog}
+              icon={<Icon name="Layers3" size={18} className="text-primary" />}
+              helper={`${summary.serviceDeskCatalog} ServiceDesk + ${summary.opManagerCatalog} OpManager`}
+            />
+            <ManageEngineMetricCard
+              label={t('operationalFeed', 'Operational feed')}
+              value={summary.operations}
+              icon={<Icon name="Activity" size={18} className="text-primary" />}
+              helper={`${summary.serviceDeskRequests} requests + ${summary.opManagerAlerts} alerts`}
+            />
+            <ManageEngineMetricCard
+              label={t('importedTickets', 'Imported tickets')}
+              value={(syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0)}
+              icon={<Icon name="ArrowUpDown" size={18} className="text-primary" />}
+              helper={`${syncStatus?.createdCount || 0} created / ${syncStatus?.updatedCount || 0} updated`}
+            />
             <div className="rounded-lg border border-border bg-muted/20 p-4">
               <div className="text-xs text-muted-foreground mb-1">{t('lastSync', 'Last sync')}</div>
               <div className="text-sm font-semibold text-foreground">

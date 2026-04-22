@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
 import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -36,6 +37,10 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
 
   const externalPressure = summary.operations;
   const pressureDelta = externalPressure - openInternal;
+  const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: summary.serviceDeskRequests },
+    { value: summary.opManagerAlerts },
+  ]);
   const comparisonLabel = pressureDelta > 0
     ? t('externalPressureHigher', 'External pressure is higher than the current open internal backlog.')
     : pressureDelta < 0
@@ -54,9 +59,11 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
             {t('manageEngineComparativeInsightsDesc', 'Compare internal backlog against live external demand from ServiceDesk and OpManager.')}
           </p>
         </div>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-          {t('liveComparison', 'Live comparison')}
-        </span>
+        {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} /> : (
+          <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+            {t('liveComparison', 'Live comparison')}
+          </span>
+        )}
       </div>
 
       {loading ? (
@@ -66,18 +73,22 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">{t('openInternalTickets', 'Open internal tickets')}</div>
-              <div className="text-2xl font-semibold text-foreground">{openInternal}</div>
-            </div>
-            <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">{t('serviceDeskRequests', 'ServiceDesk requests')}</div>
-              <div className="text-2xl font-semibold text-foreground">{summary.serviceDeskRequests}</div>
-            </div>
-            <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground mb-1">{t('opManagerAlerts', 'OpManager alerts')}</div>
-              <div className="text-2xl font-semibold text-foreground">{summary.opManagerAlerts}</div>
-            </div>
+            <ManageEngineMetricCard
+              label={t('openInternalTickets', 'Open internal tickets')}
+              value={openInternal}
+              icon={<Icon name="Ticket" size={16} className="text-primary" />}
+              hideWhenZero={false}
+            />
+            <ManageEngineMetricCard
+              label={t('serviceDeskRequests', 'ServiceDesk requests')}
+              value={summary.serviceDeskRequests}
+              icon={<Icon name="ClipboardList" size={16} className="text-primary" />}
+            />
+            <ManageEngineMetricCard
+              label={t('opManagerAlerts', 'OpManager alerts')}
+              value={summary.opManagerAlerts}
+              icon={<Icon name="Radar" size={16} className="text-primary" />}
+            />
           </div>
 
           <div className="rounded-lg border border-border bg-background p-4">

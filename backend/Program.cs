@@ -236,9 +236,12 @@ try
         }
         else if (db.Database.GetPendingMigrations().Any())
         {
+            await BaselineExistingDatabaseAsync(db);
             Console.WriteLine("Applying pending database migrations...");
             await db.Database.MigrateAsync();
         }
+
+        await EnsureLegacySchemaCompatibilityAsync(db);
         
         // Demo seed data is opt-in only.
         var seedDemoData = builder.Configuration.GetValue<bool>("Database:SeedDemoData");
@@ -261,6 +264,258 @@ catch (Exception ex)
 
 
 app.Run();
+
+static async Task BaselineExistingDatabaseAsync(ApplicationDbContext context)
+{
+    const string baselineSql = """
+        IF OBJECT_ID(N'[dbo].[AutomationRules]', N'U') IS NOT NULL
+        BEGIN
+            IF OBJECT_ID(N'[dbo].[__EFMigrationsHistory]', N'U') IS NULL
+            BEGIN
+                CREATE TABLE [dbo].[__EFMigrationsHistory] (
+                    [MigrationId] nvarchar(150) NOT NULL,
+                    [ProductVersion] nvarchar(32) NOT NULL,
+                    CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+                );
+            END;
+
+            IF NOT EXISTS (
+                SELECT 1 FROM [dbo].[__EFMigrationsHistory]
+                WHERE [MigrationId] = N'20260414190218_InitialCreate'
+            )
+            BEGIN
+                INSERT INTO [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+                VALUES (N'20260414190218_InitialCreate', N'9.0.5');
+            END;
+
+            IF COL_LENGTH(N'dbo.ServiceCatalogItems', N'NameAr') IS NOT NULL
+                AND COL_LENGTH(N'dbo.ServiceCatalogItems', N'DescriptionAr') IS NOT NULL
+                AND COL_LENGTH(N'dbo.ServiceCatalogItems', N'CategoryAr') IS NOT NULL
+                AND NOT EXISTS (
+                    SELECT 1 FROM [dbo].[__EFMigrationsHistory]
+                    WHERE [MigrationId] = N'20260417225240_AddServiceCatalogTranslations'
+                )
+            BEGIN
+                INSERT INTO [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+                VALUES (N'20260417225240_AddServiceCatalogTranslations', N'9.0.5');
+            END;
+        END
+        """;
+
+    await context.Database.ExecuteSqlRawAsync(baselineSql);
+}
+
+static async Task EnsureLegacySchemaCompatibilityAsync(ApplicationDbContext context)
+{
+    const string compatibilitySql = """
+        IF OBJECT_ID(N'[dbo].[Users]', N'U') IS NOT NULL
+        BEGIN
+            IF COL_LENGTH(N'dbo.Users', N'EmailUpdatesEnabled') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[Users] ADD [EmailUpdatesEnabled] bit NOT NULL CONSTRAINT [DF_Users_EmailUpdatesEnabled] DEFAULT CAST(1 AS bit)');
+
+            IF COL_LENGTH(N'dbo.Users', N'SmsAlertsEnabled') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[Users] ADD [SmsAlertsEnabled] bit NOT NULL CONSTRAINT [DF_Users_SmsAlertsEnabled] DEFAULT CAST(0 AS bit)');
+
+            IF COL_LENGTH(N'dbo.Users', N'PushNotificationsEnabled') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[Users] ADD [PushNotificationsEnabled] bit NOT NULL CONSTRAINT [DF_Users_PushNotificationsEnabled] DEFAULT CAST(1 AS bit)');
+
+            IF COL_LENGTH(N'dbo.Users', N'WeeklyDigestEnabled') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[Users] ADD [WeeklyDigestEnabled] bit NOT NULL CONSTRAINT [DF_Users_WeeklyDigestEnabled] DEFAULT CAST(1 AS bit)');
+
+            IF COL_LENGTH(N'dbo.Users', N'ExternalId') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[Users] ADD [ExternalId] nvarchar(450) NULL');
+
+            IF COL_LENGTH(N'dbo.Users', N'ExternalSource') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[Users] ADD [ExternalSource] nvarchar(450) NULL');
+
+            IF COL_LENGTH(N'dbo.Users', N'ExternalId') IS NOT NULL
+                AND COL_LENGTH(N'dbo.Users', N'ExternalSource') IS NOT NULL
+                AND NOT EXISTS (
+                    SELECT 1 FROM [sys].[indexes]
+                    WHERE [name] = N'IX_Users_ExternalId_ExternalSource'
+                        AND [object_id] = OBJECT_ID(N'[dbo].[Users]')
+                )
+            BEGIN
+                EXEC(N'CREATE UNIQUE INDEX [IX_Users_ExternalId_ExternalSource]
+                    ON [dbo].[Users] ([ExternalId], [ExternalSource])
+                    WHERE [ExternalId] IS NOT NULL AND [ExternalSource] IS NOT NULL');
+            END;
+        END
+
+        IF OBJECT_ID(N'[dbo].[ServiceRequests]', N'U') IS NOT NULL
+        BEGIN
+            IF COL_LENGTH(N'dbo.ServiceRequests', N'ExternalId') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[ServiceRequests] ADD [ExternalId] nvarchar(max) NULL');
+
+            IF COL_LENGTH(N'dbo.ServiceRequests', N'ExternalSystem') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[ServiceRequests] ADD [ExternalSystem] nvarchar(max) NULL');
+        END
+
+        IF OBJECT_ID(N'[dbo].[ProblemRecords]', N'U') IS NULL
+            AND OBJECT_ID(N'[dbo].[Users]', N'U') IS NOT NULL
+        BEGIN
+            EXEC(N'CREATE TABLE [dbo].[ProblemRecords] (
+                [Id] int NOT NULL IDENTITY,
+                [ProblemNumber] nvarchar(450) NOT NULL,
+                [Title] nvarchar(max) NOT NULL,
+                [Description] nvarchar(max) NOT NULL,
+                [RootCause] nvarchar(max) NOT NULL,
+                [Workaround] nvarchar(max) NOT NULL,
+                [Status] nvarchar(max) NOT NULL,
+                [Priority] nvarchar(max) NOT NULL,
+                [Category] nvarchar(max) NOT NULL,
+                [CreatedById] int NOT NULL,
+                [CreatedAt] datetime2 NOT NULL,
+                [UpdatedAt] datetime2 NOT NULL,
+                [ResolvedAt] datetime2 NULL,
+                CONSTRAINT [PK_ProblemRecords] PRIMARY KEY ([Id]),
+                CONSTRAINT [FK_ProblemRecords_Users_CreatedById] FOREIGN KEY ([CreatedById]) REFERENCES [dbo].[Users] ([Id]) ON DELETE NO ACTION
+            )');
+        END
+
+        IF OBJECT_ID(N'[dbo].[ProblemRecords]', N'U') IS NOT NULL
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_ProblemRecords_CreatedById'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[ProblemRecords]')
+            )
+                EXEC(N'CREATE INDEX [IX_ProblemRecords_CreatedById] ON [dbo].[ProblemRecords] ([CreatedById])');
+
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_ProblemRecords_ProblemNumber'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[ProblemRecords]')
+            )
+                EXEC(N'CREATE UNIQUE INDEX [IX_ProblemRecords_ProblemNumber] ON [dbo].[ProblemRecords] ([ProblemNumber])');
+        END
+
+        IF OBJECT_ID(N'[dbo].[ProblemTicketLinks]', N'U') IS NULL
+            AND OBJECT_ID(N'[dbo].[ProblemRecords]', N'U') IS NOT NULL
+            AND OBJECT_ID(N'[dbo].[Tickets]', N'U') IS NOT NULL
+        BEGIN
+            EXEC(N'CREATE TABLE [dbo].[ProblemTicketLinks] (
+                [Id] int NOT NULL IDENTITY,
+                [ProblemRecordId] int NOT NULL,
+                [TicketId] int NOT NULL,
+                [CreatedAt] datetime2 NOT NULL,
+                CONSTRAINT [PK_ProblemTicketLinks] PRIMARY KEY ([Id]),
+                CONSTRAINT [FK_ProblemTicketLinks_ProblemRecords_ProblemRecordId] FOREIGN KEY ([ProblemRecordId]) REFERENCES [dbo].[ProblemRecords] ([Id]) ON DELETE CASCADE,
+                CONSTRAINT [FK_ProblemTicketLinks_Tickets_TicketId] FOREIGN KEY ([TicketId]) REFERENCES [dbo].[Tickets] ([Id]) ON DELETE CASCADE
+            )');
+        END
+
+        IF OBJECT_ID(N'[dbo].[ProblemTicketLinks]', N'U') IS NOT NULL
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_ProblemTicketLinks_ProblemRecordId'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[ProblemTicketLinks]')
+            )
+                EXEC(N'CREATE INDEX [IX_ProblemTicketLinks_ProblemRecordId] ON [dbo].[ProblemTicketLinks] ([ProblemRecordId])');
+
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_ProblemTicketLinks_TicketId'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[ProblemTicketLinks]')
+            )
+                EXEC(N'CREATE INDEX [IX_ProblemTicketLinks_TicketId] ON [dbo].[ProblemTicketLinks] ([TicketId])');
+        END
+
+        IF OBJECT_ID(N'[dbo].[AssetRelationships]', N'U') IS NULL
+            AND OBJECT_ID(N'[dbo].[Assets]', N'U') IS NOT NULL
+        BEGIN
+            EXEC(N'CREATE TABLE [dbo].[AssetRelationships] (
+                [Id] int NOT NULL IDENTITY,
+                [SourceAssetId] int NOT NULL,
+                [TargetAssetId] int NOT NULL,
+                [RelationshipType] nvarchar(max) NOT NULL,
+                [CreatedAt] datetime2 NOT NULL,
+                [AssetId] int NULL,
+                [AssetId1] int NULL,
+                CONSTRAINT [PK_AssetRelationships] PRIMARY KEY ([Id]),
+                CONSTRAINT [FK_AssetRelationships_Assets_AssetId] FOREIGN KEY ([AssetId]) REFERENCES [dbo].[Assets] ([Id]),
+                CONSTRAINT [FK_AssetRelationships_Assets_AssetId1] FOREIGN KEY ([AssetId1]) REFERENCES [dbo].[Assets] ([Id]),
+                CONSTRAINT [FK_AssetRelationships_Assets_SourceAssetId] FOREIGN KEY ([SourceAssetId]) REFERENCES [dbo].[Assets] ([Id]) ON DELETE NO ACTION,
+                CONSTRAINT [FK_AssetRelationships_Assets_TargetAssetId] FOREIGN KEY ([TargetAssetId]) REFERENCES [dbo].[Assets] ([Id]) ON DELETE NO ACTION
+            )');
+        END
+
+        IF OBJECT_ID(N'[dbo].[AssetRelationships]', N'U') IS NOT NULL
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_AssetRelationships_AssetId'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[AssetRelationships]')
+            )
+                EXEC(N'CREATE INDEX [IX_AssetRelationships_AssetId] ON [dbo].[AssetRelationships] ([AssetId])');
+
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_AssetRelationships_AssetId1'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[AssetRelationships]')
+            )
+                EXEC(N'CREATE INDEX [IX_AssetRelationships_AssetId1] ON [dbo].[AssetRelationships] ([AssetId1])');
+
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_AssetRelationships_SourceAssetId'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[AssetRelationships]')
+            )
+                EXEC(N'CREATE INDEX [IX_AssetRelationships_SourceAssetId] ON [dbo].[AssetRelationships] ([SourceAssetId])');
+
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_AssetRelationships_TargetAssetId'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[AssetRelationships]')
+            )
+                EXEC(N'CREATE INDEX [IX_AssetRelationships_TargetAssetId] ON [dbo].[AssetRelationships] ([TargetAssetId])');
+        END
+
+        IF OBJECT_ID(N'[dbo].[ExternalIntegrations]', N'U') IS NULL
+        BEGIN
+            EXEC(N'CREATE TABLE [dbo].[ExternalIntegrations] (
+                [Id] int NOT NULL IDENTITY,
+                [Name] nvarchar(max) NOT NULL,
+                [Provider] nvarchar(max) NOT NULL,
+                [ConfigurationJson] nvarchar(max) NOT NULL,
+                [IsEnabled] bit NOT NULL,
+                [EventSubscriptions] nvarchar(max) NOT NULL,
+                [CreatedAt] datetime2 NOT NULL,
+                [LastSyncAt] datetime2 NULL,
+                CONSTRAINT [PK_ExternalIntegrations] PRIMARY KEY ([Id])
+            )');
+        END
+
+        IF OBJECT_ID(N'[dbo].[IntegrationLogs]', N'U') IS NULL
+            AND OBJECT_ID(N'[dbo].[ExternalIntegrations]', N'U') IS NOT NULL
+        BEGIN
+            EXEC(N'CREATE TABLE [dbo].[IntegrationLogs] (
+                [Id] int NOT NULL IDENTITY,
+                [IntegrationId] int NOT NULL,
+                [EventType] nvarchar(max) NOT NULL,
+                [Status] nvarchar(max) NOT NULL,
+                [RequestPayload] nvarchar(max) NOT NULL,
+                [ResponsePayload] nvarchar(max) NOT NULL,
+                [CreatedAt] datetime2 NOT NULL,
+                CONSTRAINT [PK_IntegrationLogs] PRIMARY KEY ([Id]),
+                CONSTRAINT [FK_IntegrationLogs_ExternalIntegrations_IntegrationId] FOREIGN KEY ([IntegrationId]) REFERENCES [dbo].[ExternalIntegrations] ([Id]) ON DELETE CASCADE
+            )');
+        END
+
+        IF OBJECT_ID(N'[dbo].[IntegrationLogs]', N'U') IS NOT NULL
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM [sys].[indexes]
+                WHERE [name] = N'IX_IntegrationLogs_IntegrationId'
+                    AND [object_id] = OBJECT_ID(N'[dbo].[IntegrationLogs]')
+            )
+                EXEC(N'CREATE INDEX [IX_IntegrationLogs_IntegrationId] ON [dbo].[IntegrationLogs] ([IntegrationId])');
+        END
+        """;
+
+    await context.Database.ExecuteSqlRawAsync(compatibilitySql);
+}
 
 async Task SeedDataAsync(ApplicationDbContext context)
 {

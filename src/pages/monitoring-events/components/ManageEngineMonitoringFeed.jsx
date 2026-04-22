@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
 import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -12,6 +13,7 @@ const ManageEngineMonitoringFeed = () => {
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
+  const zeroHiddenCount = countHiddenZeroMetrics([{ value: alerts.length }]);
 
   const loadData = async () => {
     try {
@@ -44,16 +46,20 @@ const ManageEngineMonitoringFeed = () => {
             {t('manageEngineMonitoringFeedDesc', 'Live OpManager alerts to compare against the event you are about to create.')}
           </p>
         </div>
-        <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          {t('refresh', 'Refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} /> : null}
+          <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
+            {t('refresh', 'Refresh')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="rounded-xl bg-muted/40 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('liveAlerts', 'Live alerts')}</div>
-          <div className="text-2xl font-semibold text-foreground">{alerts.length}</div>
-        </div>
+        <ManageEngineMetricCard
+          label={t('liveAlerts', 'Live alerts')}
+          value={alerts.length}
+          icon={<Icon name="Radar" size={16} className="text-primary" />}
+        />
         <div className="rounded-xl bg-muted/40 p-4">
           <div className="text-xs text-muted-foreground mb-1">{t('syncHealth', 'Sync health')}</div>
           <div className="text-sm font-semibold text-foreground capitalize">{syncStatus?.status || t('idle', 'idle')}</div>

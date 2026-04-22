@@ -3,6 +3,7 @@ import { manageEngineAPI } from '../../../services/api';
 import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 
 const ManageEngineIntegration = ({ onSyncComplete }) => {
   const [syncStatus, setSyncStatus] = useState('idle');
@@ -138,6 +139,10 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
     serviceDesk: catalog.filter((item) => item.source === 'ServiceDesk'),
     opManager: catalog.filter((item) => item.source === 'OpManager'),
   }), [catalog]);
+  const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: operations.length },
+    { value: catalog.length },
+  ]);
 
   const handleFilterChange = (key, value) => {
     setFilters((current) => ({
@@ -162,6 +167,7 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
           <Button variant="outline" size="sm" iconName="RefreshCw" onClick={refreshAll}>
             Refresh
           </Button>
+          {!loadingData && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} /> : null}
           <Button
             variant="default"
             size="sm"
@@ -187,14 +193,16 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
             {connectionStatus.opManagerConnected ? 'Connected' : 'Disconnected'}
           </div>
         </div>
-        <div className="rounded-xl border border-border bg-background p-4">
-          <div className="text-sm text-muted-foreground mb-1">Operational Items</div>
-          <div className="text-2xl font-semibold text-foreground">{operations.length}</div>
-        </div>
-        <div className="rounded-xl border border-border bg-background p-4">
-          <div className="text-sm text-muted-foreground mb-1">Catalog + Services</div>
-          <div className="text-2xl font-semibold text-foreground">{catalog.length}</div>
-        </div>
+        <ManageEngineMetricCard
+          label="Operational Items"
+          value={operations.length}
+          icon={<Icon name="Activity" size={18} className="text-primary" />}
+        />
+        <ManageEngineMetricCard
+          label="Catalog + Services"
+          value={catalog.length}
+          icon={<Icon name="Layers3" size={18} className="text-primary" />}
+        />
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

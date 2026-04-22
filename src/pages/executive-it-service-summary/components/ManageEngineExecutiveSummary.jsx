@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
 import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -17,6 +18,11 @@ const ManageEngineExecutiveSummary = () => {
     opManagerAlerts: 0,
   });
   const [syncStatus, setSyncStatus] = useState(null);
+  const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: summary.catalog },
+    { value: summary.operations },
+    { value: (syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0) },
+  ]);
 
   const loadData = async () => {
     try {
@@ -82,6 +88,7 @@ const ManageEngineExecutiveSummary = () => {
               : 'Cross-platform view of external service demand, monitoring volume, and ticket sync health.'}
           </p>
         </div>
+        {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} className="ml-auto" /> : null}
       </div>
 
       {loading ? (
@@ -91,14 +98,13 @@ const ManageEngineExecutiveSummary = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {executiveMetrics.map((metric) => (
-            <div key={metric.label} className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-muted-foreground">{metric.label}</span>
-                <Icon name={metric.icon} size={18} className="text-primary" />
-              </div>
-              <div className="text-2xl font-bold text-foreground capitalize">{metric.value}</div>
-              <p className="text-xs text-muted-foreground mt-2">{metric.helper}</p>
-            </div>
+            <ManageEngineMetricCard
+              key={metric.label}
+              label={metric.label}
+              value={metric.value}
+              icon={<Icon name={metric.icon} size={18} className="text-primary" />}
+              helper={metric.helper}
+            />
           ))}
         </div>
       )}

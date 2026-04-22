@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
+import { useLanguage } from '../../../context/LanguageContext';
 
 const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpdate, onConnectionAdd, selectedNode }) => {
+  const { language } = useLanguage();
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
+  const text = (arText, enText) => (isArabic ? arText : enText);
   const canvasRef = useRef(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -104,7 +108,7 @@ const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpd
           <button
             onClick={() => setZoom(Math.min(zoom * 1.2, 2))}
             className="p-2 rounded hover:bg-muted transition-smooth press-scale focus-ring"
-            title="Zoom in"
+            title={text('تكبير', 'Zoom in')}
           >
             <Icon name="ZoomIn" size={18} />
           </button>
@@ -112,7 +116,7 @@ const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpd
           <button
             onClick={() => setZoom(Math.max(zoom * 0.8, 0.25))}
             className="p-2 rounded hover:bg-muted transition-smooth press-scale focus-ring"
-            title="Zoom out"
+            title={text('تصغير', 'Zoom out')}
           >
             <Icon name="ZoomOut" size={18} />
           </button>
@@ -120,7 +124,7 @@ const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpd
           <button
             onClick={resetView}
             className="p-2 rounded hover:bg-muted transition-smooth press-scale focus-ring"
-            title="Reset view"
+            title={text('إعادة العرض', 'Reset view')}
           >
             <Icon name="Maximize2" size={18} />
           </button>
@@ -131,7 +135,7 @@ const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpd
           className={`bg-card border border-border rounded-md shadow-elevation-2 p-2 hover:bg-muted transition-smooth press-scale focus-ring ${
             showGrid ? 'text-primary' : ''
           }`}
-          title="Toggle grid"
+          title={text('إظهار/إخفاء الشبكة', 'Toggle grid')}
         >
           <Icon name="Grid3x3" size={18} />
         </button>
@@ -139,20 +143,20 @@ const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpd
       <div className="absolute top-4 right-4 z-10 bg-card border border-border rounded-md shadow-elevation-2 p-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
           <Icon name="Info" size={14} />
-          <span className="font-medium">Shortcuts</span>
+          <span className="font-medium">{text('الاختصارات', 'Shortcuts')}</span>
         </div>
         <div className="space-y-1 text-xs">
           <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Pan:</span>
-            <span className="font-medium">Click + Drag</span>
+            <span className="text-muted-foreground">{text('التحريك', 'Pan')}:</span>
+            <span className="font-medium">{text('نقر + سحب', 'Click + Drag')}</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Zoom:</span>
-            <span className="font-medium">Mouse Wheel</span>
+            <span className="text-muted-foreground">{text('التكبير', 'Zoom')}:</span>
+            <span className="font-medium">{text('عجلة الماوس', 'Mouse Wheel')}</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Delete:</span>
-            <span className="font-medium">Del / Backspace</span>
+            <span className="text-muted-foreground">{text('الحذف', 'Delete')}:</span>
+            <span className="font-medium">{text('Del / Backspace', 'Del / Backspace')}</span>
           </div>
         </div>
       </div>
@@ -252,26 +256,26 @@ const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpd
               </div>
               
               <div className="flex justify-between px-2 pb-2">
+              <button
+                onClick={(e) => {
+                  e?.stopPropagation();
+                  handleConnectionStart(node?.id);
+                }}
+                className="w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-smooth"
+                title={text('إنشاء اتصال', 'Create connection')}
+              >
+                <Icon name="Plus" size={14} className="text-primary" />
+              </button>
                 <button
-                  onClick={(e) => {
-                    e?.stopPropagation();
-                    handleConnectionStart(node?.id);
-                  }}
-                  className="w-6 h-6 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-smooth"
-                  title="Create connection"
-                >
-                  <Icon name="Plus" size={14} className="text-primary" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e?.stopPropagation();
-                    handleConnectionEnd(node?.id);
-                  }}
-                  className="w-6 h-6 rounded-full bg-success/10 hover:bg-success/20 flex items-center justify-center transition-smooth"
-                  title="Connect here"
-                >
-                  <Icon name="Check" size={14} className="text-success" />
-                </button>
+                onClick={(e) => {
+                  e?.stopPropagation();
+                  handleConnectionEnd(node?.id);
+                }}
+                className="w-6 h-6 rounded-full bg-success/10 hover:bg-success/20 flex items-center justify-center transition-smooth"
+                title={text('الاتصال هنا', 'Connect here')}
+              >
+                <Icon name="Check" size={14} className="text-success" />
+              </button>
               </div>
             </div>
           ))}
@@ -281,9 +285,9 @@ const WorkflowCanvas = ({ nodes, connections, onNodeAdd, onNodeSelect, onNodeUpd
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <Icon name="Workflow" size={64} className="mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Start Building Your Workflow</h3>
+            <h3 className="text-lg font-semibold mb-2">{text('ابدأ بناء سير العمل', 'Start Building Your Workflow')}</h3>
             <p className="text-sm text-muted-foreground max-w-md">
-              Drag components from the palette to create your workflow.\nConnect nodes to define the process flow.
+              {text('اسحب المكونات من اللوحة لإنشاء سير العمل.\nقم بربط العقد لتحديد تدفق العملية.', 'Drag components from the palette to create your workflow.\nConnect nodes to define the process flow.')}
             </p>
           </div>
         </div>

@@ -1,8 +1,12 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useLanguage } from '../../../context/LanguageContext';
 
 const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
+  const { language } = useLanguage();
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
+  const text = (arText, enText) => (isArabic ? arText : enText);
   const errors = validationResults?.filter(r => r?.type === 'error');
   const warnings = validationResults?.filter(r => r?.type === 'warning');
   const suggestions = validationResults?.filter(r => r?.type === 'suggestion');
@@ -42,15 +46,15 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
         <div className="p-4 md:p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl md:text-2xl font-semibold">Workflow Validation</h2>
+              <h2 className="text-xl md:text-2xl font-semibold">{text('التحقق من سير العمل', 'Workflow Validation')}</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Review configuration issues and suggestions
+                {text('راجع مشكلات التكوين والاقتراحات', 'Review configuration issues and suggestions')}
               </p>
             </div>
             <button
               onClick={onClose}
               className="p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring"
-              aria-label="Close validation panel"
+              aria-label={text('إغلاق لوحة التحقق', 'Close validation panel')}
             >
               <Icon name="X" size={24} />
             </button>
@@ -59,15 +63,15 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
           <div className="flex gap-4 mt-4">
             <div className="flex items-center gap-2 px-3 py-2 bg-error/10 rounded-md">
               <Icon name="XCircle" size={16} className="text-error" />
-              <span className="text-sm font-medium">{errors?.length} Errors</span>
+              <span className="text-sm font-medium">{errors?.length} {text('أخطاء', 'Errors')}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-warning/10 rounded-md">
               <Icon name="AlertTriangle" size={16} className="text-warning" />
-              <span className="text-sm font-medium">{warnings?.length} Warnings</span>
+              <span className="text-sm font-medium">{warnings?.length} {text('تحذيرات', 'Warnings')}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-md">
               <Icon name="Lightbulb" size={16} className="text-primary" />
-              <span className="text-sm font-medium">{suggestions?.length} Suggestions</span>
+              <span className="text-sm font-medium">{suggestions?.length} {text('اقتراحات', 'Suggestions')}</span>
             </div>
           </div>
         </div>
@@ -77,9 +81,9 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <Icon name="CheckCircle" size={64} className="mx-auto text-success mb-4" />
-                <h3 className="text-lg font-semibold mb-2">All Clear!</h3>
+                <h3 className="text-lg font-semibold mb-2">{text('كل شيء سليم!', 'All Clear!')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Your workflow has no validation issues
+                  {text('لا توجد مشكلات تحقق في سير العمل', 'Your workflow has no validation issues')}
                 </p>
               </div>
             </div>
@@ -89,7 +93,7 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
                 <div>
                   <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
                     <Icon name="XCircle" size={20} className="text-error" />
-                    Errors ({errors?.length})
+                    {text('أخطاء', 'Errors')} ({errors?.length})
                   </h3>
                   <div className="space-y-3">
                     {errors?.map((result, index) => (
@@ -117,7 +121,7 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
                 <div>
                   <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
                     <Icon name="AlertTriangle" size={20} className="text-warning" />
-                    Warnings ({warnings?.length})
+                    {text('تحذيرات', 'Warnings')} ({warnings?.length})
                   </h3>
                   <div className="space-y-3">
                     {warnings?.map((result, index) => (
@@ -139,7 +143,7 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
                 <div>
                   <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
                     <Icon name="Lightbulb" size={20} className="text-primary" />
-                    Suggestions ({suggestions?.length})
+                    {text('اقتراحات', 'Suggestions')} ({suggestions?.length})
                   </h3>
                   <div className="space-y-3">
                     {suggestions?.map((result, index) => (
@@ -166,7 +170,7 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
             size="default"
             onClick={onClose}
           >
-            Close
+            {text('إغلاق', 'Close')}
           </Button>
           {errors?.length === 0 && (
             <Button
@@ -175,7 +179,7 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
               iconName="CheckCircle"
               iconPosition="left"
             >
-              Deploy Workflow
+              {text('نشر سير العمل', 'Deploy Workflow')}
             </Button>
           )}
         </div>

@@ -16,7 +16,20 @@ import { getTranslation } from '../../services/i18n';
 const ServicePerformanceAnalytics = () => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const langText = (ar, en) => (language === 'ar' ? ar : en);
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
+  const langText = (ar, en) => (isArabic ? ar : en);
+  const translateMetricTitle = (name) => {
+    const normalized = String(name || '').toLowerCase();
+    const metricMap = {
+      'cost per ticket': 'costPerTicket',
+      'employee satisfaction': 'employeeSatisfaction',
+      'it service availability': 'itServiceAvailability',
+      'average resolution time': 'avgResolutionTime',
+      'sla compliance': 'slaCompliance',
+    };
+    const key = metricMap[normalized];
+    return key ? t(key, name || 'Metric') : (name || 'Metric');
+  };
   const [filters, setFilters] = useState({
     timeRange: '30d',
     department: 'all',
@@ -61,7 +74,7 @@ const ServicePerformanceAnalytics = () => {
 
         const data = Array.isArray(metricsRes.data) ? metricsRes.data : [];
         const mapped = data.slice(0, 4).map((m) => ({
-          title: m.metricName || 'Metric',
+          title: translateMetricTitle(m.metricName),
           value: String(m.value ?? 0),
           unit: m.unit || '',
           change: Number(m.percentageChange || 0),
@@ -151,7 +164,7 @@ const ServicePerformanceAnalytics = () => {
                 </div>
                 <div className={`hidden md:flex items-center space-x-2 text-sm text-muted-foreground ${isRtl ? 'flex-row-reverse space-x-reverse' : ''}`}>
                   <span>{t('dashboardRefreshed', 'Dashboard refreshed')}:</span>
-                  <span className="font-medium">{new Date('2024-09-21T08:48:00').toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}</span>
+                  <span className="font-medium">{new Date('2024-09-21T08:48:00').toLocaleString(isArabic ? 'ar-SA' : 'en-US')}</span>
                 </div>
               </div>
             </div>

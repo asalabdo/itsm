@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
 import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -49,6 +50,7 @@ const ManageEngineOperationsPanel = () => {
 
   const serviceDeskCount = operations.filter((item) => item.source === 'ServiceDesk').length;
   const opManagerCount = operations.filter((item) => item.source === 'OpManager').length;
+  const zeroHiddenCount = countHiddenZeroMetrics([{ value: serviceDeskCount }, { value: opManagerCount }]);
   const connectionLabel = (value) => (value ? t('connected', 'Connected') : t('offline', 'Offline'));
   const sourceLabel = (value) => {
     const normalized = String(value || '').toLowerCase();
@@ -74,30 +76,25 @@ const ManageEngineOperationsPanel = () => {
             {t('manageEngineLiveOperationsDesc', 'ServiceDesk requests and OpManager alerts in one live operational feed.')}
           </p>
         </div>
-        <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          {t('refresh', 'Refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} /> : null}
+          <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
+            {t('refresh', 'Refresh')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="rounded-lg border border-border bg-muted/30 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('serviceDesk', 'ServiceDesk')}</div>
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-semibold text-foreground">{serviceDeskCount}</span>
-            <span className={`text-xs font-medium ${connection.serviceDeskConnected ? 'text-success' : 'text-error'}`}>
-              {connectionLabel(connection.serviceDeskConnected)}
-            </span>
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-muted/30 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('opManager', 'OpManager')}</div>
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-semibold text-foreground">{opManagerCount}</span>
-            <span className={`text-xs font-medium ${connection.opManagerConnected ? 'text-success' : 'text-error'}`}>
-              {connectionLabel(connection.opManagerConnected)}
-            </span>
-          </div>
-        </div>
+        <ManageEngineMetricCard
+          label={t('serviceDesk', 'ServiceDesk')}
+          value={serviceDeskCount}
+          icon={<span className={`text-xs font-medium ${connection.serviceDeskConnected ? 'text-success' : 'text-error'}`}>{connectionLabel(connection.serviceDeskConnected)}</span>}
+        />
+        <ManageEngineMetricCard
+          label={t('opManager', 'OpManager')}
+          value={opManagerCount}
+          icon={<span className={`text-xs font-medium ${connection.opManagerConnected ? 'text-success' : 'text-error'}`}>{connectionLabel(connection.opManagerConnected)}</span>}
+        />
       </div>
 
       <div className="space-y-3">

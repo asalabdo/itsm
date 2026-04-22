@@ -9,7 +9,7 @@ import { getTranslation } from '../../../services/i18n';
 const FilterControls = ({ onFiltersChange, onExport, changeCount = 0 }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const [filters, setFilters] = useState({
     dateRange: '30d',
     changeType: 'all',

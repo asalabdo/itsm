@@ -9,6 +9,7 @@ import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../se
 const FilterPanel = ({ onFiltersChange, onExport, lastUpdated }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedService, setSelectedService] = useState('all');
@@ -135,7 +136,7 @@ const FilterPanel = ({ onFiltersChange, onExport, lastUpdated }) => {
       <div className="mt-4 pt-4 border-t border-border">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            {t('lastUpdated', 'Last updated')}: {lastUpdated ? new Date(lastUpdated).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US') : '—'}
+            {t('lastUpdated', 'Last updated')}: {lastUpdated ? new Date(lastUpdated).toLocaleString(isArabic ? 'ar-SA' : 'en-US') : '—'}
           </span>
           <div className="flex items-center space-x-2">
             <Icon name="RefreshCw" size={14} />

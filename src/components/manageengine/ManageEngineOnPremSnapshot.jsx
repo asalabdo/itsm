@@ -3,12 +3,14 @@ import Icon from '../AppIcon';
 import Button from '../ui/Button';
 import { manageEngineAPI } from '../../services/api';
 import { normalizeManageEngineUnified, summarizeManageEngineUnified } from '../../services/manageEngineDataUtils';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from './ManageEngineMetricCard';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
 const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
     catalog: 0,
@@ -18,6 +20,11 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
   });
   const [latestItems, setLatestItems] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
+  const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: summary.serviceDeskRequests },
+    { value: summary.opManagerAlerts },
+    { value: summary.catalog },
+  ]);
 
   const loadData = useCallback(async () => {
     try {
@@ -60,9 +67,12 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
             {description || t('manageEngineOnPremSnapshotDesc', 'Live ServiceDesk Plus API v3 and OpManager context for this workspace.')}
           </p>
         </div>
-        <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          {t('refresh', 'Refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={isArabic ? `${zeroHiddenCount} مخفية` : `${zeroHiddenCount} hidden`} /> : null}
+          <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
+            {t('refresh', 'Refresh')}
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -72,10 +82,23 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
       ) : (
         <div className="space-y-4">
           <div className={`grid gap-3 ${compact ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'}`}>
-            <Metric label={t('serviceDeskRequests', 'ServiceDesk Requests')} value={summary.serviceDeskRequests} icon="ClipboardList" />
-            <Metric label={t('opManagerAlerts', 'OpManager Alerts')} value={summary.opManagerAlerts} icon="Radar" />
-            {!compact && <Metric label={t('externalCatalog', 'External Catalog')} value={summary.catalog} icon="Layers3" />}
-            {!compact && <Metric label={t('syncHealth', 'Sync Health')} value={syncStatus?.status || 'idle'} icon="ShieldCheck" />}
+            <ManageEngineMetricCard label={t('serviceDeskRequests', 'ServiceDesk Requests')} value={summary.serviceDeskRequests} icon={<Icon name="ClipboardList" size={16} className="text-primary" />} />
+            <ManageEngineMetricCard label={t('opManagerAlerts', 'OpManager Alerts')} value={summary.opManagerAlerts} icon={<Icon name="Radar" size={16} className="text-primary" />} />
+            {!compact && (
+              <ManageEngineMetricCard
+                label={t('externalCatalog', 'External Catalog')}
+                value={summary.catalog}
+                icon={<Icon name="Layers3" size={16} className="text-primary" />}
+              />
+            )}
+            {!compact && (
+              <ManageEngineMetricCard
+                label={t('syncHealth', 'Sync Health')}
+                value={syncStatus?.status || 'idle'}
+                icon={<Icon name="ShieldCheck" size={16} className="text-primary" />}
+                hideWhenZero={false}
+              />
+            )}
           </div>
 
           {!compact && (
@@ -106,15 +129,5 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
     </section>
   );
 };
-
-const Metric = ({ label, value, icon }) => (
-  <div className="rounded-xl border border-border bg-muted/20 p-4">
-    <div className="mb-2 flex items-center justify-between gap-3">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <Icon name={icon} size={16} className="text-primary" />
-    </div>
-    <div className="text-xl font-semibold capitalize text-foreground">{value}</div>
-  </div>
-);
 
 export default ManageEngineOnPremSnapshot;

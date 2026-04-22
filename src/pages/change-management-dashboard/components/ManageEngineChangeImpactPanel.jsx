@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
 import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -8,6 +9,7 @@ import { getTranslation } from '../../../services/i18n';
 
 const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
   const { language, isRtl } = useLanguage();
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [catalogItems, setCatalogItems] = useState([]);
@@ -39,6 +41,10 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
     () => changes.filter((change) => !['completed', 'closed', 'cancelled'].includes(String(change?.status || '').toLowerCase())).length,
     [changes]
   );
+  const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: catalogItems.length },
+    { value: alerts.length },
+  ]);
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 operations-shadow" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -54,24 +60,31 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
             {t('manageEngineChangeImpactDesc', 'Use OpManager services and alerts to understand current risk around planned and active changes.')}
           </p>
         </div>
-        <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          {t('refresh', 'Refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} ${isArabic ? 'مخفية' : 'hidden'}`} /> : null}
+          <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
+            {t('refresh', 'Refresh')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
-        <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('activeChanges', 'Active changes')}</div>
-          <div className="text-2xl font-semibold text-foreground">{activeChangeCount}</div>
-        </div>
-        <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('monitoredServices', 'Monitored services')}</div>
-          <div className="text-2xl font-semibold text-foreground">{catalogItems.length}</div>
-        </div>
-        <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('liveAlerts', 'Live alerts')}</div>
-          <div className="text-2xl font-semibold text-foreground">{alerts.length}</div>
-        </div>
+        <ManageEngineMetricCard
+          label={t('activeChanges', 'Active changes')}
+          value={activeChangeCount}
+          icon={<Icon name="CalendarClock" size={16} className="text-primary" />}
+          hideWhenZero={false}
+        />
+        <ManageEngineMetricCard
+          label={t('monitoredServices', 'Monitored services')}
+          value={catalogItems.length}
+          icon={<Icon name="Layers3" size={16} className="text-primary" />}
+        />
+        <ManageEngineMetricCard
+          label={t('liveAlerts', 'Live alerts')}
+          value={alerts.length}
+          icon={<Icon name="AlertTriangle" size={16} className="text-warning" />}
+        />
         <div className="rounded-lg border border-border bg-muted/20 p-4">
           <div className="text-xs text-muted-foreground mb-1">{t('syncHealth', 'Sync health')}</div>
           <div className="text-sm font-semibold text-foreground capitalize">{syncStatus?.status || 'idle'}</div>

@@ -17,7 +17,7 @@ import { downloadCsv } from '../../services/exportUtils';
 const ChangeManagementDashboard = () => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const locale = isArabic ? 'ar-SA' : 'en-US';
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());

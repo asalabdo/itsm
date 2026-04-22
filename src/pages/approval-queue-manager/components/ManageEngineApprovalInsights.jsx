@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
 import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -12,6 +13,10 @@ const ManageEngineApprovalInsights = () => {
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
+  const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: requests.length },
+    { value: syncStatus?.createdCount || 0 },
+  ]);
 
   const loadData = async () => {
     try {
@@ -46,20 +51,25 @@ const ManageEngineApprovalInsights = () => {
             {t('manageEngineApprovalInsightsDesc', 'Live ServiceDesk requests that may need follow-up while local approvals are in progress.')}
           </p>
         </div>
-        <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
-          {t('refresh', 'Refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} /> : null}
+          <Button variant="outline" size="sm" iconName="RefreshCw" onClick={() => void loadData()}>
+            {t('refresh', 'Refresh')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('externalRequests', 'External requests')}</div>
-          <div className="text-2xl font-semibold text-foreground">{requests.length}</div>
-        </div>
-        <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <div className="text-xs text-muted-foreground mb-1">{t('createdLocalTickets', 'Created local tickets')}</div>
-          <div className="text-2xl font-semibold text-foreground">{syncStatus?.createdCount || 0}</div>
-        </div>
+        <ManageEngineMetricCard
+          label={t('externalRequests', 'External requests')}
+          value={requests.length}
+          icon={<Icon name="ClipboardList" size={16} className="text-primary" />}
+        />
+        <ManageEngineMetricCard
+          label={t('createdLocalTickets', 'Created local tickets')}
+          value={syncStatus?.createdCount || 0}
+          icon={<Icon name="ArrowUpDown" size={16} className="text-primary" />}
+        />
         <div className="rounded-lg border border-border bg-muted/20 p-4">
           <div className="text-xs text-muted-foreground mb-1">{t('syncHealth', 'Sync health')}</div>
           <div className="text-sm font-semibold text-foreground capitalize">{syncStatus?.status || 'idle'}</div>

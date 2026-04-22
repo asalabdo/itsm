@@ -8,7 +8,7 @@ import { getTranslation } from '../../../services/i18n';
 const ChangeSuccessMetrics = ({ changes = [], overviewMetrics = null, onExport }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
+  const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedEnvironment, setSelectedEnvironment] = useState('all');
 

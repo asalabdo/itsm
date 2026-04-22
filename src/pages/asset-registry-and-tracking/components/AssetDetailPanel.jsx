@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
 const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus }) => {
+  const navigate = useNavigate();
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [activeTab, setActiveTab] = useState('details');
@@ -290,7 +292,7 @@ const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus }) => {
         <Button variant="default" fullWidth iconName="ArrowRightLeft" iconPosition="left">
           {t('transferAsset', 'Transfer asset')}
         </Button>
-        <Button variant="outline" fullWidth iconName="Wrench" iconPosition="left">
+        <Button variant="outline" fullWidth iconName="Wrench" iconPosition="left" onClick={() => navigate('/maintenance-scheduling')}>
           {t('scheduleMaintenance', 'Schedule maintenance')}
         </Button>
       </div>

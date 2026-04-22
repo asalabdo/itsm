@@ -3382,4 +3382,33 @@ export const ar = {
     noActiveAlerts: 'لا توجد تنبيهات نشطة متاحة.',
     serviceDeskRequests: 'طلبات ServiceDesk',
     noLinkedRequests: 'لا توجد طلبات خارجية مرتبطة متاحة.',
+
+    // Asset Form
+    editAsset: 'تعديل الأصل',
+    saveAssetDetails: 'حفظ تفاصيل الأصل في الخادم',
+    assetTag: 'رقم الأصل',
+    assetType: 'نوع الأصل',
+    serialNumber: 'الرقم التسلسلي',
+    manufacturer: 'الشركة المصنعة',
+    model: 'الموديل',
+    costAmount: 'التكلفة',
+    purchaseDate: 'تاريخ الشراء',
+    ownerId: 'رقم المالك',
+    ownerIdHint: 'استخدم رقم المستخدم الرقمي من صفحة المستخدمين.',
+    location: 'الموقع',
+    description: 'الوصف',
+    decommissionDate: 'تاريخ إيقاف التشغيل',
+    saveAsset: 'حفظ الأصل',
+    saving: 'جارٍ الحفظ...',
+
+    // Asset Filters
+    search_: 'بحث',
+    searchByTagNameOwnerSerial: 'البحث برقم الأصل أو الاسم أو المالك أو الرقم التسلسلي...',
+    hardware: 'أجهزة',
+    software: 'برمجيات',
+    network: 'شبكة',
+    peripheral: 'ملحقات',
+    all: 'الكل',
+    matchingAssets: 'أصل مطابق',
+    selectAssetTip: 'اختر الأصل من الجدول لرؤية الملكية والتاريخ والعلاقات.',
 };

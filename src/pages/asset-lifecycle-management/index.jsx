@@ -260,7 +260,7 @@ const AssetLifecycleManagement = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate('/asset-registry-and-tracking')}
+                  onClick={() => navigate('/maintenance-scheduling')}
                   className={`w-full flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors`}
                 >
                   <span className="text-sm font-medium">جدولة الصيانة</span>

@@ -292,39 +292,39 @@ const ManageAssets = () => {
           <div className="bg-card border border-border rounded-lg p-4 md:p-5 shadow-elevation-1 mb-6" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               <label className="block">
-                <span className={`text-xs font-medium text-muted-foreground`}>Search</span>
+                <span className={`text-xs font-medium text-muted-foreground`}>{t('search_', 'Search')}</span>
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search by tag, name, owner, serial..."
+                  placeholder={t('searchByTagNameOwnerSerial', 'Search by tag, name, owner, serial...')}
                   className={`mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm`}
                 />
               </label>
               <label className="block">
-                <span className={`text-xs font-medium text-muted-foreground`}>Status</span>
+                <span className={`text-xs font-medium text-muted-foreground`}>{t('status', 'Status')}</span>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className={`mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm`}
                 >
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="retired">Retired</option>
+                  <option value="all">{t('all', 'All')}</option>
+                  <option value="active">{t('active', 'Active')}</option>
+                  <option value="maintenance">{t('maintenance', 'Maintenance')}</option>
+                  <option value="retired">{t('retired', 'Retired')}</option>
                 </select>
               </label>
               <label className="block">
-                <span className={`text-xs font-medium text-muted-foreground`}>Type</span>
+                <span className={`text-xs font-medium text-muted-foreground`}>{t('type', 'Type')}</span>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
                   className={`mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm`}
                 >
-                  <option value="all">All</option>
-                  <option value="hardware">Hardware</option>
-                  <option value="software">Software</option>
-                  <option value="network">Network</option>
-                  <option value="peripheral">Peripheral</option>
+                  <option value="all">{t('all', 'All')}</option>
+                  <option value="hardware">{t('hardware', 'Hardware')}</option>
+                  <option value="software">{t('software', 'Software')}</option>
+                  <option value="network">{t('network', 'Network')}</option>
+                  <option value="peripheral">{t('peripheral', 'Peripheral')}</option>
                 </select>
               </label>
             </div>
@@ -476,8 +476,8 @@ const ManageAssets = () => {
             <form onSubmit={saveAsset} className="w-full max-w-4xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
               <div className="p-5 border-b border-border flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">{editingAssetId ? 'Edit Asset' : 'New Asset'}</h2>
-                  <p className="text-sm text-muted-foreground">Save asset details to the backend</p>
+                  <h2 className="text-xl font-semibold text-foreground">{editingAssetId ? t('editAsset', 'Edit Asset') : t('newAsset', 'New Asset')}</h2>
+                  <p className="text-sm text-muted-foreground">{t('saveAssetDetails', 'Save asset details to the backend')}</p>
                 </div>
                 <button type="button" onClick={closeForm} className="p-2 rounded-md hover:bg-muted">
                   <Icon name="X" size={18} />
@@ -490,49 +490,49 @@ const ManageAssets = () => {
                     {formError}
                   </div>
                 )}
-                <AssetField label="Asset Tag">
+                <AssetField label={t('assetTag', 'Asset Tag')}>
                   <input value={form.assetTag} onChange={(e) => setForm((prev) => ({ ...prev, assetTag: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Name">
+                <AssetField label={t('name', 'Name')}>
                   <input value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Asset Type">
+                <AssetField label={t('assetType', 'Asset Type')}>
                   <input value={form.assetType} onChange={(e) => setForm((prev) => ({ ...prev, assetType: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Serial Number">
+                <AssetField label={t('serialNumber', 'Serial Number')}>
                   <input value={form.serialNumber} onChange={(e) => setForm((prev) => ({ ...prev, serialNumber: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Manufacturer">
+                <AssetField label={t('manufacturer', 'Manufacturer')}>
                   <input value={form.manufacturer} onChange={(e) => setForm((prev) => ({ ...prev, manufacturer: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Model">
+                <AssetField label={t('model', 'Model')}>
                   <input value={form.model} onChange={(e) => setForm((prev) => ({ ...prev, model: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Cost Amount">
+                <AssetField label={t('costAmount', 'Cost Amount')}>
                   <input type="number" min="0" step="0.01" value={form.costAmount} onChange={(e) => setForm((prev) => ({ ...prev, costAmount: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Purchase Date">
+                <AssetField label={t('purchaseDate', 'Purchase Date')}>
                   <input type="date" value={form.purchaseDate} onChange={(e) => setForm((prev) => ({ ...prev, purchaseDate: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Owner ID" hint="Use the numeric user ID from the users page.">
+                <AssetField label={t('ownerId', 'Owner ID')} hint={t('ownerIdHint', 'Use the numeric user ID from the users page.')}>
                   <input type="number" min="1" value={form.ownerId} onChange={(e) => setForm((prev) => ({ ...prev, ownerId: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Location">
+                <AssetField label={t('location', 'Location')}>
                   <input value={form.location} onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
-                <AssetField label="Description">
+                <AssetField label={t('description', 'Description')}>
                   <textarea value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} rows={3} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </AssetField>
                 {editingAssetId && (
                   <>
-                    <AssetField label="Status">
+                    <AssetField label={t('status', 'Status')}>
                       <select value={form.status} onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
-                        <option value="Active">Active</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Retired">Retired</option>
+                        <option value="Active">{t('active', 'Active')}</option>
+                        <option value="Maintenance">{t('maintenance', 'Maintenance')}</option>
+                        <option value="Retired">{t('retired', 'Retired')}</option>
                       </select>
                     </AssetField>
-                    <AssetField label="Decommission Date">
+                    <AssetField label={t('decommissionDate', 'Decommission Date')}>
                       <input type="date" value={form.decommissionDate} onChange={(e) => setForm((prev) => ({ ...prev, decommissionDate: e.target.value }))} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                     </AssetField>
                   </>
@@ -541,10 +541,10 @@ const ManageAssets = () => {
 
               <div className="p-5 border-t border-border flex items-center justify-end gap-2">
                 <Button type="button" variant="outline" onClick={closeForm}>
-                  Cancel
+                  {t('cancel', 'Cancel')}
                 </Button>
                 <Button type="submit" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Asset'}
+                  {saving ? t('saving', 'Saving...') : t('saveAsset', 'Save Asset')}
                 </Button>
               </div>
             </form>

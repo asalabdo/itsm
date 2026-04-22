@@ -136,7 +136,7 @@ const AssetRegistryAndTracking = () => {
 
   const handleBulkAction = (action) => {
     if (action === 'schedule-maintenance') {
-      navigate('/asset-lifecycle-management');
+      navigate('/maintenance-scheduling');
       return;
     }
 

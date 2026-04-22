@@ -43,6 +43,7 @@ import ChangeManagement from './pages/change-management';
 import ChangeManagementDetails from './pages/change-management/details';
 import UserManagement from './pages/user-management/UserManagement';
 import IncidentManagementWorkflow from './pages/incident-management-workflow';
+import MaintenanceScheduling from './pages/maintenance-scheduling';
 import SearchResults from './pages/search-results';
 import KnowledgeBase from './pages/knowledge-base';
 import Problems from './pages/problems';
@@ -108,6 +109,7 @@ const Routes = () => {
             <Route path="/ticket-chatbot" element={<ProtectedRoute><TicketChatbot /></ProtectedRoute>} />
             <Route path="/user-management" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
             <Route path="/incident-management-workflow" element={<ProtectedRoute><IncidentManagementWorkflow /></ProtectedRoute>} />
+            <Route path="/maintenance-scheduling" element={<ProtectedRoute><MaintenanceScheduling /></ProtectedRoute>} />
             <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
             <Route path="/problems" element={<ProtectedRoute><Problems /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

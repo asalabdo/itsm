@@ -52,7 +52,11 @@ const Settings = () => {
       apiKeyQueryName: 'apiKey',
       technicianHeaderName: 'TECHNICIAN_KEY',
       catalogEndpoint: '/api/v3/request_templates',
+      knowledgeBaseEndpoint: '/api/v3/solutions',
       requestsEndpoint: '/api/v3/requests',
+      approvalsEndpoint: '/api/v3/approvals',
+      changesEndpoint: '/api/v3/changes',
+      assetEndpoint: '/api/v3/assets',
       servicesEndpoint: '/api/v3/service_catalog/items',
       alertsEndpoint: '/api/v3/requests',
     },
@@ -492,7 +496,7 @@ const Settings = () => {
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">{isArabic ? 'ØªÙƒØ§Ù…Ù„ ManageEngine' : 'ManageEngine Integration'}</h2>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {isArabic ? 'Ø§Ø¶Ø¨Ø· Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø§Ø¹ØªÙ…Ø§Ø¯ ÙˆÙ†Ù‚Ø§Ø· Ø§Ù„Ù†Ù‡Ø§ÙŠØ© ÙˆÙˆØ¶Ø¹ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø© Ù„Ù€ ServiceDesk Ùˆ OpManager.' : 'Configure runtime credentials, endpoints, and auth mode for ServiceDesk and OpManager.'}
+                      {isArabic ? 'Ø§Ø¶Ø¨Ø· Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø§Ø¹ØªÙ…Ø§Ø¯ ÙˆÙ†Ù‚Ø§Ø· Ø§Ù„Ù†Ù‡Ø§ÙŠØ© ÙˆÙˆØ¶Ø¹ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø© Ù„Ù€ ServiceDesk Ùˆ OpManager 12.8.270.' : 'Configure runtime credentials, endpoints, and auth mode for ServiceDesk and OpManager 12.8.270.'}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -697,10 +701,42 @@ const Settings = () => {
                         />
                       </label>
                       <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Knowledge Base Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.knowledgeBaseEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'knowledgeBaseEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
                         <span className="text-sm font-medium text-foreground">Requests Endpoint</span>
                         <input
                           value={manageEngineSettings[sectionKey]?.requestsEndpoint || ''}
                           onChange={(e) => updateManageEngineField(sectionKey, 'requestsEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Approvals Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.approvalsEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'approvalsEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Changes Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.changesEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'changesEndpoint', e.target.value)}
+                          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium text-foreground">Asset Endpoint</span>
+                        <input
+                          value={manageEngineSettings[sectionKey]?.assetEndpoint || ''}
+                          onChange={(e) => updateManageEngineField(sectionKey, 'assetEndpoint', e.target.value)}
                           className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
                         />
                       </label>

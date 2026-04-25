@@ -155,7 +155,7 @@ const EscalationsPage = () => {
         <ManageEngineOnPremSnapshot
           compact
           title={t('manageEngineEscalationSignals', 'ManageEngine Escalation Signals')}
-          description={t('manageEngineEscalationSignalsDesc', 'Correlate ServiceDesk queue pressure and OpManager alarms before deciding escalation thresholds.')}
+          description={t('manageEngineEscalationSignalsDesc', 'Correlate ServiceDesk request pressure with OpManager 12.8.270 alerts before deciding escalation thresholds.')}
         />
 
         <section className="space-y-4">

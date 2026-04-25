@@ -66,7 +66,7 @@ const ManageIndex = () => {
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEngineAdminData', 'ManageEngine Admin Data')}
-              description={t('manageEngineAdminDataDesc', 'Review live ServiceDesk and OpManager context while maintaining local SLA, priority, workflow, and reference data.')}
+              description={t('manageEngineAdminDataDesc', 'Review live ServiceDesk requests plus OpManager 12.8.270 services and alerts while maintaining local SLA, priority, workflow, and reference data.')}
             />
           </div>
 

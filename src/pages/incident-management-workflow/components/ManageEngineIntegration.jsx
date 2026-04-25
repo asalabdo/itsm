@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { manageEngineAPI } from '../../../services/api';
-import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
+import { normalizeManageEngineUnified, summarizeOpManager270 } from '../../../services/manageEngineDataUtils';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
@@ -131,17 +131,20 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
   };
 
   const operationGroups = useMemo(() => ({
-    serviceDesk: operations.filter((item) => item.source === 'ServiceDesk'),
-    opManager: operations.filter((item) => item.source === 'OpManager'),
+    serviceDesk: operations.filter((item) => item.source === 'ServiceDesk' && item.itemType === 'request'),
+    opManager: operations.filter((item) => item.source === 'OpManager' && item.itemType === 'alert'),
   }), [operations]);
 
   const catalogGroups = useMemo(() => ({
-    serviceDesk: catalog.filter((item) => item.source === 'ServiceDesk'),
-    opManager: catalog.filter((item) => item.source === 'OpManager'),
+    serviceDesk: catalog.filter((item) => item.source === 'ServiceDesk' && item.itemType === 'catalog'),
+    opManager: catalog.filter((item) => item.source === 'OpManager' && item.itemType === 'service'),
   }), [catalog]);
+  const opManagerSummary = useMemo(() => summarizeOpManager270({ data: { catalog, operations } }), [catalog, operations]);
   const zeroHiddenCount = countHiddenZeroMetrics([
-    { value: operations.length },
-    { value: catalog.length },
+    { value: operationGroups.serviceDesk.length },
+    { value: operationGroups.opManager.length },
+    { value: catalogGroups.serviceDesk.length },
+    { value: catalogGroups.opManager.length },
   ]);
 
   const handleFilterChange = (key, value) => {
@@ -157,7 +160,7 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
         <div>
           <h3 className="text-xl font-semibold text-foreground">ManageEngine Unified Integration</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            ServiceDesk requests and catalog data combined with OpManager services and alerts.
+            ServiceDesk requests and catalog data combined with OpManager 12.8.270 services and alerts.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -194,13 +197,13 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
           </div>
         </div>
         <ManageEngineMetricCard
-          label="Operational Items"
-          value={operations.length}
+          label="Requests + Alerts"
+          value={operationGroups.serviceDesk.length + operationGroups.opManager.length}
           icon={<Icon name="Activity" size={18} className="text-primary" />}
         />
         <ManageEngineMetricCard
           label="Catalog + Services"
-          value={catalog.length}
+          value={catalogGroups.serviceDesk.length + catalogGroups.opManager.length}
           icon={<Icon name="Layers3" size={18} className="text-primary" />}
         />
       </div>
@@ -250,13 +253,13 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
           ServiceDesk ops: {operationGroups.serviceDesk.length}
         </span>
         <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-          OpManager ops: {operationGroups.opManager.length}
+          OpManager alerts: {operationGroups.opManager.length}
         </span>
         <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
           ServiceDesk catalog: {catalogGroups.serviceDesk.length}
         </span>
         <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-          OpManager services: {catalogGroups.opManager.length}
+          OpManager 12.8.270 services: {opManagerSummary.services}
         </span>
       </div>
 
@@ -284,7 +287,7 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             <span className="rounded-full bg-muted px-2 py-1">Sync status: {syncDetails.status}</span>
             <span className="rounded-full bg-muted px-2 py-1">ServiceDesk tickets: {syncDetails.serviceDeskCount || 0}</span>
-            <span className="rounded-full bg-muted px-2 py-1">OpManager tickets: {syncDetails.opManagerCount || 0}</span>
+            <span className="rounded-full bg-muted px-2 py-1">OpManager items: {syncDetails.opManagerCount || 0}</span>
           </div>
         </div>
       )}
@@ -304,7 +307,7 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <Icon name="Activity" size={18} className="text-primary" />
-              <h4 className="text-lg font-semibold text-foreground">Operational Feed</h4>
+              <h4 className="text-lg font-semibold text-foreground">Requests and Alerts</h4>
             </div>
             {[...operationGroups.serviceDesk, ...operationGroups.opManager].slice(0, 10).map((item) => (
               <div key={`${item.source}-${item.externalId}`} className="rounded-xl border border-border bg-background p-4">
@@ -335,7 +338,7 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
             ))}
             {operations.length === 0 && (
               <div className="rounded-xl border border-dashed border-border bg-background p-6 text-sm text-muted-foreground">
-                No ServiceDesk requests or OpManager alerts were returned.
+                No ServiceDesk requests or OpManager 12.8.270 alerts were returned.
               </div>
             )}
           </section>
@@ -343,7 +346,7 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <Icon name="Layers3" size={18} className="text-primary" />
-              <h4 className="text-lg font-semibold text-foreground">Catalog and Services</h4>
+              <h4 className="text-lg font-semibold text-foreground">Catalog and Supported Services</h4>
             </div>
             {[...catalogGroups.serviceDesk, ...catalogGroups.opManager].slice(0, 10).map((item) => (
               <div key={`${item.source}-${item.externalId}`} className="rounded-xl border border-border bg-background p-4">
@@ -371,7 +374,7 @@ const ManageEngineIntegration = ({ onSyncComplete }) => {
             ))}
             {catalog.length === 0 && (
               <div className="rounded-xl border border-dashed border-border bg-background p-6 text-sm text-muted-foreground">
-                No ServiceDesk templates or OpManager services were returned.
+                No ServiceDesk templates or OpManager 12.8.270 services were returned.
               </div>
             )}
           </section>

@@ -1,55 +1,70 @@
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
-import ExecutiveITServiceSummary from './pages/executive-it-service-summary';
-import ITOperationsCommandCenter from './pages/it-operations-command-center';
-import ServicePerformanceAnalytics from './pages/service-performance-analytics';
-import AssetLifecycleManagement from './pages/asset-lifecycle-management';
-import ChangeManagementDashboard from './pages/change-management-dashboard';
-import ServiceRequestManagement from './pages/service-request-management';
 import Layout from './components/Layout';
 import CRUDPage from './crud/CRUDPage';
-import ManageIndex from './pages/manage';
-import TicketCreation from './pages/ticket-creation';
-import AgentDashboard from './pages/agent-dashboard';
-import ManagerDashboard from './pages/manager-dashboard';
-import CustomerPortal from './pages/customer-portal';
-import ServiceDeskBlueprint from './pages/service-desk-blueprint';
-import MonitoringEvents from './pages/monitoring-events';
-import ReportsAnalytics from './pages/reports-analytics';
-import TicketDetails from './pages/ticket-details';
-import WorkflowBuilder from './pages/workflow-builder';
-import ApprovalQueueManager from './pages/approval-queue-manager';
-import WorkflowBuilderStudio from './pages/workflow-builder-studio';
-import TicketManagementCenter from './pages/ticket-management-center';
-import TicketWorkflowCrud from './pages/ticket-workflow-crud';
-import ReportingAndAnalyticsHub from './pages/reporting-and-analytics-hub';
-import AuditTrailAndComplianceViewer from './pages/audit-trail-and-compliance-viewer';
-import AssetRegistryAndTracking from './pages/asset-registry-and-tracking';
-import ManageAssets from './pages/manage-assets';
-import TicketChatbot from './pages/ticket-chatbot';
-import MyWorkDashboard from './pages/my-work-dashboard';
-import Login from './pages/login/Login';
-import AutomationManagement from './pages/automation-rules';
-import AdvancedAnalyticsHub from './pages/advanced-analytics';
-import SlaPolicies from './pages/sla-policies';
-import TicketSla from './pages/ticket-sla';
-import Priorities from './pages/priorities';
-import Escalations from './pages/escalations';
-import ServiceCatalogHub from './pages/service-catalog';
-import FulfillmentCenter from './pages/service-request-management/FulfillmentCenter';
-import ChangeManagement from './pages/change-management';
-import ChangeManagementDetails from './pages/change-management/details';
-import UserManagement from './pages/user-management/UserManagement';
-import IncidentManagementWorkflow from './pages/incident-management-workflow';
-import MaintenanceScheduling from './pages/maintenance-scheduling';
-import SearchResults from './pages/search-results';
-import KnowledgeBase from './pages/knowledge-base';
-import Problems from './pages/problems';
-import Settings from './pages/settings';
-import ScenarioValidationCenter from './pages/scenario-validation-center';
 import { Navigate } from 'react-router-dom';
+import { useLanguage } from './context/LanguageContext';
+import { getTranslation } from './services/i18n';
+
+const ExecutiveITServiceSummary = lazy(() => import('./pages/executive-it-service-summary'));
+const ITOperationsCommandCenter = lazy(() => import('./pages/it-operations-command-center'));
+const ServicePerformanceAnalytics = lazy(() => import('./pages/service-performance-analytics'));
+const AssetLifecycleManagement = lazy(() => import('./pages/asset-lifecycle-management'));
+const ChangeManagementDashboard = lazy(() => import('./pages/change-management-dashboard'));
+const ServiceRequestManagement = lazy(() => import('./pages/service-request-management'));
+const ManageIndex = lazy(() => import('./pages/manage'));
+const TicketCreation = lazy(() => import('./pages/ticket-creation'));
+const AgentDashboard = lazy(() => import('./pages/agent-dashboard'));
+const ManagerDashboard = lazy(() => import('./pages/manager-dashboard'));
+const CustomerPortal = lazy(() => import('./pages/customer-portal'));
+const ServiceDeskBlueprint = lazy(() => import('./pages/service-desk-blueprint'));
+const MonitoringEvents = lazy(() => import('./pages/monitoring-events'));
+const ReportsAnalytics = lazy(() => import('./pages/reports-analytics'));
+const TicketDetails = lazy(() => import('./pages/ticket-details'));
+const WorkflowBuilder = lazy(() => import('./pages/workflow-builder'));
+const ApprovalQueueManager = lazy(() => import('./pages/approval-queue-manager'));
+const WorkflowBuilderStudio = lazy(() => import('./pages/workflow-builder-studio'));
+const TicketManagementCenter = lazy(() => import('./pages/ticket-management-center'));
+const TicketWorkflowCrud = lazy(() => import('./pages/ticket-workflow-crud'));
+const ReportingAndAnalyticsHub = lazy(() => import('./pages/reporting-and-analytics-hub'));
+const AuditTrailAndComplianceViewer = lazy(() => import('./pages/audit-trail-and-compliance-viewer'));
+const AssetRegistryAndTracking = lazy(() => import('./pages/asset-registry-and-tracking'));
+const ManageAssets = lazy(() => import('./pages/manage-assets'));
+const TicketChatbot = lazy(() => import('./pages/ticket-chatbot'));
+const MyWorkDashboard = lazy(() => import('./pages/my-work-dashboard'));
+const Login = lazy(() => import('./pages/login/Login'));
+const AutomationManagement = lazy(() => import('./pages/automation-rules'));
+const AdvancedAnalyticsHub = lazy(() => import('./pages/advanced-analytics'));
+const SlaPolicies = lazy(() => import('./pages/sla-policies'));
+const TicketSla = lazy(() => import('./pages/ticket-sla'));
+const Priorities = lazy(() => import('./pages/priorities'));
+const Escalations = lazy(() => import('./pages/escalations'));
+const ServiceCatalogHub = lazy(() => import('./pages/service-catalog'));
+const FulfillmentCenter = lazy(() => import('./pages/service-request-management/FulfillmentCenter'));
+const ChangeManagement = lazy(() => import('./pages/change-management'));
+const ChangeManagementDetails = lazy(() => import('./pages/change-management/details'));
+const UserManagement = lazy(() => import('./pages/user-management/UserManagement'));
+const IncidentManagementWorkflow = lazy(() => import('./pages/incident-management-workflow'));
+const MaintenanceScheduling = lazy(() => import('./pages/maintenance-scheduling'));
+const SearchResults = lazy(() => import('./pages/search-results'));
+const KnowledgeBase = lazy(() => import('./pages/knowledge-base'));
+const Problems = lazy(() => import('./pages/problems'));
+const Settings = lazy(() => import('./pages/settings'));
+const ScenarioValidationCenter = lazy(() => import('./pages/scenario-validation-center'));
+
+const RouteFallback = () => {
+  const { language } = useLanguage();
+  const t = (key, fallback) => getTranslation(language, key, fallback);
+
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center text-sm text-muted-foreground">
+      {t('loadingPage', 'Loading page...')}
+    </div>
+  );
+};
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -65,7 +80,8 @@ const Routes = () => {
       <ErrorBoundary>
         <ScrollToTop />
         <Layout>
-          <RouterRoutes>
+          <Suspense fallback={<RouteFallback />}>
+            <RouterRoutes>
             <Route path="/login" element={<Login />} />
             
             <Route path="/" element={<ProtectedRoute><AgentDashboard /></ProtectedRoute>} />
@@ -117,7 +133,8 @@ const Routes = () => {
             <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
             
             <Route path="*" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
-          </RouterRoutes>
+            </RouterRoutes>
+          </Suspense>
         </Layout>
       </ErrorBoundary>
     </BrowserRouter>

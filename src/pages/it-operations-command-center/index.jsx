@@ -10,6 +10,7 @@ import IncidentAgingHeatmap from './components/IncidentAgingHeatmap';
 import TechnicianWorkload from './components/TechnicianWorkload';
 import SLAComplianceGauges from './components/SLAComplianceGauges';
 import ManageEngineOperationsPanel from './components/ManageEngineOperationsPanel';
+import TicketLaunchMenu from '../../components/tickets/TicketLaunchMenu';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 
@@ -20,7 +21,6 @@ const ITOperationsCommandCenter = () => {
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [selectedService, setSelectedService] = useState('all');
   const [lastUpdated, setLastUpdated] = useState(new Date());
-  const [connectionStatus, setConnectionStatus] = useState('connected');
 
   useEffect(() => {
     let refreshInterval;
@@ -28,11 +28,6 @@ const ITOperationsCommandCenter = () => {
     if (isAutoRefresh) {
       refreshInterval = setInterval(() => {
         setLastUpdated(new Date());
-        // Simulate occasional connection issues
-        if (Math.random() < 0.05) {
-          setConnectionStatus('warning');
-          setTimeout(() => setConnectionStatus('connected'), 3000);
-        }
       }, 30000); // 30 second refresh
     }
 
@@ -46,7 +41,6 @@ const ITOperationsCommandCenter = () => {
   useEffect(() => {
     const handleRefresh = () => {
       setLastUpdated(new Date());
-      setConnectionStatus('connected');
     };
 
     window.addEventListener('itsm:refresh', handleRefresh);
@@ -111,11 +105,10 @@ const ITOperationsCommandCenter = () => {
               </div>
               
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  connectionStatus === 'connected' ? 'bg-success animate-pulse' : 
-                  connectionStatus === 'warning' ? 'bg-warning animate-pulse' : 'bg-error'
-                }`}></div>
-              <span className="text-muted-foreground capitalize">{t(connectionStatus, connectionStatus)}</span>
+                <div className={`w-2 h-2 rounded-full ${isAutoRefresh ? 'bg-success animate-pulse' : 'bg-warning'}`}></div>
+                <span className="text-muted-foreground">
+                  {isAutoRefresh ? t('autoRefreshEnabled', 'Auto refresh enabled') : t('manualRefreshMode', 'Manual refresh mode')}
+                </span>
               </div>
             </div>
           </div>
@@ -152,9 +145,13 @@ const ITOperationsCommandCenter = () => {
           {/* Quick Actions Footer */}
           <div className="bg-card border-t border-border p-4 mt-6">
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <button onClick={() => navigate('/incident-management-workflow')} className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-                <span className="text-sm font-medium">{t('createIncident', 'Create Incident')}</span>
-              </button>
+              <TicketLaunchMenu
+                buttonVariant="default"
+                buttonSize="sm"
+                buttonClassName="h-10 px-4 gap-2"
+                buttonLabel={t('createTicket', 'Create Ticket')}
+                showText
+              />
               
               <button onClick={() => navigate('/manager-dashboard')} className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
                 <span className="text-sm font-medium">{t('escalateToManager', 'Escalate to Manager')}</span>

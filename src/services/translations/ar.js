@@ -3583,4 +3583,19 @@ export const ar = {
     all: 'الكل',
     matchingAssets: 'أصل مطابق',
     selectAssetTip: 'اختر الأصل من الجدول لرؤية الملكية والتاريخ والعلاقات.',
+
+    // Scenario Validation Center
+    searchScenarios: 'ابحث في السيناريوهات',
+    searchScenarioPlaceholder: 'ابحث برقم السيناريو أو الاسم أو الوحدة أو النتيجة المتوقعة...',
+    readyForCutover: 'جاهز للقطع',
+    backendOnlyCutover: 'لا تزال %d سيناريوهات خلفية تحتاج عمل قطع',
+    backendOnlyMigration: 'لا تزال %d سيناريوهات خلفية تحتاج دعم الترحيل',
+    hypercareReady: 'جاهز للمراقبة',
+    backendOnlyMigrationWork: 'لا تزال %d سيناريوهات خلفية تحتاج عمل ترحيل',
+    migrationSupportReady: 'دعم الترحيل جاهز',
+    manageEngineScenarioEvidenceDesc: 'تحقق من السيناريوهات مقابل تدفق طلبات ServiceDesk المحلية وخدمات OpManager وضغط التنبيهات.',
+    securityAndAccess: 'الأمان والوصول',
+    ticketManagement: 'إدارة التذاكر',
+    serviceRequests: 'طلبات الخدمة',
+    scenarios: 'سيناريوهات',
 };

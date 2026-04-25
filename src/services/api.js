@@ -139,8 +139,13 @@ export const manageEngineAPI = {
     const queryString = new URLSearchParams(params).toString();
     return apiClient.get(`/manageengine/incidents${queryString ? `?${queryString}` : ''}`);
   },
+  getKnowledgeBase: (params = {}) => apiClient.get('/manageengine/knowledge-base', { params }),
+  getApprovals: (params = {}) => apiClient.get('/manageengine/approvals', { params }),
+  getChanges: (params = {}) => apiClient.get('/manageengine/changes', { params }),
+  getRequesters: (params = {}) => apiClient.get('/manageengine/requesters', { params }),
   getCatalog: (params = {}) => apiClient.get('/manageengine/catalog', { params }),
   getOperations: (params = {}) => apiClient.get('/manageengine/operations', { params }),
+  getOpManagerAnalytics: () => apiClient.get('/manageengine/opmanager-analytics'),
   getUnified: (params = {}) => apiClient.get('/manageengine/unified', { params }),
   getSyncStatus: () => apiClient.get('/manageengine/sync-status'),
   syncAsset: (assetId) => apiClient.post(`/manageengine/assets/${assetId}/sync`),

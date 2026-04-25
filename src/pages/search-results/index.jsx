@@ -126,7 +126,7 @@ const SearchResults = () => {
           <ManageEngineOnPremSnapshot
             compact
             title={t('manageEngineSearchContext', 'ManageEngine Search Context')}
-            description={t('manageEngineSearchContextDesc', 'Use ServiceDesk and OpManager activity as live context while searching local tickets.')}
+            description={t('manageEngineSearchContextDesc', 'Use ServiceDesk requests plus OpManager 12.8.270 services and alerts as live context while searching local tickets.')}
           />
         </div>
 

@@ -123,7 +123,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={16} />
-            <span className="ml-1">{isExpanded ? t('less', 'Less') : t('more', 'More')}</span>
+            <span className="ms-1">{isExpanded ? t('less', 'Less') : t('more', 'More')}</span>
           </Button>
           <Button
             variant="ghost"
@@ -132,7 +132,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
             disabled={getActiveFilterCount() === 0}
           >
             <Icon name="RotateCcw" size={16} />
-            <span className="ml-1">{t('reset', 'Reset')}</span>
+            <span className="ms-1">{t('reset', 'Reset')}</span>
           </Button>
         </div>
       </div>
@@ -208,7 +208,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
           <h4 className="text-sm font-medium text-foreground">{t('quickFilters', 'Quick Filters')}</h4>
           <Button variant="ghost" size="sm" onClick={saveCurrentFilter}>
             <Icon name="Plus" size={14} />
-            <span className="ml-1">{t('saveCurrent', 'Save Current')}</span>
+            <span className="ms-1">{t('saveCurrent', 'Save Current')}</span>
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -239,7 +239,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
               onClick={() => onExport?.('pdf')}
             >
               <Icon name="FileText" size={16} />
-              <span className="ml-1">PDF</span>
+              <span className="ms-1">PDF</span>
             </Button>
             <Button
               variant="outline"
@@ -247,7 +247,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
               onClick={() => onExport?.('excel')}
             >
               <Icon name="FileSpreadsheet" size={16} />
-              <span className="ml-1">Excel</span>
+              <span className="ms-1">Excel</span>
             </Button>
             <Button
               variant="outline"
@@ -255,7 +255,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
               onClick={() => onExport?.('csv')}
             >
               <Icon name="Download" size={16} />
-              <span className="ml-1">CSV</span>
+              <span className="ms-1">CSV</span>
             </Button>
             <Button
               variant="outline"
@@ -263,7 +263,7 @@ const FilterControls = ({ onFiltersChange, onExport, filterOptions = {} }) => {
               onClick={() => navigate('/reports-analytics')}
             >
               <Icon name="BarChart3" size={16} />
-              <span className="ml-1">{t('analytics', 'Analytics')}</span>
+              <span className="ms-1">{t('analytics', 'Analytics')}</span>
             </Button>
           </div>
         </div>

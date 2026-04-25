@@ -4,6 +4,7 @@ import Icon from '../AppIcon';
 import Button from './Button';
 import Input from './Input';
 import ThemeToggle from './ThemeToggle';
+import TicketLaunchMenu from '../tickets/TicketLaunchMenu';
 import notificationService from '../../services/notificationService';
 import { ticketsAPI } from '../../services/api';
 import { isBackendReady, markBackendReady } from '../../services/backendAvailability';
@@ -420,12 +421,13 @@ const Header = () => {
             </div>
 
             {/* Quick Create */}
-            <Button asChild variant="default" size="sm" className="h-8 px-2 gap-1" title={t('newTicket', 'New Ticket')}>
-              <Link to="/ticket-creation">
-                <Icon name="Plus" size={15} />
-                <span className="hidden md:inline text-xs font-medium">{t('newTicket', 'New Ticket')}</span>
-              </Link>
-            </Button>
+            <TicketLaunchMenu
+              buttonVariant="default"
+              buttonSize="sm"
+              buttonClassName="h-8 px-2 gap-1"
+              buttonLabel={t('newTicket', 'New Ticket')}
+              showText
+            />
 
             {/* Pending badge */}
             {pendingCount > 0 && (

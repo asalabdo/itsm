@@ -161,6 +161,13 @@ const MaintenanceScheduling = () => {
     corrective: scheduledMaintenances.filter(m => m.type === 'corrective').length,
     overdue: scheduledMaintenances.filter(m => m.scheduledDate && new Date(m.scheduledDate) < new Date()).length,
   }), [scheduledMaintenances]);
+  const maintenanceCue = loading
+    ? t('loadingMaintenance', 'Loading maintenance schedule...')
+    : stats.overdue > 0
+      ? `${stats.overdue} ${t('overdue', 'overdue')} ${t('maintenanceTasks', 'maintenance tasks')}`
+      : stats.totalScheduled > 0
+        ? t('maintenanceQueueHealthy', 'Maintenance queue healthy')
+        : t('noMaintenanceScheduled', 'No maintenance scheduled');
 
   const getPriorityColor = (priority) => {
     const colors = {
@@ -187,6 +194,20 @@ const MaintenanceScheduling = () => {
                 <p className="text-muted-foreground">
                   {t('maintenanceSchedulingDesc', 'إدارة جدولة الصيانة الوقائية والتصحيحية للأصول')}
                 </p>
+                <div
+                  className={`mt-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
+                    loading
+                      ? 'border-border bg-muted text-muted-foreground'
+                      : stats.overdue > 0
+                        ? 'border-error/20 bg-error/10 text-error'
+                        : stats.totalScheduled > 0
+                          ? 'border-success/20 bg-success/10 text-success'
+                          : 'border-border bg-muted text-muted-foreground'
+                  }`}
+                  aria-live="polite"
+                >
+                  {maintenanceCue}
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <Button

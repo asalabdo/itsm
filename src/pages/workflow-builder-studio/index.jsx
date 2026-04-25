@@ -50,6 +50,36 @@ const WorkflowBuilderStudio = () => {
     }
   ];
 
+  const deploymentReadiness = (() => {
+    const errorCount = validationResults.filter((result) => result.type === 'error').length;
+    const warningCount = validationResults.filter((result) => result.type === 'warning').length;
+
+    if (errorCount > 0) {
+      return {
+        state: 'blocked',
+        label: t('deploymentBlocked', 'Blocked for deployment'),
+        tone: 'destructive',
+        description: t('resolveErrorsBeforeDeploy', 'Resolve validation errors before deploying this workflow')
+      };
+    }
+
+    if (warningCount > 0) {
+      return {
+        state: 'review',
+        label: t('deploymentReview', 'Ready for review'),
+        tone: 'warning',
+        description: t('reviewWarningsBeforeDeploy', 'Review validation warnings before deployment')
+      };
+    }
+
+    return {
+      state: 'ready',
+      label: t('deploymentReady', 'Ready for deployment'),
+      tone: 'success',
+      description: t('workflowReadyToDeploy', 'No validation issues remain')
+    };
+  })();
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e?.ctrlKey || e?.metaKey) && e?.key === 's') {
@@ -197,7 +227,7 @@ const WorkflowBuilderStudio = () => {
           <ManageEngineOnPremSnapshot
             compact
             title={isArabic ? 'إشارات منشئ سير العمل في ManageEngine' : t('manageEngineWorkflowBuilderSignals', 'ManageEngine Workflow Builder Signals')}
-            description={isArabic ? 'استخدم إشارات تكامل ServiceDesk وOpManager أثناء تصميم مسارات الأتمتة.' : t('manageEngineWorkflowBuilderSignalsDesc', 'Use ServiceDesk and OpManager integration signals while designing automation paths.')}
+            description={isArabic ? 'استخدم طلبات ServiceDesk مع خدمات وتنبيهات OpManager 12.8.270 أثناء تصميم مسارات الأتمتة.' : t('manageEngineWorkflowBuilderSignalsDesc', 'Use ServiceDesk requests plus OpManager 12.8.270 services and alerts while designing automation paths.')}
           />
         </div>
 
@@ -212,6 +242,7 @@ const WorkflowBuilderStudio = () => {
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history?.length - 1}
           isSaving={isSaving}
+          deploymentReadiness={deploymentReadiness}
         />
 
         <div className="px-4 md:px-6 pt-4">
@@ -224,6 +255,7 @@ const WorkflowBuilderStudio = () => {
             lastAction={isSaving ? (isArabic ? 'جارٍ حفظ تغييرات سير العمل' : t('savingWorkflow', 'Saving workflow changes')) : (isArabic ? `تحتوي اللوحة على ${nodes.length} عقدة و${connections.length} اتصال` : t('canvasContains', `Canvas contains ${nodes.length} node(s) and ${connections.length} connection(s)`))}
             activeStep={activeWorkflowStep}
             steps={workflowSteps}
+            deploymentReadiness={deploymentReadiness}
           />
         </div>
 

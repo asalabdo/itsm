@@ -131,11 +131,11 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
             <Icon name="Filter" size={16} />
-            <span className="ml-2">{isArabic ? 'تصفية' : 'Filter'}</span>
+            <span className="ms-2">{isArabic ? 'تصفية' : 'Filter'}</span>
           </Button>
           <Button variant="outline" size="sm">
             <Icon name="Download" size={16} />
-            <span className="ml-2">{isArabic ? 'تصدير' : 'Export'}</span>
+            <span className="ms-2">{isArabic ? 'تصدير' : 'Export'}</span>
           </Button>
         </div>
       </div>
@@ -242,12 +242,12 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
                 {actionLoading?.[`${approval?.id}-approve`] ? (
                   <>
                     <div className="animate-spin w-3 h-3 border border-green-600 border-t-transparent rounded-full"></div>
-                    <span className="ml-2">{isArabic ? 'جارٍ الاعتماد...' : 'Approving...'}</span>
+                    <span className="ms-2">{isArabic ? 'جارٍ الاعتماد...' : 'Approving...'}</span>
                   </>
                 ) : (
                   <>
                     <Icon name="Check" size={14} />
-                    <span className="ml-2">{isArabic ? 'اعتماد' : 'Approve'}</span>
+                    <span className="ms-2">{isArabic ? 'اعتماد' : 'Approve'}</span>
                   </>
                 )}
               </Button>
@@ -262,19 +262,19 @@ const ApprovalWorkflowCards = ({ expanded = false }) => {
                 {actionLoading?.[`${approval?.id}-reject`] ? (
                   <>
                     <div className="animate-spin w-3 h-3 border border-red-600 border-t-transparent rounded-full"></div>
-                    <span className="ml-2">{isArabic ? 'جارٍ الرفض...' : 'Rejecting...'}</span>
+                    <span className="ms-2">{isArabic ? 'جارٍ الرفض...' : 'Rejecting...'}</span>
                   </>
                 ) : (
                   <>
                     <Icon name="X" size={14} />
-                    <span className="ml-2">{isArabic ? 'رفض' : 'Reject'}</span>
+                    <span className="ms-2">{isArabic ? 'رفض' : 'Reject'}</span>
                   </>
                 )}
               </Button>
               
               <Button variant="ghost" size="sm">
                 <Icon name="MessageSquare" size={14} />
-                <span className="ml-2">{isArabic ? 'تعليق' : 'Comment'}</span>
+                <span className="ms-2">{isArabic ? 'تعليق' : 'Comment'}</span>
               </Button>
             </div>
           </div>

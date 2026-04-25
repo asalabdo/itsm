@@ -8,34 +8,81 @@ import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 import { getLocalizedKnowledgeBaseArticle, getLocalizedKnowledgeBaseField } from '../../../services/knowledgeBaseLocalization';
 
+const CATEGORY_LABEL_TO_ID = {
+  access: 'access',
+  hardware: 'hardware',
+  requests: 'requests',
+  asset: 'asset',
+  process: 'process',
+  software: 'software',
+  email: 'email',
+  network: 'network',
+  printing: 'printing',
+  incident: 'incident',
+  problem: 'problem',
+  'service request': 'service-request',
+};
+
+const CATEGORY_OPTIONS = [
+  { id: 'all', labelKey: 'allTopics', fallback: 'All Topics', icon: 'Grid' },
+  { id: 'access', labelKey: 'categoryAccess', fallback: 'Access', icon: 'Shield' },
+  { id: 'hardware', labelKey: 'categoryHardware', fallback: 'Hardware', icon: 'Laptop' },
+  { id: 'requests', labelKey: 'categoryRequests', fallback: 'Requests', icon: 'ClipboardList' },
+  { id: 'asset', labelKey: 'categoryAsset', fallback: 'Asset', icon: 'Package' },
+  { id: 'process', labelKey: 'categoryProcess', fallback: 'Process', icon: 'Route' },
+  { id: 'software', labelKey: 'categorySoftware', fallback: 'Software', icon: 'Box' },
+  { id: 'email', labelKey: 'categoryEmail', fallback: 'Email', icon: 'Mail' },
+  { id: 'network', labelKey: 'categoryNetwork', fallback: 'Network', icon: 'Globe' },
+  { id: 'printing', labelKey: 'categoryPrinting', fallback: 'Printing', icon: 'Printer' },
+  { id: 'incident', labelKey: 'categoryIncident', fallback: 'Incident', icon: 'AlertCircle' },
+  { id: 'problem', labelKey: 'categoryProblem', fallback: 'Problem', icon: 'TriangleAlert' },
+  { id: 'service-request', labelKey: 'categoryServiceRequest', fallback: 'Service Request', icon: 'FileText' },
+];
+
+const getCategoryId = (category) => {
+  const normalized = String(category || '').trim().toLowerCase();
+  return CATEGORY_LABEL_TO_ID[normalized] || normalized.replace(/\s+/g, '-');
+};
+
 const KnowledgeBaseSection = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const isArabic = language === 'ar';
+  const loadErrorText = getTranslation(language, 'knowledgeBaseLoadFailed', 'Failed to load knowledge base articles.');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [rawArticles, setRawArticles] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const loadArticles = async () => {
+      setLoadError('');
       try {
         const res = await knowledgeBaseAPI.getArticles();
         setRawArticles(Array.isArray(res?.data) ? res.data : []);
       } catch (error) {
         setRawArticles([]);
+        setLoadError(loadErrorText);
       }
     };
 
-    loadArticles();
-  }, []);
+    void loadArticles();
+
+    const handleRefresh = () => {
+      void loadArticles();
+    };
+
+    window.addEventListener('itsm:refresh', handleRefresh);
+    return () => window.removeEventListener('itsm:refresh', handleRefresh);
+  }, [loadErrorText]);
 
   const popularArticles = useMemo(
     () => rawArticles.map((article) => ({
       id: article.id,
       ...getLocalizedKnowledgeBaseArticle(article, language),
       description: getLocalizedKnowledgeBaseField(article, 'summary', language) || getLocalizedKnowledgeBaseField(article, 'content', language) || '',
-      category: article.category || 'General',
+      category: getCategoryId(article.category),
       categoryLabel: getLocalizedKnowledgeBaseField(article, 'category', language) || article.category || 'General',
       views: article.views || 0,
       helpful: 90,
@@ -44,15 +91,6 @@ const KnowledgeBaseSection = () => {
     })),
     [rawArticles, language]
   );
-
-  const categoryBase = [
-    { id: 'all', label: t('allTopics', 'All Topics'), icon: 'Grid' },
-    { id: 'getting-started', label: t('gettingStarted', 'Getting Started'), icon: 'Rocket' },
-    { id: 'account', label: t('accountBilling', 'Account & Billing'), icon: 'CreditCard' },
-    { id: 'technical', label: t('technicalIssues', 'Technical Issues'), icon: 'Wrench' },
-    { id: 'features', label: t('featuresUsage', 'Features & Usage'), icon: 'Zap' },
-    { id: 'security', label: t('securityPrivacy', 'Security & Privacy'), icon: 'Shield' },
-  ];
 
   const troubleshootingGuides = [
     {
@@ -94,16 +132,15 @@ const KnowledgeBaseSection = () => {
     const matchesSearch = article?.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
       article?.description?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
       article?.categoryLabel?.toLowerCase()?.includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' ||
-      article?.category?.toLowerCase()?.includes(selectedCategory.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || article?.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = categoryBase.map((category) => ({
+  const categories = CATEGORY_OPTIONS.map((category) => ({
     ...category,
     count: category.id === 'all'
       ? popularArticles.length
-      : popularArticles.filter((article) => article?.category?.toLowerCase()?.includes(category.label.toLowerCase())).length,
+      : popularArticles.filter((article) => article?.category === category.id).length,
   }));
 
   return (
@@ -151,7 +188,7 @@ const KnowledgeBaseSection = () => {
                 className="mx-auto mb-2"
               />
               <div className="text-xs md:text-sm font-medium text-foreground text-center line-clamp-2 mb-1">
-                {category?.label}
+                {t(category?.labelKey, category?.fallback)}
               </div>
               <div className="text-xs text-muted-foreground text-center caption data-text">
                 {category?.count} {isArabic ? 'مقال' : t('articles', 'articles')}
@@ -159,6 +196,12 @@ const KnowledgeBaseSection = () => {
             </button>
           ))}
         </div>
+
+        {loadError && (
+          <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            {loadError}
+          </div>
+        )}
       </div>
 
       <div className="bg-card rounded-lg shadow-elevation-2 p-4 md:p-6 lg:p-8">
@@ -204,7 +247,7 @@ const KnowledgeBaseSection = () => {
           ))}
         </div>
 
-        {filteredArticles?.length === 0 && (
+        {!loadError && filteredArticles?.length === 0 && (
           <div className="text-center py-12">
             <Icon name="Search" size={48} className="mx-auto mb-4 opacity-30" color="var(--color-muted-foreground)" />
             <h3 className="text-lg font-medium text-foreground mb-2">{t('noArticlesFound', 'No articles found')}</h3>
@@ -278,3 +321,4 @@ const KnowledgeBaseSection = () => {
 };
 
 export default KnowledgeBaseSection;
+

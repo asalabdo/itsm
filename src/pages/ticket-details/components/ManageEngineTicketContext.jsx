@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { manageEngineAPI } from '../../../services/api';
-import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
+import { findExactManageEngineTicketMatch, normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import ExternalSystemBadge from '../../../components/ui/ExternalSystemBadge';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
@@ -12,6 +12,7 @@ const ManageEngineTicketContext = ({ ticket }) => {
   const [loading, setLoading] = useState(true);
   const [matchedItem, setMatchedItem] = useState(null);
   const [syncStatus, setSyncStatus] = useState(null);
+  const ticketExternalId = ticket?.externalId;
 
   useEffect(() => {
     const loadData = async () => {
@@ -24,19 +25,7 @@ const ManageEngineTicketContext = ({ ticket }) => {
 
         const { operations, catalog } = normalizeManageEngineUnified(unifiedRes);
         const searchable = [...operations, ...catalog];
-        const title = String(ticket?.title || '').toLowerCase();
-        const description = String(ticket?.description || '').toLowerCase();
-        const externalId = String(ticket?.externalId || '').toLowerCase();
-
-        const matched = searchable.find((item) => {
-          const itemId = String(item?.externalId || '').toLowerCase();
-          const itemName = String(item?.name || '').toLowerCase();
-          const itemDescription = String(item?.description || '').toLowerCase();
-          if (externalId && itemId && itemId === externalId) return true;
-          if (title && itemName && itemName.includes(title)) return true;
-          if (description && itemDescription && itemDescription.includes(description.slice(0, 40))) return true;
-          return false;
-        }) || null;
+        const matched = findExactManageEngineTicketMatch({ externalId: ticketExternalId }, searchable);
 
         setMatchedItem(matched);
         setSyncStatus(syncRes?.data || null);
@@ -46,7 +35,7 @@ const ManageEngineTicketContext = ({ ticket }) => {
     };
 
     void loadData();
-  }, [ticket?.description, ticket?.externalId, ticket?.title]);
+  }, [ticketExternalId]);
 
   const syncHealthLabel = (value) => {
     const normalized = String(value || '').toLowerCase();
@@ -108,7 +97,7 @@ const ManageEngineTicketContext = ({ ticket }) => {
             {t('noMatchingManageEngineItem', 'No matching ManageEngine item was found for this ticket yet.')}
           </div>
           <div className="rounded-xl bg-muted/40 p-4 text-sm text-muted-foreground">
-            {syncStatus?.message || t('manageEngineSyncContextHint', 'The ticket is still eligible for external sync context when ManageEngine data overlaps with its content.')}
+            {syncStatus?.message || t('manageEngineSyncContextHint', 'The ticket is still eligible for external sync context when it has an exact ManageEngine external ID link.')}
           </div>
         </div>
       )}

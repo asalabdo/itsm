@@ -1,19 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
-import { knowledgeBaseAPI } from '../../services/api';
+import { knowledgeBaseAPI, manageEngineAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
 import { getLocalizedKnowledgeBaseField } from '../../services/knowledgeBaseLocalization';
 import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
+import { normalizeManageEngineList } from '../../services/manageEngineDataUtils';
 
 const KnowledgeBase = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   const loadErrorText = getTranslation(language, 'knowledgeBaseLoadFailed', 'Failed to load knowledge base articles.');
 
   const translateCategory = (category) => {
@@ -38,8 +39,11 @@ const KnowledgeBase = () => {
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [manageEngineArticles, setManageEngineArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [manageEngineLoading, setManageEngineLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [manageEngineError, setManageEngineError] = useState('');
 
   useEffect(() => {
     const loadArticles = async () => {
@@ -66,14 +70,37 @@ const KnowledgeBase = () => {
     return () => clearTimeout(timer);
   }, [query, loadErrorText]);
 
+  useEffect(() => {
+    const loadManageEngineArticles = async () => {
+      setManageEngineLoading(true);
+      setManageEngineError('');
+
+      try {
+        const res = query.trim()
+          ? await manageEngineAPI.getKnowledgeBase({ search: query.trim() })
+          : await manageEngineAPI.getKnowledgeBase();
+        const data = normalizeManageEngineList(res);
+        setManageEngineArticles(data);
+      } catch {
+        setManageEngineArticles([]);
+        setManageEngineError(getTranslation(language, 'manageEngineKnowledgeLoadFailed', 'Failed to load ServiceDesk knowledge articles.'));
+      } finally {
+        setManageEngineLoading(false);
+      }
+    };
+
+    const timer = setTimeout(loadManageEngineArticles, 250);
+    return () => clearTimeout(timer);
+  }, [query, language]);
+
   const categories = useMemo(() => {
     const keys = new Set(articles.map((article) => article.category).filter(Boolean));
     return [t('all', 'All'), ...Array.from(keys)];
-  }, [articles, language]);
+  }, [articles, t]);
 
   const filteredArticles = useMemo(
     () => articles.filter((article) => (selectedCategory === t('all', 'All') || selectedCategory === 'All') || article.category === selectedCategory),
-    [articles, selectedCategory, language]
+    [articles, selectedCategory, t]
   );
 
   const featuredArticles = useMemo(
@@ -101,6 +128,12 @@ const KnowledgeBase = () => {
       .filter((article) => article.id !== selectedArticle.id && article.category === selectedArticle.category)
       .slice(0, 3);
   }, [articles, selectedArticle]);
+
+  const openManageEngineArticle = (article) => {
+    if (article?.externalUrl) {
+      window.open(article.externalUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -144,7 +177,7 @@ const KnowledgeBase = () => {
           <ManageEngineOnPremSnapshot
             compact
             title={t('manageEngineKnowledgeContext', 'ManageEngine Knowledge Context')}
-            description={t('manageEngineKnowledgeContextDesc', 'ServiceDesk requests and OpManager alerts that can guide article updates, runbooks, and self-service coverage.')}
+            description={t('manageEngineKnowledgeContextDesc', 'ServiceDesk requests plus OpManager 12.8.270 services and alerts that can guide article updates, runbooks, and self-service coverage.')}
           />
 
           {loadError && (
@@ -264,6 +297,56 @@ const KnowledgeBase = () => {
             </div>
 
             <aside className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">
+                      {t('serviceDeskKnowledge', 'ServiceDesk Knowledge')}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {t('serviceDeskKnowledgeDesc', 'Live ServiceDesk articles and solutions from the on-prem system.')}
+                    </p>
+                  </div>
+                  <Icon name="Database" size={20} className="text-primary" />
+                </div>
+
+                {manageEngineError ? (
+                  <div className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+                    {manageEngineError}
+                  </div>
+                ) : manageEngineLoading ? (
+                  <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                    {t('loadingServiceDeskKnowledge', 'Loading ServiceDesk knowledge...')}
+                  </div>
+                ) : manageEngineArticles.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                    {t('noServiceDeskKnowledge', 'No ServiceDesk knowledge articles are available right now.')}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {manageEngineArticles.slice(0, 4).map((article) => (
+                      <button
+                        key={`${article.source}-${article.externalId}`}
+                        type="button"
+                        onClick={() => openManageEngineArticle(article)}
+                        className="w-full rounded-xl border border-border p-3 text-left hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">{article.name}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{article.category || t('knowledgeBase', 'Knowledge Base')}</div>
+                          </div>
+                          <Icon name="ExternalLink" size={14} className="text-muted-foreground" />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                          {article.description || t('noDescriptionAvailable', 'No description available.')}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
                 <div className={`flex items-center justify-between mb-4`}>
                   <div>

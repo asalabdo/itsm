@@ -166,7 +166,7 @@ const AgentDashboard = () => {
         <div className="mb-6 md:mb-8">
           <ManageEngineOnPremSnapshot
             title={t('manageEngineAgentContext', 'ManageEngine Agent Context')}
-            description={t('manageEngineAgentContextDesc', 'ServiceDesk Plus requests and OpManager alerts that may affect the active ticket queue.')}
+            description={t('manageEngineAgentContextDesc', 'ServiceDesk requests plus OpManager 12.8.270 services and alerts that may affect the active ticket queue.')}
           />
         </div>
 

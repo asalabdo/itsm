@@ -3,7 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
-import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
+import { getOpManager270LatestAlerts, summarizeOpManager270 } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -12,18 +12,20 @@ const ManageEngineMonitoringFeed = () => {
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState([]);
+  const [summary, setSummary] = useState({ alerts: 0, services: 0 });
   const [syncStatus, setSyncStatus] = useState(null);
   const zeroHiddenCount = countHiddenZeroMetrics([{ value: alerts.length }]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [operationsRes, syncRes] = await Promise.all([
-        manageEngineAPI.getOperations({ source: 'OpManager', type: 'alert' }).catch(() => ({ data: { items: [] } })),
+      const [unifiedRes, syncRes] = await Promise.all([
+        manageEngineAPI.getUnified().catch(() => ({ data: { catalog: [], operations: [] } })),
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      setAlerts(normalizeManageEngineList(operationsRes).slice(0, 5));
+      setAlerts(getOpManager270LatestAlerts(unifiedRes, 5));
+      setSummary(summarizeOpManager270(unifiedRes));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);
@@ -43,7 +45,7 @@ const ManageEngineMonitoringFeed = () => {
             <h2 className="text-lg font-semibold text-foreground">{t('manageEngineMonitoringFeed', 'ManageEngine Monitoring Feed')}</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t('manageEngineMonitoringFeedDesc', 'Live OpManager alerts to compare against the event you are about to create.')}
+            {t('manageEngineMonitoringFeedDesc', 'Live OpManager 12.8.270 alerts to compare against the event you are about to create.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -57,7 +59,7 @@ const ManageEngineMonitoringFeed = () => {
       <div className="grid grid-cols-2 gap-3 mb-4">
         <ManageEngineMetricCard
           label={t('liveAlerts', 'Live alerts')}
-          value={alerts.length}
+          value={summary.alerts}
           icon={<Icon name="Radar" size={16} className="text-primary" />}
         />
         <div className="rounded-xl bg-muted/40 p-4">
@@ -65,6 +67,12 @@ const ManageEngineMonitoringFeed = () => {
           <div className="text-sm font-semibold text-foreground capitalize">{syncStatus?.status || t('idle', 'idle')}</div>
         </div>
       </div>
+
+      {!loading && (
+        <div className="mb-4 rounded-xl border border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+          {t('trackedOpManagerServices', 'Tracked OpManager services')}: <span className="font-medium text-foreground">{summary.services}</span>
+        </div>
+      )}
 
       <div className="space-y-3">
         {loading ? (

@@ -1,4 +1,3 @@
-import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -10,6 +9,62 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
   const errors = validationResults?.filter(r => r?.type === 'error');
   const warnings = validationResults?.filter(r => r?.type === 'warning');
   const suggestions = validationResults?.filter(r => r?.type === 'suggestion');
+  const hasErrors = (errors?.length || 0) > 0;
+  const hasWarnings = (warnings?.length || 0) > 0;
+  const readinessState = hasErrors
+    ? {
+        tone: 'error',
+        icon: 'XCircle',
+        label: text('محظور للإطلاق', 'Blocked for go-live'),
+      }
+    : {
+        tone: 'success',
+        icon: 'CheckCircle',
+        label: text('جاهز للإطلاق', 'Ready for go-live'),
+      };
+  const rollbackStatus = hasErrors
+    ? {
+        tone: 'error',
+        icon: 'XCircle',
+        label: text(
+          'تخطيط التراجع معطل حتى استعادة أخطاء التحقق',
+          'Rollback planning is blocked until validation errors are resolved',
+        ),
+      }
+    : hasWarnings
+      ? {
+          tone: 'warning',
+          icon: 'AlertTriangle',
+          label: text(
+            'يوصى بمراجعة تخطيط التراجع قبل النشر',
+            'Rollback review is recommended before deploy',
+          ),
+        }
+      : {
+          tone: 'success',
+          icon: 'CheckCircle',
+          label: text(
+            'خطة التراجع جاهزة للإطلاق',
+            'Rollback plan is ready for go-live',
+          ),
+        };
+  const goLiveSupportCue = hasErrors
+    ? {
+        tone: 'error',
+        icon: 'AlertTriangle',
+        label: text('دعم الإطلاق معلق', 'Go-live support blocked'),
+      }
+    : hasWarnings
+      ? {
+          tone: 'warning',
+          icon: 'AlertTriangle',
+          label: text('دعم الإطلاق قيد المراجعة', 'Go-live support review'),
+        }
+      : {
+          tone: 'success',
+          icon: 'CheckCircle',
+          label: text('دعم الإطلاق جاهز', 'Go-live support ready'),
+        };
 
   const getIcon = (type) => {
     switch (type) {
@@ -72,6 +127,30 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
             <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-md">
               <Icon name="Lightbulb" size={16} className="text-primary" />
               <span className="text-sm font-medium">{suggestions?.length} {text('اقتراحات', 'Suggestions')}</span>
+            </div>
+            <div
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
+                readinessState.tone === 'error'
+                  ? 'bg-error/10 text-error'
+                  : 'bg-success/10 text-success'
+              }`}
+              aria-live="polite"
+            >
+              <Icon name={readinessState.icon} size={16} />
+              <span>{readinessState.label}</span>
+            </div>
+            <div
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium ${
+                rollbackStatus.tone === 'error'
+                  ? 'bg-error/10 text-error'
+                  : rollbackStatus.tone === 'warning'
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-success/10 text-success'
+              }`}
+              aria-live="polite"
+            >
+              <Icon name={rollbackStatus.icon} size={14} />
+              <span>{rollbackStatus.label}</span>
             </div>
           </div>
         </div>
@@ -164,7 +243,20 @@ const ValidationPanel = ({ isOpen, onClose, validationResults }) => {
           )}
         </div>
 
-        <div className="p-4 md:p-6 border-t border-border flex justify-end gap-3">
+        <div className="p-4 md:p-6 border-t border-border flex items-center justify-end gap-3">
+          <div
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium ${
+              goLiveSupportCue.tone === 'error'
+                ? 'bg-error/10 text-error'
+                : goLiveSupportCue.tone === 'warning'
+                  ? 'bg-warning/10 text-warning'
+                  : 'bg-success/10 text-success'
+            }`}
+            aria-live="polite"
+          >
+            <Icon name={goLiveSupportCue.icon} size={14} />
+            <span>{goLiveSupportCue.label}</span>
+          </div>
           <Button
             variant="outline"
             size="default"

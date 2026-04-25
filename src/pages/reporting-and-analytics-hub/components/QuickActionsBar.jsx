@@ -10,6 +10,7 @@ const QuickActionsBar = ({ onRefresh, onSchedule, onShare, onExport, lastUpdated
           <Icon name="Clock" size={16} />
           <span>Last updated: {lastUpdated}</span>
           <button
+            type="button"
             onClick={onRefresh}
             className="p-1 rounded-md hover:bg-muted transition-smooth"
             aria-label="Refresh data"

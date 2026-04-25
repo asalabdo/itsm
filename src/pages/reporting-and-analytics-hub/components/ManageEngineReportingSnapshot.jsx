@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
-import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
+import ManageEngineMetricCard, {
+  ManageEngineZeroBadge,
+  countHiddenZeroMetrics,
+} from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
-import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
+import { summarizeManageEngineUnified, summarizeOpManager270 } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -11,18 +14,15 @@ const ManageEngineReportingSnapshot = () => {
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
-    catalog: 0,
-    operations: 0,
-    serviceDeskCatalog: 0,
-    opManagerCatalog: 0,
     serviceDeskRequests: 0,
+    opManagerServices: 0,
     opManagerAlerts: 0,
   });
   const [syncStatus, setSyncStatus] = useState(null);
   const zeroHiddenCount = countHiddenZeroMetrics([
-    { value: summary.catalog },
-    { value: summary.operations },
-    { value: (syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0) },
+    { value: summary.serviceDeskRequests },
+    { value: summary.opManagerServices },
+    { value: summary.opManagerAlerts },
   ]);
 
   useEffect(() => {
@@ -30,11 +30,17 @@ const ManageEngineReportingSnapshot = () => {
       try {
         setLoading(true);
         const [unifiedRes, syncRes] = await Promise.all([
-          manageEngineAPI.getUnified().catch(() => ({ data: { summary: {} } })),
+          manageEngineAPI.getUnified().catch(() => ({ data: { catalog: [], operations: [], summary: {} } })),
           manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
         ]);
 
-        setSummary(summarizeManageEngineUnified(unifiedRes));
+        const unifiedSummary = summarizeManageEngineUnified(unifiedRes);
+        const opManagerSummary = summarizeOpManager270(unifiedRes);
+        setSummary({
+          serviceDeskRequests: unifiedSummary.serviceDeskRequests,
+          opManagerServices: opManagerSummary.services,
+          opManagerAlerts: opManagerSummary.alerts,
+        });
         setSyncStatus(syncRes?.data || null);
       } finally {
         setLoading(false);
@@ -61,7 +67,7 @@ const ManageEngineReportingSnapshot = () => {
             <h3 className="font-semibold text-foreground">{t('manageEngineReportingSnapshot', 'ManageEngine Reporting Snapshot')}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t('manageEngineReportingSnapshotDesc', 'External service demand and monitoring data ready for reporting.')}
+            {t('manageEngineReportingSnapshotDesc', 'Reporting-ready counts using ServiceDesk requests plus OpManager 12.8.270 services and alerts.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -80,22 +86,22 @@ const ManageEngineReportingSnapshot = () => {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
             <ManageEngineMetricCard
-              label={t('externalCatalog', 'External catalog')}
-              value={summary.catalog}
-              icon={<Icon name="Layers3" size={18} className="text-primary" />}
-              helper={`${summary.serviceDeskCatalog} ServiceDesk + ${summary.opManagerCatalog} OpManager`}
+              label={t('serviceDeskRequests', 'ServiceDesk requests')}
+              value={summary.serviceDeskRequests}
+              icon={<Icon name="ClipboardList" size={18} className="text-primary" />}
+              helper={t('serviceDeskRequestsReadyForReports', 'External request load ready for stakeholder reporting.')}
             />
             <ManageEngineMetricCard
-              label={t('operationalFeed', 'Operational feed')}
-              value={summary.operations}
-              icon={<Icon name="Activity" size={18} className="text-primary" />}
-              helper={`${summary.serviceDeskRequests} requests + ${summary.opManagerAlerts} alerts`}
+              label={t('opManagerServices', 'OpManager services')}
+              value={summary.opManagerServices}
+              icon={<Icon name="Server" size={18} className="text-primary" />}
+              helper={t('opManagerServicesReadyForReports', 'Supported services from the OpManager 12.8.270 feed.')}
             />
             <ManageEngineMetricCard
-              label={t('importedTickets', 'Imported tickets')}
-              value={(syncStatus?.createdCount || 0) + (syncStatus?.updatedCount || 0)}
-              icon={<Icon name="ArrowUpDown" size={18} className="text-primary" />}
-              helper={`${syncStatus?.createdCount || 0} created / ${syncStatus?.updatedCount || 0} updated`}
+              label={t('opManagerAlerts', 'OpManager alerts')}
+              value={summary.opManagerAlerts}
+              icon={<Icon name="Radar" size={18} className="text-primary" />}
+              helper={t('opManagerAlertsReadyForReports', 'Active alert volume from OpManager 12.8.270.')}
             />
             <div className="rounded-lg border border-border bg-muted/20 p-4">
               <div className="text-xs text-muted-foreground mb-1">{t('lastSync', 'Last sync')}</div>
@@ -116,7 +122,7 @@ const ManageEngineReportingSnapshot = () => {
             <p className="text-sm text-muted-foreground">
               {t(
                 'reportingHintDescription',
-                'Use this snapshot to explain how much of the current operational load is coming from external service requests versus monitoring events before exporting reports to stakeholders.'
+                'Use this snapshot to explain ServiceDesk request demand alongside only the services and alerts that OpManager 12.8.270 actually exposes.'
               )}
             </p>
           </div>

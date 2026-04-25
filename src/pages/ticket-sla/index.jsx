@@ -15,6 +15,41 @@ const TicketSlaPage = () => {
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const riskSummary = tickets.reduce(
+    (acc, ticket) => {
+      const status = String(ticket?.slaStatus || '').toLowerCase();
+
+      if (status === 'breached') {
+        acc.breached += 1;
+      } else if (status === 'at_risk') {
+        acc.atRisk += 1;
+      } else {
+        acc.onTrack += 1;
+      }
+
+      return acc;
+    },
+    { breached: 0, atRisk: 0, onTrack: 0 },
+  );
+  const slaCue = loading
+    ? {
+        tone: 'muted',
+        label: t('slaCueLoading', 'Loading SLA risk'),
+      }
+    : riskSummary.breached > 0
+      ? {
+          tone: 'error',
+          label: `${riskSummary.breached} ${t('breached', 'breached')} ${t('tickets', 'tickets')}`,
+        }
+      : riskSummary.atRisk > 0
+        ? {
+            tone: 'warning',
+            label: `${riskSummary.atRisk} ${t('atRisk', 'at risk')} ${t('tickets', 'tickets')}`,
+          }
+        : {
+            tone: 'success',
+            label: t('slaAllClear', 'All SLA tickets on track'),
+          };
 
   useEffect(() => {
     const load = async () => {
@@ -54,6 +89,20 @@ const TicketSlaPage = () => {
               <p className="text-xs uppercase tracking-[0.24em] text-primary font-semibold">{t('liveSLAView', 'Live SLA View')}</p>
               <h1 className="text-3xl font-bold text-foreground mt-1">{t('ticketSLA', 'Ticket SLA')}</h1>
               <p className="text-muted-foreground">{t('slaPageDescription', 'See active tickets, their SLA clock, and jump directly to the ticket or incident workflow.')}</p>
+              <div
+                className={`mt-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
+                  slaCue.tone === 'error'
+                    ? 'border-error/20 bg-error/10 text-error'
+                    : slaCue.tone === 'warning'
+                      ? 'border-warning/20 bg-warning/10 text-warning'
+                      : slaCue.tone === 'success'
+                        ? 'border-success/20 bg-success/10 text-success'
+                        : 'border-border bg-muted text-muted-foreground'
+                }`}
+                aria-live="polite"
+              >
+                {slaCue.label}
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button variant="default" onClick={() => navigate('/ticket-management-center')} iconName="Ticket">{t('tickets', 'Tickets')}</Button>
@@ -66,7 +115,7 @@ const TicketSlaPage = () => {
         <ManageEngineOnPremSnapshot
           compact
           title={t('manageEngineSlaContext', 'ManageEngine SLA Context')}
-          description={t('manageEngineSlaContextDesc', 'External ServiceDesk demand and OpManager alerts that can affect SLA risk.')}
+          description={t('manageEngineSlaContextDesc', 'ServiceDesk request demand plus OpManager 12.8.270 alerts that can affect SLA risk.')}
         />
 
         <section className="rounded-2xl border border-border bg-card shadow-elevation-1 overflow-hidden">

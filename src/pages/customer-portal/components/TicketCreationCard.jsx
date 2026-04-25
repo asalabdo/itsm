@@ -4,51 +4,38 @@ import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import TicketQuickPresetGrid from '../../../components/tickets/TicketQuickPresetGrid';
+import { getLocalizedTicketQuickPreset, TICKET_QUICK_PRESETS } from '../../../services/ticketDepartmentDefaults';
+import { getPortalIncidentEntryState, getPortalQuickPresetEntryState } from '../../ticket-creation/portalIncidentSeed';
 
 const TicketCreationCard = () => {
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
+  const quickPresets = TICKET_QUICK_PRESETS.map((preset) => getLocalizedTicketQuickPreset(preset, language));
 
   const ticketCategories = [
     {
       id: 'incident',
       title: t('reportIncident', 'Report an Incident'),
-      description: t('reportTechnicalIssues', 'Report technical issues, bugs, or service disruptions that need immediate attention'),
+      description: t(
+        'reportTechnicalIssues',
+        'Open the existing incident intake flow with incident defaults, SLA lookup, and ERP department loading already in place.'
+      ),
       icon: 'AlertCircle',
       color: 'var(--color-error)',
       bgColor: 'bg-error/10',
-    },
-    {
-      id: 'problem',
-      title: t('reportProblem', 'Report a Problem'),
-      description: t('identifyRecurringIssues', 'Identify recurring issues or root causes that require investigation and permanent fix'),
-      icon: 'AlertTriangle',
-      color: 'var(--color-warning)',
-      bgColor: 'bg-warning/10',
-    },
-    {
-      id: 'change',
-      title: t('requestChange', 'Request a Change'),
-      description: t('submitRequests', 'Submit requests for new features, modifications, or system enhancements'),
-      icon: 'GitBranch',
-      color: 'var(--color-primary)',
-      bgColor: 'bg-primary/10',
+      entryState: getPortalIncidentEntryState(),
+      cta: t('startIncidentFlow', 'Start incident flow'),
     },
   ];
 
-  const handleCategoryClick = (categoryId) => {
-    if (categoryId === 'problem') {
-      navigate('/problems');
-      return;
-    }
+  const handleCategoryClick = (category) => {
+    navigate('/ticket-creation', { state: category?.entryState || { source: 'customer-portal', entryPoint: 'ticket-intake' } });
+  };
 
-    if (categoryId === 'change') {
-      navigate('/change-management');
-      return;
-    }
-
-    navigate('/ticket-creation', { state: { category: categoryId } });
+  const handlePresetClick = (preset) => {
+    navigate('/ticket-creation', { state: getPortalQuickPresetEntryState(preset?.id) });
   };
 
   return (
@@ -66,12 +53,13 @@ const TicketCreationCard = () => {
           <Icon name="Plus" size={32} color="var(--color-primary)" />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 gap-4 md:gap-6">
         {ticketCategories?.map((category) => (
           <button
+            type="button"
             key={category?.id}
-            onClick={() => handleCategoryClick(category?.id)}
-            className={`group relative bg-background border-2 border-border rounded-lg p-4 md:p-6 hover:border-primary hover:shadow-elevation-3 transition-smooth hover-lift`}
+            onClick={() => handleCategoryClick(category)}
+            className={`group relative bg-background border-2 border-border rounded-lg p-4 md:p-6 text-left hover:border-primary hover:shadow-elevation-3 transition-smooth hover-lift`}
           >
             <div className={`w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ${category?.bgColor} rounded-lg flex items-center justify-center mb-3 md:mb-4 transition-smooth group-hover:scale-110`}>
               <Icon name={category?.icon} size={28} color={category?.color} />
@@ -82,11 +70,25 @@ const TicketCreationCard = () => {
             <p className="text-sm md:text-base text-muted-foreground line-clamp-3">
               {category?.description}
             </p>
-            <div className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} opacity-0 group-hover:opacity-100 transition-smooth`}>
-              <Icon name="ArrowRight" size={20} color="var(--color-primary)" />
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+                {category?.cta || t('openFlow', 'Open flow')}
+              </span>
+              <div className={`${isRtl ? '' : 'ml-auto'} opacity-70 group-hover:opacity-100 transition-smooth`}>
+                <Icon name="ArrowRight" size={20} color="var(--color-primary)" />
+              </div>
             </div>
           </button>
         ))}
+      </div>
+      <div className="mt-6 md:mt-8">
+        <TicketQuickPresetGrid
+          presets={quickPresets}
+          onSelect={handlePresetClick}
+          title={t('commonRequests', 'Common Requests')}
+          description={t('portalQuickPresetDesc', 'Start from a shared request pattern for the most common support needs.')}
+          compact
+        />
       </div>
       <div className="mt-6 md:mt-8 p-4 md:p-6 bg-muted/50 rounded-lg border border-border">
         <div className="flex items-start gap-3 md:gap-4">

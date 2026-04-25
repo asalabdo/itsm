@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
@@ -34,7 +35,14 @@ const getStatusOptions = (t) => [
   { value: 'Closed', label: t('closed', 'Closed') },
 ];
 
+const getLinkedTickets = (problem) => (Array.isArray(problem?.linkedTickets) ? problem.linkedTickets : []);
+
+const getTicketDisplayNumber = (ticket) => ticket?.ticketNumber || (ticket?.id ? `TCK-${ticket.id}` : 'Linked ticket');
+
+const getTicketAssignee = (ticket) => ticket?.assignedTo?.fullName || ticket?.assignedTo?.username || 'Unassigned';
+
 const Problems = () => {
+  const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
   const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   const [problems, setProblems] = useState([]);
@@ -51,17 +59,16 @@ const Problems = () => {
     try {
       setLoading(true);
       const res = await problemAPI.getAll();
-      setProblems(res.data || []);
-      if (!selectedProblem && (res.data || []).length > 0) {
-        setSelectedProblem((res.data || [])[0]);
-      }
+      const nextProblems = res.data || [];
+      setProblems(nextProblems);
+      setSelectedProblem((current) => current || nextProblems[0] || null);
     } catch (err) {
       console.error('Failed to load problems:', err);
       setProblems([]);
     } finally {
       setLoading(false);
     }
-  }, [selectedProblem]);
+  }, []);
 
   useEffect(() => {
     void loadProblems();
@@ -96,9 +103,11 @@ const Problems = () => {
   const validate = () => {
     if (!form.title.trim()) return t('titleRequired', 'Title is required');
     if (!form.description.trim()) return t('descriptionRequired', 'Description is required');
-    if (!form.rootCause.trim()) return t('rootCauseRequired', 'Root cause is required');
-    if (!form.workaround.trim()) return t('workaroundRequired', 'Workaround is required');
     if (!form.category.trim()) return t('categoryRequired', 'Category is required');
+    if (['Resolved', 'Closed'].includes(form.status)) {
+      if (!form.rootCause.trim()) return t('rootCauseRequired', 'Root cause is required before closing the problem.');
+      if (!form.workaround.trim()) return t('workaroundRequired', 'Workaround is required before closing the problem.');
+    }
     return '';
   };
 
@@ -142,10 +151,14 @@ const Problems = () => {
 
   const linkTicket = async () => {
     const ticketId = Number(linkTicketId);
-    if (!selectedProblem || Number.isNaN(ticketId)) return;
+    if (!selectedProblem || !Number.isInteger(ticketId) || ticketId < 1) {
+      setError(t('failedLinkTicket', 'Enter a valid ticket ID of 1 or greater.'));
+      return;
+    }
 
     try {
       setSaving(true);
+      setError('');
       await problemAPI.linkTicket(selectedProblem.id, ticketId);
       setLinkTicketId('');
       await loadProblems();
@@ -158,6 +171,26 @@ const Problems = () => {
   };
 
   const selectedDetail = useMemo(() => selectedProblem || problems[0] || null, [selectedProblem, problems]);
+  const linkedTickets = useMemo(() => getLinkedTickets(selectedDetail), [selectedDetail]);
+  const rcaSummary = useMemo(() => {
+    if (!selectedDetail) {
+      return null;
+    }
+
+    return {
+      knownError: `${selectedDetail.problemNumber || 'Problem'} - ${selectedDetail.category || t('uncategorized', 'Uncategorized')} - ${selectedDetail.status || t('unknownStatus', 'Unknown')}`,
+      fiveWhys: selectedDetail.rootCause?.trim()
+        ? selectedDetail.rootCause.trim()
+        : t('captureFiveWhys', 'Capture the 5 Whys chain here so the next incident follows the cause, not just the symptom.'),
+      fishbone: t(
+        'captureFishbone',
+        'Check people, process, technology, and environment for contributing factors before marking the record known-error ready.'
+      ),
+      workaround: selectedDetail.workaround?.trim()
+        ? selectedDetail.workaround.trim()
+        : t('addWorkaround', 'Add a workaround so agents can resolve the next linked incident consistently.'),
+    };
+  }, [selectedDetail, t]);
 
   return (
     <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -284,20 +317,96 @@ const Problems = () => {
                       <p className="text-sm font-medium text-foreground">{selectedDetail.status}</p>
                     </div>
                   </div>
-                  <div className="pt-3 border-t border-border">
-                    <label className="block text-sm font-medium text-foreground mb-2">{t('linkTicketId', 'Link Ticket ID')}</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        min="1"
-                        value={linkTicketId}
-                        onChange={(e) => setLinkTicketId(e?.target?.value)}
-                        className="flex-1 rounded-xl border border-border bg-background px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                        placeholder={t('ticketId', 'Ticket ID')}
-                      />
-                      <Button type="button" onClick={linkTicket} disabled={saving || !linkTicketId}>
-                        {t('link', 'Link')}
-                      </Button>
+                  {rcaSummary && (
+                    <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('rcaQuickView', 'RCA Quick View')}</p>
+                          <p className="text-sm font-medium text-foreground">{rcaSummary.knownError}</p>
+                        </div>
+                        <Icon name="GitBranch" size={18} className="text-primary" />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="rounded-xl bg-background/80 border border-border p-3">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{t('fiveWhys', '5 Whys')}</p>
+                          <p className="text-sm text-foreground whitespace-pre-wrap">{rcaSummary.fiveWhys}</p>
+                        </div>
+                        <div className="rounded-xl bg-background/80 border border-border p-3">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{t('fishbone', 'Fishbone')}</p>
+                          <p className="text-sm text-foreground whitespace-pre-wrap">{rcaSummary.fishbone}</p>
+                        </div>
+                        <div className="rounded-xl bg-background/80 border border-border p-3">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{t('knownErrorWorkaround', 'Known Error / Workaround')}</p>
+                          <p className="text-sm text-foreground whitespace-pre-wrap">{rcaSummary.workaround}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="pt-3 border-t border-border space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{t('linkedIncidents', 'Linked Incidents')}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {linkedTickets.length > 0
+                            ? t('linkedIncidentsCount', `${linkedTickets.length} incident(s) linked to this problem`)
+                            : t('noLinkedIncidents', 'No linked incidents yet.')}
+                        </p>
+                      </div>
+                      <Icon name="Link" size={18} className="text-primary" />
+                    </div>
+                    {linkedTickets.length > 0 ? (
+                      <div className="space-y-2">
+                        {linkedTickets.map((ticket) => (
+                          <div
+                            key={ticket.id}
+                            className="rounded-xl border border-border bg-background px-3 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-medium text-foreground">{getTicketDisplayNumber(ticket)}</span>
+                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                                  {ticket.priority || t('priority', 'Priority')}
+                                </span>
+                                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                  {ticket.status || t('status', 'Status')}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-sm text-foreground">{ticket.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {ticket.category || t('uncategorized', 'Uncategorized')} - {getTicketAssignee(ticket)}
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              iconName="ArrowUpRight"
+                              iconPosition="left"
+                              onClick={() => navigate(ticket?.id ? `/ticket-details/${ticket.id}` : '/ticket-management-center')}
+                            >
+                              {t('openIncident', 'Open')}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{t('noLinkedIncidentsYet', 'Link incidents here to make recurring issues easier to investigate and reuse.')}</p>
+                    )}
+                    <div className="pt-1">
+                      <label className="block text-sm font-medium text-foreground mb-2">{t('linkTicketId', 'Link Ticket ID')}</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          value={linkTicketId}
+                          onChange={(e) => setLinkTicketId(e?.target?.value)}
+                          className="flex-1 rounded-xl border border-border bg-background px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                          placeholder={t('ticketId', 'Ticket ID')}
+                        />
+                        <Button type="button" onClick={linkTicket} disabled={saving || !linkTicketId}>
+                          {t('link', 'Link')}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -339,6 +448,9 @@ const Problems = () => {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-foreground mb-2">{t('rootCause', 'Root Cause')}</label>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {t('rootCauseGuidance', 'Optional while the problem is open; required before a record can be resolved or closed.')}
+                </p>
                 <textarea
                   rows={4}
                   value={form.rootCause}
@@ -348,6 +460,9 @@ const Problems = () => {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-foreground mb-2">{t('workaround', 'Workaround')}</label>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {t('workaroundGuidance', 'Document the temporary fix or known error guidance here.')}
+                </p>
                 <textarea
                   rows={4}
                   value={form.workaround}
@@ -376,3 +491,5 @@ const Problems = () => {
 };
 
 export default Problems;
+
+

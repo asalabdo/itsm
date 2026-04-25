@@ -258,9 +258,16 @@ const SlaPoliciesPage = () => {
   }, [fallbackPolicies]);
 
   useEffect(() => {
+    let isMounted = true;
+
+    setLoading(true);
+
     const load = async () => {
       try {
         const res = await slaAPI.getPolicies();
+        if (!isMounted) {
+          return;
+        }
         const rawPolicies = Array.isArray(res.data) ? res.data : [];
         if (rawPolicies.length) {
           const normalized = rawPolicies.map((policy, index) => {
@@ -294,13 +301,21 @@ const SlaPoliciesPage = () => {
           setPolicies(fallbackPolicies);
         }
       } catch {
+        if (!isMounted) {
+          return;
+        }
         setPolicies(fallbackPolicies);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     load();
+    return () => {
+      isMounted = false;
+    };
   }, [fallbackPolicies, isArabic]);
 
   const stats = useMemo(() => {

@@ -21,7 +21,11 @@ namespace ITSMBackend.Services
         public string ApiKeyQueryName { get; set; } = string.Empty;
         public string TechnicianHeaderName { get; set; } = string.Empty;
         public string CatalogEndpoint { get; set; } = string.Empty;
+        public string KnowledgeBaseEndpoint { get; set; } = string.Empty;
         public string RequestsEndpoint { get; set; } = string.Empty;
+        public string ApprovalsEndpoint { get; set; } = string.Empty;
+        public string ChangesEndpoint { get; set; } = string.Empty;
+        public string AssetEndpoint { get; set; } = string.Empty;
         public string ServicesEndpoint { get; set; } = string.Empty;
         public string AlertsEndpoint { get; set; } = string.Empty;
     }
@@ -57,11 +61,39 @@ namespace ITSMBackend.Services
         public Dictionary<string, string> Metadata { get; set; } = new();
     }
 
+    public class ManageEnginePersonProfile
+    {
+        public string Source { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string ExternalId { get; set; } = string.Empty;
+        public string ExternalUrl { get; set; } = string.Empty;
+        public DateTime? LastSeenAt { get; set; }
+        public int ReferenceCount { get; set; }
+        public Dictionary<string, string> Metadata { get; set; } = new();
+    }
+
     public class ManageEngineUnifiedData
     {
         public List<ManageEngineNormalizedItem> Catalog { get; set; } = new();
         public List<ManageEngineNormalizedItem> Operations { get; set; } = new();
         public Dictionary<string, int> Summary { get; set; } = new();
+    }
+
+    public class ManageEngineOpManagerAnalytics
+    {
+        public int ServicesCount { get; set; }
+        public int AlertsCount { get; set; }
+        public int ActiveAlertsCount { get; set; }
+        public int CriticalAlertsCount { get; set; }
+        public int WarningAlertsCount { get; set; }
+        public int HealthyServicesCount { get; set; }
+        public int DegradedServicesCount { get; set; }
+        public DateTime? LastUpdatedAt { get; set; }
+        public string Status { get; set; } = "idle";
+        public string Message { get; set; } = "No OpManager analytics available.";
+        public List<ManageEngineNormalizedItem> LatestAlerts { get; set; } = new();
+        public List<ManageEngineNormalizedItem> LatestServices { get; set; } = new();
     }
 
     public class ManageEngineQueryOptions
@@ -206,6 +238,99 @@ namespace ITSMBackend.Services
                 .ToList(), options);
         }
 
+        public async Task<ManageEngineOpManagerAnalytics> GetOpManagerAnalyticsAsync()
+        {
+            var services = await GetOpManagerServicesAsync();
+            var alerts = await GetOpManagerAlertItemsAsync();
+            var latestServices = services
+                .OrderByDescending(item => item.UpdatedAt ?? item.CreatedAt ?? DateTime.MinValue)
+                .Take(5)
+                .ToList();
+            var latestAlerts = alerts
+                .OrderByDescending(item => item.UpdatedAt ?? item.CreatedAt ?? DateTime.MinValue)
+                .Take(5)
+                .ToList();
+
+            var criticalAlerts = alerts.Count(item =>
+            {
+                var status = $"{item.Status} {item.Priority} {item.Description}".Trim();
+                return status.Contains("critical", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("urgent", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("high", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("severe", StringComparison.OrdinalIgnoreCase);
+            });
+
+            var warningAlerts = alerts.Count(item =>
+            {
+                var status = $"{item.Status} {item.Priority} {item.Description}".Trim();
+                return status.Contains("warn", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("medium", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("minor", StringComparison.OrdinalIgnoreCase);
+            });
+
+            var healthyServices = services.Count(item =>
+            {
+                var status = $"{item.Status} {item.Priority}".Trim();
+                return status.Contains("healthy", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("up", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("ok", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("monitored", StringComparison.OrdinalIgnoreCase)
+                    || status.Contains("available", StringComparison.OrdinalIgnoreCase);
+            });
+
+            var degradedServices = services.Count - healthyServices;
+
+            return new ManageEngineOpManagerAnalytics
+            {
+                ServicesCount = services.Count,
+                AlertsCount = alerts.Count,
+                ActiveAlertsCount = alerts.Count,
+                CriticalAlertsCount = criticalAlerts,
+                WarningAlertsCount = warningAlerts,
+                HealthyServicesCount = healthyServices,
+                DegradedServicesCount = degradedServices,
+                LastUpdatedAt = latestAlerts.FirstOrDefault()?.UpdatedAt ?? latestServices.FirstOrDefault()?.UpdatedAt,
+                Status = alerts.Count > 0 ? "active" : services.Count > 0 ? "healthy" : "idle",
+                Message = alerts.Count > 0
+                    ? "OpManager 12.8.270 currently has active alerts worth reviewing."
+                    : services.Count > 0
+                        ? "OpManager 12.8.270 services are available with no active alerts."
+                        : "No OpManager 12.8.270 services or alerts are currently available.",
+                LatestAlerts = latestAlerts,
+                LatestServices = latestServices
+            };
+        }
+
+        public async Task<List<ManageEngineNormalizedItem>> GetApprovalItemsAsync(ManageEngineQueryOptions? options = null)
+        {
+            var approvals = await GetServiceDeskApprovalItemsAsync();
+
+            return ApplyFilters(approvals
+                .OrderByDescending(item => item.UpdatedAt ?? item.CreatedAt ?? DateTime.MinValue)
+                .ThenBy(item => item.Source)
+                .ToList(), options);
+        }
+
+        public async Task<List<ManageEngineNormalizedItem>> GetChangeItemsAsync(ManageEngineQueryOptions? options = null)
+        {
+            var changes = await GetServiceDeskChangeItemsAsync();
+
+            return ApplyFilters(changes
+                .OrderByDescending(item => item.UpdatedAt ?? item.CreatedAt ?? DateTime.MinValue)
+                .ThenBy(item => item.Source)
+                .ToList(), options);
+        }
+
+        public async Task<List<ManageEnginePersonProfile>> GetRequesterProfilesAsync(ManageEngineQueryOptions? options = null)
+        {
+            var requestItems = await GetServiceDeskOperationalItemsAsync();
+            var approvalItems = await GetServiceDeskApprovalItemsAsync();
+            var changeItems = await GetServiceDeskChangeItemsAsync();
+
+            var profiles = BuildRequesterProfiles(requestItems, approvalItems, changeItems);
+            return ApplyRequesterFilters(profiles, options);
+        }
+
         public async Task<ManageEngineUnifiedData> GetUnifiedDataAsync(ManageEngineQueryOptions? options = null)
         {
             var catalog = await GetCatalogItemsAsync(options);
@@ -220,8 +345,10 @@ namespace ITSMBackend.Services
                     ["catalog"] = catalog.Count,
                     ["operations"] = operations.Count,
                     ["serviceDeskCatalog"] = catalog.Count(item => item.Source == "ServiceDesk"),
+                    ["serviceDeskKnowledgeBase"] = 0,
                     ["opManagerCatalog"] = catalog.Count(item => item.Source == "OpManager"),
                     ["serviceDeskRequests"] = operations.Count(item => item.Source == "ServiceDesk"),
+                    ["serviceDeskApprovals"] = 0,
                     ["opManagerAlerts"] = operations.Count(item => item.Source == "OpManager")
                 }
             };
@@ -327,91 +454,69 @@ namespace ITSMBackend.Services
             var existingItem = await FindExistingAssetItemAsync(asset);
             if (existingItem != null)
             {
+                var updatedItem = await UpdateServiceDeskAssetAsync(existingItem.ExternalId, asset);
                 return new ManageEngineAssetSyncResult
                 {
                     Created = false,
-                    Item = existingItem,
-                    Message = "Asset already has an exact ManageEngine identity match."
+                    Item = updatedItem ?? existingItem,
+                    Message = updatedItem != null
+                        ? "Updated the matching ServiceDesk asset record."
+                        : "Asset already has an exact ManageEngine identity match."
                 };
             }
 
             var serviceDesk = await BuildServiceDeskSettingsAsync();
-            var metadata = BuildAssetIdentityMetadata(asset);
-            var subject = $"Asset sync: {FirstNonEmpty(asset.AssetTag, asset.Name, $"Asset {asset.Id}")}";
-            var description = string.Join(Environment.NewLine, new[]
-            {
-                "Create/link this asset in ManageEngine using the exact identity metadata below.",
-                $"Asset Tag: {asset.AssetTag}",
-                $"Serial Number: {asset.SerialNumber}",
-                $"Name: {asset.Name}",
-                $"Type: {asset.AssetType}",
-                $"Location: {asset.Location}",
-                $"Manufacturer: {asset.Manufacturer}",
-                $"Model: {asset.Model}"
-            }.Where(value => !string.IsNullOrWhiteSpace(value)));
+            var payload = BuildServiceDeskAssetPayload(asset);
 
-            var payload = new
-            {
-                request = new
-                {
-                    subject,
-                    description,
-                    priority = "Medium",
-                    status = "Open",
-                    category = "Asset",
-                    subcategory = "Asset Sync",
-                    udf_fields = metadata,
-                    asset_tag = metadata.GetValueOrDefault("asset_tag"),
-                    asset_id = metadata.GetValueOrDefault("asset_id"),
-                    serial_number = metadata.GetValueOrDefault("serial_number"),
-                    barcode = metadata.GetValueOrDefault("barcode")
-                }
-            };
-
-            var document = await SendJsonAsync(serviceDesk, serviceDesk.RequestsEndpoint, HttpMethod.Post, payload, ManageEngineAuthMode.ServiceDesk);
+            var document = await SendJsonAsync(serviceDesk, serviceDesk.AssetEndpoint, HttpMethod.Post, payload, ManageEngineAuthMode.ServiceDesk);
             if (document == null)
             {
                 return new ManageEngineAssetSyncResult
                 {
                     Created = false,
-                    Message = "ServiceDesk request could not be created."
+                    Message = "ServiceDesk asset record could not be created."
                 };
             }
 
             var createdRoot = ExtractArray(document.RootElement).FirstOrDefault();
             var createdItem = createdRoot.ValueKind == JsonValueKind.Undefined
                 ? null
-                : MapServiceDeskRequest(createdRoot, serviceDesk.BaseUrl);
+                : MapServiceDeskAssetItem(createdRoot, serviceDesk.BaseUrl);
 
             createdItem ??= new ManageEngineNormalizedItem
             {
                 Source = "ServiceDesk",
-                ItemType = "request",
-                ExternalId = FirstNonEmpty(GetString(document.RootElement, "id"), GetString(document.RootElement, "request_id")),
-                Name = subject,
-                Description = description,
-                Status = "Open",
-                Priority = "Medium",
-                Category = "Asset",
+                ItemType = "asset",
+                ExternalId = FirstNonEmpty(GetString(document.RootElement, "id"), GetString(document.RootElement, "asset_id")),
+                Name = FirstNonEmpty(asset.Name, asset.AssetTag, $"Asset {asset.Id}"),
+                Description = string.Join(Environment.NewLine, new[]
+                {
+                    $"Asset Tag: {asset.AssetTag}",
+                    $"Serial Number: {asset.SerialNumber}",
+                    $"Type: {asset.AssetType}",
+                    $"Location: {asset.Location}",
+                    $"Manufacturer: {asset.Manufacturer}",
+                    $"Model: {asset.Model}"
+                }.Where(value => !string.IsNullOrWhiteSpace(value))),
+                Status = asset.Status,
+                Priority = asset.AssetType,
+                Category = asset.AssetType,
+                Owner = FirstNonEmpty(asset.Owner?.Username, asset.Owner?.FullName),
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                ExternalUrl = BuildExternalUrl(serviceDesk.BaseUrl, "assets", FirstNonEmpty(GetString(document.RootElement, "id"), GetString(document.RootElement, "asset_id")))
             };
 
-            foreach (var pair in metadata)
+            foreach (var pair in BuildAssetIdentityMetadata(asset))
             {
                 createdItem.Metadata[pair.Key] = pair.Value;
-            }
-
-            if (string.IsNullOrWhiteSpace(createdItem.ExternalUrl) && !string.IsNullOrWhiteSpace(createdItem.ExternalId))
-            {
-                createdItem.ExternalUrl = BuildExternalUrl(serviceDesk.BaseUrl, "requests", createdItem.ExternalId);
             }
 
             return new ManageEngineAssetSyncResult
             {
                 Created = true,
                 Item = createdItem,
-                Message = "Created a ServiceDesk asset sync request with exact identity metadata."
+                Message = "Created a ServiceDesk asset record with exact identity metadata."
             };
         }
 
@@ -494,6 +599,71 @@ namespace ITSMBackend.Services
                 .ToList();
         }
 
+        private async Task<List<ManageEngineNormalizedItem>> GetServiceDeskApprovalItemsAsync()
+        {
+            var settings = await BuildServiceDeskSettingsAsync();
+            var document = await GetJsonDocumentAsync(settings, settings.ApprovalsEndpoint, BuildServiceDeskApprovalListQuery(settings), ManageEngineAuthMode.ServiceDesk);
+            if (document == null)
+            {
+                return new List<ManageEngineNormalizedItem>();
+            }
+
+            return ExtractArray(document.RootElement)
+                .Select(element => MapServiceDeskApprovalItem(element, settings.BaseUrl))
+                .Where(item => !string.IsNullOrWhiteSpace(item.ExternalId))
+                .ToList();
+        }
+
+        public async Task<List<ManageEngineNormalizedItem>> GetKnowledgeBaseItemsAsync(ManageEngineQueryOptions? options = null)
+        {
+            var settings = await BuildServiceDeskSettingsAsync();
+            var document = await GetJsonDocumentAsync(settings, settings.KnowledgeBaseEndpoint, BuildServiceDeskKnowledgeBaseListQuery(settings), ManageEngineAuthMode.ServiceDesk);
+            if (document == null)
+            {
+                return new List<ManageEngineNormalizedItem>();
+            }
+
+            var articles = ExtractArray(document.RootElement)
+                .Select(element => MapServiceDeskKnowledgeBaseItem(element, settings.BaseUrl))
+                .Where(item => !string.IsNullOrWhiteSpace(item.ExternalId))
+                .ToList();
+
+            return ApplyFilters(articles
+                .OrderByDescending(item => item.UpdatedAt ?? item.CreatedAt ?? DateTime.MinValue)
+                .ThenBy(item => item.Source)
+                .ToList(), options);
+        }
+
+        private async Task<List<ManageEngineNormalizedItem>> GetServiceDeskChangeItemsAsync()
+        {
+            var settings = await BuildServiceDeskSettingsAsync();
+            var document = await GetJsonDocumentAsync(settings, settings.ChangesEndpoint, BuildServiceDeskChangeListQuery(settings), ManageEngineAuthMode.ServiceDesk);
+            if (document == null)
+            {
+                return new List<ManageEngineNormalizedItem>();
+            }
+
+            return ExtractArray(document.RootElement)
+                .Select(element => MapServiceDeskChangeItem(element, settings.BaseUrl))
+                .Where(item => !string.IsNullOrWhiteSpace(item.ExternalId))
+                .ToList();
+        }
+
+        private async Task<List<ManageEngineNormalizedItem>> GetServiceDeskAssetItemsAsync(AssetDto? asset = null)
+        {
+            var settings = await BuildServiceDeskSettingsAsync();
+            var document = await GetJsonDocumentAsync(settings, settings.AssetEndpoint, BuildServiceDeskAssetListQuery(asset), ManageEngineAuthMode.ServiceDesk);
+            if (document == null)
+            {
+                return new List<ManageEngineNormalizedItem>();
+            }
+
+            return ExtractArray(document.RootElement)
+                .Select(element => MapServiceDeskAssetItem(element, settings.BaseUrl))
+                .Where(item => !string.IsNullOrWhiteSpace(item.ExternalId))
+                .ToList();
+        }
+
         private async Task<List<ManageEngineNormalizedItem>> GetOpManagerServicesAsync()
         {
             var settings = await BuildOpManagerSettingsAsync();
@@ -538,7 +708,11 @@ namespace ITSMBackend.Services
                 ApiKeyQueryName = FirstNonEmpty(_settings.ServiceDesk.ApiKeyQueryName, "apiKey"),
                 TechnicianHeaderName = FirstNonEmpty(_settings.ServiceDesk.TechnicianHeaderName, "TECHNICIAN_KEY"),
                 CatalogEndpoint = FirstNonEmpty(_settings.ServiceDesk.CatalogEndpoint, "/api/v3/request_templates"),
+                KnowledgeBaseEndpoint = FirstNonEmpty(_settings.ServiceDesk.KnowledgeBaseEndpoint, "/api/v3/solutions"),
                 RequestsEndpoint = FirstNonEmpty(_settings.ServiceDesk.RequestsEndpoint, "/api/v3/requests"),
+                ApprovalsEndpoint = FirstNonEmpty(_settings.ServiceDesk.ApprovalsEndpoint, "/api/v3/approvals"),
+                ChangesEndpoint = FirstNonEmpty(_settings.ServiceDesk.ChangesEndpoint, "/api/v3/changes"),
+                AssetEndpoint = FirstNonEmpty(_settings.ServiceDesk.AssetEndpoint, "/api/v3/assets"),
                 ServicesEndpoint = FirstNonEmpty(_settings.ServiceDesk.ServicesEndpoint, "/api/v3/service_catalog/items"),
                 AlertsEndpoint = FirstNonEmpty(_settings.ServiceDesk.AlertsEndpoint, "/api/v3/requests")
             };
@@ -841,6 +1015,89 @@ namespace ITSMBackend.Services
             return BuildServiceDeskInputDataQuery(listInfo);
         }
 
+        private static Dictionary<string, string>? BuildServiceDeskApprovalListQuery(ManageEngineSourceSettings settings)
+        {
+            if (!ShouldUseServiceDeskPlus151(settings, ManageEngineAuthMode.ServiceDesk))
+            {
+                return null;
+            }
+
+            var listInfo = new Dictionary<string, object>
+            {
+                ["row_count"] = 100,
+                ["start_index"] = 1,
+                ["sort_field"] = "created_time",
+                ["sort_order"] = "desc"
+            };
+
+            return BuildServiceDeskInputDataQuery(listInfo);
+        }
+
+        private static Dictionary<string, string>? BuildServiceDeskChangeListQuery(ManageEngineSourceSettings settings)
+        {
+            if (!ShouldUseServiceDeskPlus151(settings, ManageEngineAuthMode.ServiceDesk))
+            {
+                return null;
+            }
+
+            var listInfo = new Dictionary<string, object>
+            {
+                ["row_count"] = 100,
+                ["start_index"] = 1,
+                ["sort_field"] = "created_time",
+                ["sort_order"] = "desc"
+            };
+
+            return BuildServiceDeskInputDataQuery(listInfo);
+        }
+
+        private static Dictionary<string, string>? BuildServiceDeskAssetListQuery(AssetDto? asset = null)
+        {
+            var listInfo = new Dictionary<string, object>
+            {
+                ["row_count"] = 50,
+                ["start_index"] = 1,
+                ["sort_field"] = "last_updated_time",
+                ["sort_order"] = "desc"
+            };
+
+            var searchCriteria = new List<Dictionary<string, object>>();
+            AddAssetSearchCriteria(searchCriteria, "asset_tag", asset?.AssetTag);
+            AddAssetSearchCriteria(searchCriteria, "serial_number", asset?.SerialNumber);
+            AddAssetSearchCriteria(searchCriteria, "barcode", FirstNonEmpty(asset?.AssetTag, asset?.SerialNumber));
+
+            if (searchCriteria.Count > 0)
+            {
+                listInfo["search_criteria"] = searchCriteria.Count == 1
+                    ? searchCriteria[0]
+                    : new Dictionary<string, object>
+                    {
+                        ["logical_operator"] = "OR",
+                        ["children"] = searchCriteria
+                    };
+            }
+
+            return BuildServiceDeskInputDataQuery(listInfo);
+        }
+
+        private static Dictionary<string, string>? BuildServiceDeskKnowledgeBaseListQuery(ManageEngineSourceSettings settings)
+        {
+            if (!ShouldUseServiceDeskPlus151(settings, ManageEngineAuthMode.ServiceDesk))
+            {
+                return null;
+            }
+
+            var listInfo = new Dictionary<string, object>
+            {
+                ["row_count"] = 100,
+                ["start_index"] = 1,
+                ["sort_field"] = "name",
+                ["sort_order"] = "asc"
+            };
+
+            return BuildServiceDeskInputDataQuery(listInfo);
+        }
+
         private static Dictionary<string, string> BuildServiceDeskInputDataQuery(Dictionary<string, object> listInfo)
         {
             var inputData = JsonSerializer.Serialize(
@@ -900,6 +1157,18 @@ namespace ITSMBackend.Services
                 "templates",
                 "template",
                 "request_templates",
+                "solutions",
+                "solution",
+                "articles",
+                "article",
+                "knowledge_base",
+                "knowledgebase",
+                "approvals",
+                "approval",
+                "changes",
+                "change",
+                "assets",
+                "asset",
                 "services",
                 "service",
                 "items",
@@ -948,6 +1217,9 @@ namespace ITSMBackend.Services
                 && (!string.IsNullOrWhiteSpace(GetString(element, "id"))
                     || !string.IsNullOrWhiteSpace(GetString(element, "request_id"))
                     || !string.IsNullOrWhiteSpace(GetString(element, "template_id"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "asset_id"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "asset_tag"))
+                    || !string.IsNullOrWhiteSpace(GetString(element, "serial_number"))
                     || !string.IsNullOrWhiteSpace(GetString(element, "resourceId"))
                     || !string.IsNullOrWhiteSpace(GetString(element, "deviceId"))
                     || !string.IsNullOrWhiteSpace(GetString(element, "alarmId")));
@@ -1017,6 +1289,290 @@ namespace ITSMBackend.Services
                 ExternalUrl = BuildExternalUrl(baseUrl, "requests", id),
                 Metadata = BuildMetadata(element, "requester", "site", "group", "mode", "resolution", "assetTag", "asset_tag", "assetId", "asset_id", "serialNumber", "serial_number", "barcode", "ci", "configuration_item")
             };
+        }
+
+        private static ManageEngineNormalizedItem MapServiceDeskApprovalItem(JsonElement element, string baseUrl)
+        {
+            var id = FirstNonEmpty(
+                GetString(element, "id"),
+                GetString(element, "approval_id"),
+                GetString(element, "approvalId"),
+                GetString(element, "request_id"),
+                GetString(element, "requestId"));
+            var requestId = FirstNonEmpty(GetString(element, "request_id"), GetString(element, "requestId"));
+
+            return new ManageEngineNormalizedItem
+            {
+                Source = "ServiceDesk",
+                ItemType = "approval",
+                ExternalId = id,
+                Name = FirstNonEmpty(GetString(element, "subject"), GetString(element, "title"), GetString(element, "name"), $"Approval {id}"),
+                Description = FirstNonEmpty(GetString(element, "description"), GetString(element, "notes"), GetString(element, "request_description")),
+                Status = FirstNonEmpty(GetNestedDisplayValue(element, "approval_status"), GetNestedDisplayValue(element, "status"), GetString(element, "status"), "Pending"),
+                Priority = FirstNonEmpty(GetNestedDisplayValue(element, "priority"), GetString(element, "priority")),
+                Category = FirstNonEmpty(GetNestedDisplayValue(element, "category"), GetString(element, "category"), "Approval"),
+                Owner = FirstNonEmpty(GetNestedDisplayValue(element, "technician"), GetNestedDisplayValue(element, "requested_by"), GetNestedDisplayValue(element, "requester")),
+                CreatedAt = GetDateTime(element, "created_time") ?? GetDateTime(element, "created_at"),
+                UpdatedAt = GetDateTime(element, "updated_time") ?? GetDateTime(element, "modified_time"),
+                ExternalUrl = !string.IsNullOrWhiteSpace(requestId)
+                    ? BuildExternalUrl(baseUrl, "requests", requestId)
+                    : BuildExternalUrl(baseUrl, "approvals", id),
+                Metadata = BuildMetadata(
+                    element,
+                    "approval_status",
+                    "approval_state",
+                    "approval_type",
+                    "approval_level",
+                    "approval_stage",
+                    "approval_id",
+                    "approvalId",
+                    "request_id",
+                    "requestId",
+                    "requester",
+                    "requested_by",
+                    "technician",
+                    "notes")
+            };
+        }
+
+        private static ManageEngineNormalizedItem MapServiceDeskKnowledgeBaseItem(JsonElement element, string baseUrl)
+        {
+            var id = FirstNonEmpty(
+                GetString(element, "id"),
+                GetString(element, "article_id"),
+                GetString(element, "solution_id"),
+                GetString(element, "kb_id"));
+            var route = FirstNonEmpty(
+                GetString(element, "route"),
+                GetString(element, "url"),
+                GetString(element, "link"));
+
+            return new ManageEngineNormalizedItem
+            {
+                Source = "ServiceDesk",
+                ItemType = "article",
+                ExternalId = id,
+                Name = FirstNonEmpty(GetString(element, "title"), GetString(element, "subject"), GetString(element, "name"), $"Article {id}"),
+                Description = FirstNonEmpty(GetString(element, "summary"), GetString(element, "description"), GetString(element, "short_description")),
+                Status = FirstNonEmpty(GetNestedDisplayValue(element, "status"), GetString(element, "status"), "Published"),
+                Priority = FirstNonEmpty(GetNestedDisplayValue(element, "priority"), GetString(element, "priority")),
+                Category = FirstNonEmpty(GetNestedDisplayValue(element, "category"), GetString(element, "category"), "Knowledge Base"),
+                Owner = FirstNonEmpty(GetNestedDisplayValue(element, "owner"), GetNestedDisplayValue(element, "technician"), GetNestedDisplayValue(element, "author")),
+                CreatedAt = GetDateTime(element, "created_time") ?? GetDateTime(element, "created_at"),
+                UpdatedAt = GetDateTime(element, "updated_time") ?? GetDateTime(element, "modified_time"),
+                ExternalUrl = !string.IsNullOrWhiteSpace(route)
+                    ? BuildExternalUrl(baseUrl, route.StartsWith("/", StringComparison.Ordinal) ? route.TrimStart('/') : route, id)
+                    : BuildExternalUrl(baseUrl, "solutions", id),
+                Metadata = BuildMetadata(
+                    element,
+                    "article_id",
+                    "solution_id",
+                    "kb_id",
+                    "category",
+                    "subcategory",
+                    "tags",
+                    "keyword",
+                    "author",
+                    "owner",
+                    "visibility",
+                    "publish_status")
+            };
+        }
+
+        private static ManageEngineNormalizedItem MapServiceDeskChangeItem(JsonElement element, string baseUrl)
+        {
+            var id = FirstNonEmpty(
+                GetString(element, "id"),
+                GetString(element, "change_id"),
+                GetString(element, "changeId"),
+                GetString(element, "request_id"),
+                GetString(element, "requestId"));
+            var requestId = FirstNonEmpty(GetString(element, "request_id"), GetString(element, "requestId"));
+
+            return new ManageEngineNormalizedItem
+            {
+                Source = "ServiceDesk",
+                ItemType = "change",
+                ExternalId = id,
+                Name = FirstNonEmpty(GetString(element, "subject"), GetString(element, "title"), GetString(element, "name"), $"Change {id}"),
+                Description = FirstNonEmpty(GetString(element, "description"), GetString(element, "notes"), GetString(element, "change_summary")),
+                Status = FirstNonEmpty(GetNestedDisplayValue(element, "status"), GetString(element, "status"), "Planned"),
+                Priority = FirstNonEmpty(GetNestedDisplayValue(element, "priority"), GetString(element, "priority")),
+                Category = FirstNonEmpty(GetNestedDisplayValue(element, "category"), GetString(element, "category"), "Change"),
+                Owner = FirstNonEmpty(GetNestedDisplayValue(element, "technician"), GetNestedDisplayValue(element, "requested_by"), GetNestedDisplayValue(element, "requester")),
+                CreatedAt = GetDateTime(element, "created_time") ?? GetDateTime(element, "created_at"),
+                UpdatedAt = GetDateTime(element, "updated_time") ?? GetDateTime(element, "modified_time"),
+                ExternalUrl = !string.IsNullOrWhiteSpace(requestId)
+                    ? BuildExternalUrl(baseUrl, "requests", requestId)
+                    : BuildExternalUrl(baseUrl, "changes", id),
+                Metadata = BuildMetadata(
+                    element,
+                    "change_id",
+                    "changeId",
+                    "change_type",
+                    "change_category",
+                    "implementation_plan",
+                    "backout_plan",
+                    "scheduled_start",
+                    "scheduled_end",
+                    "request_id",
+                    "requestId",
+                    "requested_by",
+                    "requester",
+                    "technician",
+                    "notes")
+            };
+        }
+
+        private static ManageEngineNormalizedItem MapServiceDeskAssetItem(JsonElement element, string baseUrl)
+        {
+            var id = FirstNonEmpty(
+                GetString(element, "id"),
+                GetString(element, "asset_id"),
+                GetString(element, "assetId"),
+                GetString(element, "resourceId"));
+
+            return new ManageEngineNormalizedItem
+            {
+                Source = "ServiceDesk",
+                ItemType = "asset",
+                ExternalId = id,
+                Name = FirstNonEmpty(GetString(element, "name"), GetString(element, "asset_name"), GetString(element, "resourcename"), $"Asset {id}"),
+                Description = FirstNonEmpty(GetString(element, "description"), GetString(element, "model"), GetString(element, "manufacturer")),
+                Status = FirstNonEmpty(GetNestedDisplayValue(element, "state"), GetString(element, "state"), GetString(element, "status"), "In Use"),
+                Priority = FirstNonEmpty(GetString(element, "purchase_cost"), GetString(element, "cost")),
+                Category = FirstNonEmpty(GetNestedDisplayValue(element, "product_type"), GetString(element, "asset_type"), GetString(element, "category"), "Asset"),
+                Owner = FirstNonEmpty(GetNestedDisplayValue(element, "user"), GetNestedDisplayValue(element, "department")),
+                CreatedAt = GetDateTime(element, "created_time"),
+                UpdatedAt = GetDateTime(element, "last_updated_time") ?? GetDateTime(element, "updated_time"),
+                ExternalUrl = BuildExternalUrl(baseUrl, "assets", id),
+                Metadata = BuildMetadata(
+                    element,
+                    "asset_tag",
+                    "assetTag",
+                    "asset_id",
+                    "assetId",
+                    "serial_number",
+                    "serialNumber",
+                    "barcode",
+                    "location",
+                    "manufacturer",
+                    "model",
+                    "product",
+                    "site",
+                    "user",
+                    "department")
+            };
+        }
+
+        private static List<ManageEnginePersonProfile> BuildRequesterProfiles(
+            IEnumerable<ManageEngineNormalizedItem> requestItems,
+            IEnumerable<ManageEngineNormalizedItem> approvalItems,
+            IEnumerable<ManageEngineNormalizedItem> changeItems)
+        {
+            var profiles = new Dictionary<string, ManageEnginePersonProfile>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in requestItems)
+            {
+                AddPersonCandidate(profiles, item, item.Metadata.GetValueOrDefault("requester"), "Requester", "ServiceDesk", item.ExternalUrl);
+                AddPersonCandidate(profiles, item, item.Owner, "Technician", "ServiceDesk", item.ExternalUrl);
+            }
+
+            foreach (var item in approvalItems)
+            {
+                AddPersonCandidate(profiles, item, item.Owner, "Approver", "ServiceDesk", item.ExternalUrl);
+                AddPersonCandidate(profiles, item, item.Metadata.GetValueOrDefault("requester"), "Requester", "ServiceDesk", item.ExternalUrl);
+            }
+
+            foreach (var item in changeItems)
+            {
+                AddPersonCandidate(profiles, item, item.Owner, "Change Owner", "ServiceDesk", item.ExternalUrl);
+                AddPersonCandidate(profiles, item, item.Metadata.GetValueOrDefault("requester"), "Requester", "ServiceDesk", item.ExternalUrl);
+            }
+
+            return profiles.Values
+                .OrderByDescending(profile => profile.ReferenceCount)
+                .ThenBy(profile => profile.DisplayName)
+                .ToList();
+        }
+
+        private static void AddPersonCandidate(
+            IDictionary<string, ManageEnginePersonProfile> profiles,
+            ManageEngineNormalizedItem item,
+            string? displayName,
+            string role,
+            string source,
+            string externalUrl)
+        {
+            var displayLabel = FirstNonEmpty(displayName?.Trim(), item.Owner, item.Name);
+            var normalizedName = NormalizeIdentifier(displayLabel);
+            if (string.IsNullOrWhiteSpace(normalizedName))
+            {
+                return;
+            }
+
+            var key = $"{source}:{role}:{normalizedName}".ToLowerInvariant();
+            if (!profiles.TryGetValue(key, out var profile))
+            {
+                profile = new ManageEnginePersonProfile
+                {
+                    Source = source,
+                    Role = role,
+                    DisplayName = displayLabel,
+                    ExternalId = item.ExternalId,
+                    ExternalUrl = externalUrl,
+                    LastSeenAt = item.UpdatedAt ?? item.CreatedAt,
+                    Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                };
+                profiles[key] = profile;
+            }
+
+            profile.ReferenceCount += 1;
+            var seenAt = item.UpdatedAt ?? item.CreatedAt;
+            if (seenAt.HasValue && (!profile.LastSeenAt.HasValue || seenAt > profile.LastSeenAt))
+            {
+                profile.LastSeenAt = seenAt;
+            }
+
+            foreach (var pair in item.Metadata)
+            {
+                if (!profile.Metadata.ContainsKey(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                {
+                    profile.Metadata[pair.Key] = pair.Value;
+                }
+            }
+        }
+
+        private static List<ManageEnginePersonProfile> ApplyRequesterFilters(
+            List<ManageEnginePersonProfile> profiles,
+            ManageEngineQueryOptions? options)
+        {
+            if (options == null)
+            {
+                return profiles;
+            }
+
+            IEnumerable<ManageEnginePersonProfile> filtered = profiles;
+
+            if (!string.IsNullOrWhiteSpace(options.Source))
+            {
+                filtered = filtered.Where(profile => string.Equals(profile.Source, options.Source, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.Type))
+            {
+                filtered = filtered.Where(profile => string.Equals(profile.Role, options.Type, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.Search))
+            {
+                var search = options.Search.Trim();
+                filtered = filtered.Where(profile =>
+                    profile.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    profile.Role.Contains(search, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return filtered.ToList();
         }
 
         private static ManageEngineNormalizedItem MapOpManagerService(JsonElement element, string baseUrl)
@@ -1092,7 +1648,12 @@ namespace ITSMBackend.Services
                 return null;
             }
 
-            var candidates = (await GetCatalogItemsAsync()).Concat(await GetOperationalItemsAsync());
+            var candidates = await GetServiceDeskAssetItemsAsync(asset);
+            if (candidates.Count == 0)
+            {
+                return null;
+            }
+
             return candidates.FirstOrDefault(item => ItemHasAssetIdentity(item, assetIdentifiers));
         }
 
@@ -1122,10 +1683,25 @@ namespace ITSMBackend.Services
         {
             var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             AddIfPresent(metadata, "asset_tag", asset.AssetTag);
-            AddIfPresent(metadata, "asset_id", asset.AssetTag);
+            AddIfPresent(metadata, "asset_id", asset.Id.ToString());
             AddIfPresent(metadata, "serial_number", asset.SerialNumber);
             AddIfPresent(metadata, "barcode", string.IsNullOrWhiteSpace(asset.AssetTag) ? string.Empty : $"BC-{asset.AssetTag}");
             return metadata;
+        }
+
+        private static void AddAssetSearchCriteria(List<Dictionary<string, object>> criteria, string field, string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return;
+            }
+
+            criteria.Add(new Dictionary<string, object>
+            {
+                ["field"] = field,
+                ["condition"] = "is",
+                ["value"] = value.Trim()
+            });
         }
 
         private static void AddIfPresent(Dictionary<string, string> metadata, string key, string? value)
@@ -1134,6 +1710,83 @@ namespace ITSMBackend.Services
             {
                 metadata[key] = value.Trim();
             }
+        }
+
+        private async Task<ManageEngineNormalizedItem?> UpdateServiceDeskAssetAsync(string assetId, AssetDto asset)
+        {
+            var serviceDesk = await BuildServiceDeskSettingsAsync();
+            if (string.IsNullOrWhiteSpace(assetId))
+            {
+                return null;
+            }
+
+            var payload = BuildServiceDeskAssetPayload(asset);
+            var document = await SendJsonAsync(serviceDesk, $"{TrimLeadingSlash(serviceDesk.AssetEndpoint)}/{Uri.EscapeDataString(assetId)}", HttpMethod.Put, payload, ManageEngineAuthMode.ServiceDesk);
+            if (document == null)
+            {
+                return null;
+            }
+
+            var root = ExtractArray(document.RootElement).FirstOrDefault();
+            if (root.ValueKind != JsonValueKind.Undefined)
+            {
+                return MapServiceDeskAssetItem(root, serviceDesk.BaseUrl);
+            }
+
+            var metadata = BuildAssetIdentityMetadata(asset);
+            var fallback = new ManageEngineNormalizedItem
+            {
+                Source = "ServiceDesk",
+                ItemType = "asset",
+                ExternalId = assetId,
+                Name = FirstNonEmpty(asset.Name, asset.AssetTag, $"Asset {asset.Id}"),
+                Description = string.Join(Environment.NewLine, new[]
+                {
+                    $"Asset Tag: {asset.AssetTag}",
+                    $"Serial Number: {asset.SerialNumber}",
+                    $"Type: {asset.AssetType}",
+                    $"Location: {asset.Location}",
+                    $"Manufacturer: {asset.Manufacturer}",
+                    $"Model: {asset.Model}"
+                }.Where(value => !string.IsNullOrWhiteSpace(value))),
+                Status = asset.Status,
+                Category = asset.AssetType,
+                Owner = FirstNonEmpty(asset.Owner?.Username, asset.Owner?.FullName),
+                ExternalUrl = BuildExternalUrl(serviceDesk.BaseUrl, "assets", assetId),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Metadata = metadata
+            };
+
+            return fallback;
+        }
+
+        private static object BuildServiceDeskAssetPayload(AssetDto asset)
+        {
+            var metadata = BuildAssetIdentityMetadata(asset);
+            return new
+            {
+                asset = new
+                {
+                    name = FirstNonEmpty(asset.Name, asset.AssetTag, $"Asset {asset.Id}"),
+                    product = new
+                    {
+                        name = FirstNonEmpty(asset.AssetType, asset.Model, "Asset")
+                    },
+                    asset_tag = metadata.GetValueOrDefault("asset_tag"),
+                    serial_number = metadata.GetValueOrDefault("serial_number"),
+                    barcode = metadata.GetValueOrDefault("barcode"),
+                    location = asset.Location,
+                    description = string.Join(Environment.NewLine, new[]
+                    {
+                        $"Manufacturer: {asset.Manufacturer}",
+                        $"Model: {asset.Model}",
+                        $"Owner: {FirstNonEmpty(asset.Owner?.FullName, asset.Owner?.Username)}",
+                        $"Cost: {asset.CostAmount?.ToString()}"
+                    }.Where(value => !string.IsNullOrWhiteSpace(value))),
+                    udf_fields = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase)
+                }
+            };
         }
 
         private static string NormalizeIdentifier(string? value)
@@ -1199,6 +1852,7 @@ namespace ITSMBackend.Services
                 TechnicianHeaderName = ResolveUpdatedValue(request.TechnicianHeaderName, current.TechnicianHeaderName),
                 CatalogEndpoint = ResolveUpdatedValue(request.CatalogEndpoint, current.CatalogEndpoint),
                 RequestsEndpoint = ResolveUpdatedValue(request.RequestsEndpoint, current.RequestsEndpoint),
+                AssetEndpoint = ResolveUpdatedValue(request.AssetEndpoint, current.AssetEndpoint),
                 ServicesEndpoint = ResolveUpdatedValue(request.ServicesEndpoint, current.ServicesEndpoint),
                 AlertsEndpoint = ResolveUpdatedValue(request.AlertsEndpoint, current.AlertsEndpoint)
             };
@@ -1262,6 +1916,7 @@ namespace ITSMBackend.Services
                     TechnicianHeaderName = FirstNonEmpty(stored.TechnicianHeaderName, defaults.TechnicianHeaderName),
                     CatalogEndpoint = FirstNonEmpty(stored.CatalogEndpoint, defaults.CatalogEndpoint),
                     RequestsEndpoint = FirstNonEmpty(stored.RequestsEndpoint, defaults.RequestsEndpoint),
+                    AssetEndpoint = FirstNonEmpty(stored.AssetEndpoint, defaults.AssetEndpoint),
                     ServicesEndpoint = FirstNonEmpty(stored.ServicesEndpoint, defaults.ServicesEndpoint),
                     AlertsEndpoint = FirstNonEmpty(stored.AlertsEndpoint, defaults.AlertsEndpoint)
                 };
@@ -1286,7 +1941,11 @@ namespace ITSMBackend.Services
                 ApiKeyQueryName = settings.ApiKeyQueryName,
                 TechnicianHeaderName = settings.TechnicianHeaderName,
                 CatalogEndpoint = settings.CatalogEndpoint,
+                KnowledgeBaseEndpoint = settings.KnowledgeBaseEndpoint,
                 RequestsEndpoint = settings.RequestsEndpoint,
+                ApprovalsEndpoint = settings.ApprovalsEndpoint,
+                ChangesEndpoint = settings.ChangesEndpoint,
+                AssetEndpoint = settings.AssetEndpoint,
                 ServicesEndpoint = settings.ServicesEndpoint,
                 AlertsEndpoint = settings.AlertsEndpoint
             };

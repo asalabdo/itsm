@@ -285,7 +285,7 @@ const ManageAssets = () => {
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEngineAssetAdminContext', 'ManageEngine Asset Admin Context')}
-              description={t('manageEngineAssetAdminContextDesc', 'External OpManager monitoring and ServiceDesk workload to consider while editing assets.')}
+              description={t('manageEngineAssetAdminContextDesc', 'ServiceDesk workload plus OpManager 12.8.270 services and alerts to consider while editing assets.')}
             />
           </div>
 

@@ -175,7 +175,7 @@ const ActiveRequestsDashboard = ({ expanded = false, departmentFilter = 'all', s
         </div>
         <Button variant="outline" size="sm">
           <Icon name="Filter" size={16} />
-          <span className="ml-2">{t('filter', 'Filter')}</span>
+          <span className="ms-2">{t('filter', 'Filter')}</span>
         </Button>
       </div>
 
@@ -190,7 +190,7 @@ const ActiveRequestsDashboard = ({ expanded = false, departmentFilter = 'all', s
             className="text-xs"
           >
             {option?.label}
-            <span className="ml-1 opacity-70">({option?.count})</span>
+            <span className="ms-1 opacity-70">({option?.count})</span>
           </Button>
         ))}
       </div>

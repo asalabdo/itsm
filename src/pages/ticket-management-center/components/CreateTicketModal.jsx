@@ -3,11 +3,16 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import TicketDuplicateSuggestions from '../../../components/tickets/TicketDuplicateSuggestions';
+import TicketQuickPresetGrid from '../../../components/tickets/TicketQuickPresetGrid';
+import TicketRecentReusePanel from '../../../components/tickets/TicketRecentReusePanel';
 import assetService from '../../../services/assetService';
 import { formatLocalizedValue } from '../../../services/displayValue';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
+import { ticketsAPI } from '../../../services/api';
 import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../../services/organizationUnits';
+import { getLocalizedTicketQuickPreset, TICKET_QUICK_PRESETS } from '../../../services/ticketDepartmentDefaults';
 
 const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
   const { language, isRtl } = useLanguage();
@@ -31,6 +36,8 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
   });
   const [requiresAsset, setRequiresAsset] = useState(false);
   const [erpDepartments, setErpDepartments] = useState([]);
+  const [recentTickets, setRecentTickets] = useState([]);
+  const [recentTicketsLoading, setRecentTicketsLoading] = useState(false);
 
   const priorityOptions = [
     { value: 'critical', label: t('critical', 'Critical') },
@@ -54,7 +61,58 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    let mounted = true;
+
+    const loadRecentTickets = async () => {
+      setRecentTicketsLoading(true);
+      try {
+        const response = await ticketsAPI.getAll();
+        const tickets = Array.isArray(response?.data) ? response.data : [];
+        const currentUserId = Number(currentUser?.id);
+        const filteredTickets = Number.isFinite(currentUserId)
+          ? tickets.filter((ticket) => {
+              const candidateIds = [
+                ticket?.requestedById,
+                ticket?.assignedToId,
+                ticket?.requestedBy?.id,
+                ticket?.assignedTo?.id,
+              ].map((value) => Number(value)).filter((value) => !Number.isNaN(value) && value > 0);
+              return candidateIds.includes(currentUserId);
+            })
+          : tickets;
+        const sorted = [...(filteredTickets.length > 0 ? filteredTickets : tickets)]
+          .sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0))
+          .slice(0, 4);
+        if (mounted) {
+          setRecentTickets(sorted);
+        }
+      } catch {
+        if (mounted) {
+          setRecentTickets([]);
+        }
+      } finally {
+        if (mounted) {
+          setRecentTicketsLoading(false);
+        }
+      }
+    };
+
+    loadRecentTickets();
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser?.id, isOpen]);
+
   const departmentOptions = useMemo(() => getErpDepartmentOptions(erpDepartments, t), [erpDepartments, t]);
+  const quickPresets = useMemo(
+    () => TICKET_QUICK_PRESETS.map((preset) => getLocalizedTicketQuickPreset(preset, language)),
+    [language],
+  );
 
   const categoryOptions = [
     { value: 'hardware-issue', label: t('hardwareIssue', 'Hardware Issue'), requiresAsset: true },
@@ -136,6 +194,63 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
+
+  const applyQuickPreset = (preset) => {
+    const mappedCategory = preset?.managementCenterCategory || preset?.category || '';
+    const selectedCategory = categoryOptions?.find((option) => option?.value === mappedCategory);
+    const assetRequired = selectedCategory?.requiresAsset || false;
+
+    setFormData((prev) => ({
+      ...prev,
+      title: preset?.subject || preset?.title || '',
+      description: preset?.description || '',
+      priority: preset?.priority || '',
+      department: preset?.department || prev.department,
+      category: mappedCategory,
+      assetId: assetRequired ? prev.assetId : '',
+    }));
+
+    setRequiresAsset(assetRequired);
+    setErrors({});
+  };
+
+  const applyRecentTicket = (ticket) => {
+    const normalizedCategory = String(ticket?.category || '').trim().toLowerCase();
+    const matchedCategory =
+      categoryOptions.find((option) => option?.value === normalizedCategory)?.value ||
+      'general-inquiry';
+    const selectedCategory = categoryOptions.find((option) => option?.value === matchedCategory);
+    const assetRequired = selectedCategory?.requiresAsset || false;
+
+    setFormData((prev) => ({
+      ...prev,
+      title: ticket?.title || '',
+      description: ticket?.description || '',
+      priority: String(ticket?.priority || '').trim().toLowerCase() || prev.priority || 'medium',
+      department: prev.department,
+      category: matchedCategory,
+      assetId: assetRequired ? prev.assetId : '',
+    }));
+
+    setRequiresAsset(assetRequired);
+    setErrors({});
+  };
+
+  const duplicateTickets = useMemo(() => {
+    const query = String(formData?.title || '').trim().toLowerCase();
+    if (!query) {
+      return [];
+    }
+
+    return recentTickets.filter((ticket) => {
+      const title = String(ticket?.title || ticket?.subject || '').trim().toLowerCase();
+      if (!title) {
+        return false;
+      }
+
+      return title === query || title.includes(query) || query.includes(title);
+    }).slice(0, 3);
+  }, [formData?.title, recentTickets]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -290,6 +405,24 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
 
           {/* Form Content */}
           <div className="flex-1 overflow-y-auto scrollbar-custom p-6 space-y-6">
+            <TicketQuickPresetGrid
+              presets={quickPresets}
+              onSelect={applyQuickPreset}
+              title={t('quickStart', 'Quick Start')}
+              description={t('quickCreateModalDesc', 'Start from a shared ticket pattern and adjust the details if needed.')}
+              compact
+            />
+
+            <TicketRecentReusePanel
+              tickets={recentTickets}
+              loading={recentTicketsLoading}
+              onSelect={applyRecentTicket}
+              title={t('recentTickets', 'Recent Tickets')}
+              description={t('recentModalDesc', 'Reuse one of your latest tickets and adjust what changed.')}
+              emptyLabel={t('noRecentTickets', 'No recent tickets to reuse yet.')}
+              compact
+            />
+
             {/* Title */}
             <Input
               label={t('ticketTitle', 'Ticket Title')}
@@ -298,6 +431,15 @@ const CreateTicketModal = ({ isOpen, onClose, onSubmit, currentUser }) => {
               onChange={(e) => handleInputChange('title', e?.target?.value)}
               error={errors?.title}
               required
+            />
+
+            <TicketDuplicateSuggestions
+              tickets={duplicateTickets}
+              title={t('possibleDuplicate', 'Possible duplicate detected')}
+              description={t('duplicateWarning', 'We found similar recent tickets. Reusing one can save a few steps.')}
+              openLabel={t('reuse', 'Reuse')}
+              untitledLabel={t('untiledTicket', 'Untitled ticket')}
+              onOpen={applyRecentTicket}
             />
 
             {/* Category */}

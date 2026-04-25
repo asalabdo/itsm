@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
@@ -15,21 +15,9 @@ import { getTranslation } from '../../services/i18n';
 
 const ServicePerformanceAnalytics = () => {
   const { language, isRtl } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const langText = (ar, en) => (isArabic ? ar : en);
-  const translateMetricTitle = (name) => {
-    const normalized = String(name || '').toLowerCase();
-    const metricMap = {
-      'cost per ticket': 'costPerTicket',
-      'employee satisfaction': 'employeeSatisfaction',
-      'it service availability': 'itServiceAvailability',
-      'average resolution time': 'avgResolutionTime',
-      'sla compliance': 'slaCompliance',
-    };
-    const key = metricMap[normalized];
-    return key ? t(key, name || 'Metric') : (name || 'Metric');
-  };
   const [filters, setFilters] = useState({
     timeRange: '30d',
     department: 'all',
@@ -43,10 +31,24 @@ const ServicePerformanceAnalytics = () => {
     categories: [],
     tickets: [],
   });
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchKPIData = async () => {
+      const translateMetricTitle = (name) => {
+        const normalized = String(name || '').toLowerCase();
+        const metricMap = {
+          'cost per ticket': 'costPerTicket',
+          'employee satisfaction': 'employeeSatisfaction',
+          'it service availability': 'itServiceAvailability',
+          'average resolution time': 'avgResolutionTime',
+          'sla compliance': 'slaCompliance',
+        };
+        const key = metricMap[normalized];
+        return key ? t(key, name || 'Metric') : (name || 'Metric');
+      };
+
       try {
         setLoading(true);
         const timeRangeDays = (() => {
@@ -91,6 +93,7 @@ const ServicePerformanceAnalytics = () => {
           categories: Array.isArray(categoriesRes.data) ? categoriesRes.data : [],
           tickets: Array.isArray(ticketsRes.data) ? ticketsRes.data : [],
         });
+        setLastUpdated(new Date());
       } catch (error) {
         console.error('Failed to fetch KPI data:', error);
         setKpiData([]);
@@ -101,7 +104,7 @@ const ServicePerformanceAnalytics = () => {
     };
 
     fetchKPIData();
-  }, [filters]);
+  }, [filters, t]);
 
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
@@ -164,7 +167,7 @@ const ServicePerformanceAnalytics = () => {
                 </div>
                 <div className={`hidden md:flex items-center space-x-2 text-sm text-muted-foreground ${isRtl ? 'flex-row-reverse space-x-reverse' : ''}`}>
                   <span>{t('dashboardRefreshed', 'Dashboard refreshed')}:</span>
-                  <span className="font-medium">{new Date('2024-09-21T08:48:00').toLocaleString(isArabic ? 'ar-SA' : 'en-US')}</span>
+                  <span className="font-medium">{lastUpdated ? lastUpdated.toLocaleString(isArabic ? 'ar-SA' : 'en-US') : t('notAvailable', 'N/A')}</span>
                 </div>
               </div>
             </div>
@@ -172,7 +175,7 @@ const ServicePerformanceAnalytics = () => {
             <FilterPanel
               onFiltersChange={handleFiltersChange}
               onExport={handleExport}
-              lastUpdated={new Date()}
+              lastUpdated={lastUpdated || new Date()}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">

@@ -126,7 +126,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate('/service-catalog')}>
           <Icon name="Settings" size={16} />
-          <span className="ml-2">{t('manage', 'Manage')}</span>
+          <span className="ms-2">{t('manage', 'Manage')}</span>
         </Button>
       </div>
 
@@ -153,8 +153,8 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
               className="text-xs"
             >
               <Icon name={getCategoryIcon(category?.value)} size={14} />
-              <span className="ml-1">{category?.label}</span>
-              <span className="ml-1 opacity-70">({category?.count})</span>
+              <span className="ms-1">{category?.label}</span>
+              <span className="ms-1 opacity-70">({category?.count})</span>
             </Button>
           ))}
         </div>
@@ -174,7 +174,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
                   <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
                     <Icon name={service?.icon} size={20} className="text-foreground" />
                   </div>
-                  <div className="ml-3">
+                  <div className="ms-3">
                   <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
                     {getLocalizedField(service, 'name', CATALOG_SERVICE_NAMES_AR, language)}
                   </h3>
@@ -225,7 +225,7 @@ const ServiceCatalog = ({ expanded = false, onRequestService }) => {
               }}
             >
               <Icon name="Plus" size={14} />
-              <span className="ml-2">{t('requestService', 'Request Service')}</span>
+              <span className="ms-2">{t('requestService', 'Request Service')}</span>
             </Button>
           </div>
         ))}

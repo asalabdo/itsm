@@ -233,6 +233,38 @@ const ScenarioValidationCenter = () => {
     return { total, withPages, backendOnly };
   }, [flatScenarios]);
 
+  const coverage = useMemo(() => {
+    const mappedPercent = summary.total > 0 ? Math.round((summary.withPages / summary.total) * 100) : 0;
+    const backendOnlyPercent = summary.total > 0 ? 100 - mappedPercent : 0;
+
+    return { mappedPercent, backendOnlyPercent };
+  }, [summary.total, summary.withPages]);
+
+  const cutoverReadiness = useMemo(() => {
+    const ready = summary.backendOnly === 0;
+    const msg = ready ? t('readyForCutover', 'Ready for cutover') : t('backendOnlyCutover', `${summary.backendOnly} backend-only scenarios still need cutover work`);
+
+    return { ready, message: msg };
+  }, [summary.backendOnly]);
+
+  const hypercareStatus = useMemo(() => {
+    const watch = summary.backendOnly > 0;
+    const msg = watch 
+      ? t('backendOnlyMigration', `${summary.backendOnly} backend-only scenarios still need migration support`)
+      : t('hypercareReady', 'Hypercare Ready');
+
+    return { watch, message: msg };
+  }, [summary.backendOnly]);
+
+  const migrationSupport = useMemo(() => {
+    const open = summary.backendOnly > 0;
+    const msg = open
+      ? t('backendOnlyMigrationWork', `${summary.backendOnly} backend-only scenarios still need migration support work`)
+      : t('migrationSupportReady', 'Migration Support Ready');
+
+    return { open, message: msg };
+  }, [summary.backendOnly]);
+
   const localizeGroupTitle = (title) => {
     const key = scenarioGroupLabels[title];
     return key ? t(key, title) : title;
@@ -295,21 +327,89 @@ const ScenarioValidationCenter = () => {
           </div>
         </div>
 
+        <div className="rounded-2xl border border-border bg-card p-4 md:p-5 shadow-elevation-1 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="text-sm font-medium text-foreground">{isArabic ? 'ÙƒØ«Ø§ÙØ© UAT' : 'UAT Coverage'}</div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isArabic
+                ? 'ÙŠØ¨ÙŠÙ† ÙƒÙ… Ù…Ù† Ø§Ù„Ø³ÙŠÙ†Ø§Ø±ÙŠÙˆÙ‡Ø§Øª Ù…Ø±Ø¨ÙˆØ·Ø© Ø¨ØµÙØ­Ø§Øª ÙØ¹Ù„ÙŠØ© Ù…Ù‚Ø§Ø¨Ù„ Ø§Ù„ØªØ­Ù‚Ù‚ Ø§Ù„Ø®Ø§Ø±Ø¬ÙŠ.'
+                : 'A quick readiness view showing page-backed scenarios versus backend-only validation items.'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 w-full md:w-auto">
+            <div className="min-w-[140px] rounded-xl border border-border bg-background px-4 py-3">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {isArabic ? 'Ø§Ù„Ù…Ø±ØªØ¨Ø· Ø¨Ø§Ù„ØµÙØ­Ø§Øª' : 'Mapped to pages'}
+              </div>
+              <div className="mt-1 text-2xl font-semibold text-success">
+                {coverage.mappedPercent}%
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {summary.withPages} / {summary.total}
+              </div>
+            </div>
+            <div className="min-w-[140px] rounded-xl border border-border bg-background px-4 py-3">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {isArabic ? 'Ø§Ù„Ø®Ù„ÙÙŠØ© ÙÙ‚Ø·' : 'Backend only'}
+              </div>
+              <div className="mt-1 text-2xl font-semibold text-warning">
+                {coverage.backendOnlyPercent}%
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {summary.backendOnly} / {summary.total}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="rounded-2xl border border-border bg-card p-4 md:p-5 shadow-elevation-1">
-          <label className="block text-sm font-medium text-foreground mb-2">{isArabic ? 'ابحث في السيناريوهات' : 'Search scenarios'}</label>
+<label className="block text-sm font-medium text-foreground mb-2">{t('searchScenarios', 'Search scenarios')}</label>
           <input
-            type="search"
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={isArabic ? 'ابحث برقم السيناريو أو الاسم أو الوحدة أو النتيجة المتوقعة...' : 'Search by scenario number, name, module, or expected result...'}
-            className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder={t('searchScenarioPlaceholder', 'Search by scenario number, name, module, or expected result...')}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
           />
+        </div>
+
+        <div
+          className={`rounded-2xl border p-4 md:p-5 shadow-elevation-1 ${
+            cutoverReadiness.ready ? 'border-success/20 bg-success/5' : 'border-warning/20 bg-warning/5'
+          }`}
+        >
+          <div className="text-sm font-medium text-foreground">Cutover Readiness</div>
+          <p className={`text-sm mt-1 ${cutoverReadiness.ready ? 'text-success' : 'text-warning'}`}>
+            {cutoverReadiness.message}
+          </p>
+        </div>
+
+        <div
+          className={`rounded-2xl border p-4 md:p-5 shadow-elevation-1 ${
+            hypercareStatus.watch ? 'border-warning/20 bg-warning/5' : 'border-border bg-muted/30'
+          }`}
+        >
+          <div className="text-sm font-medium text-foreground">Hypercare Watch</div>
+          <p className={`text-sm mt-1 ${hypercareStatus.watch ? 'text-warning' : 'text-muted-foreground'}`}>
+            {hypercareStatus.message}
+          </p>
+        </div>
+
+        <div
+          className={`rounded-2xl border p-4 md:p-5 shadow-elevation-1 ${
+            migrationSupport.open ? 'border-warning/20 bg-warning/5' : 'border-border bg-muted/30'
+          }`}
+        >
+          <div className="text-sm font-medium text-foreground">Migration Support</div>
+          <p className={`text-sm mt-1 ${migrationSupport.open ? 'text-warning' : 'text-muted-foreground'}`}>
+            {migrationSupport.message}
+          </p>
         </div>
 
         <ManageEngineOnPremSnapshot
           compact
           title={t('manageEngineScenarioEvidence', 'ManageEngine Scenario Evidence')}
-          description={t('manageEngineScenarioEvidenceDesc', 'Validate test scenarios against live on-prem ServiceDesk request flow and OpManager event pressure.')}
+          description={t('manageEngineScenarioEvidenceDesc', 'Validate test scenarios against live on-prem ServiceDesk request flow plus OpManager 12.8.270 services and alert pressure.')}
         />
 
         <div className="space-y-6">

@@ -1455,6 +1455,7 @@ export const en = {
     hourly: 'Hourly',
     lastUpdated: 'Last Updated',
     autoRefresh: 'Auto Refresh',
+    loadingPage: 'Loading page...',
 
     // Service Request Performance
     serviceRequestPerformanceMetricsTitle: 'Performance Metrics',

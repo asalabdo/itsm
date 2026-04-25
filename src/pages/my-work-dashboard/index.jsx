@@ -207,7 +207,7 @@ const MyWorkDashboard = () => {
               <ManageEngineOnPremSnapshot
                 compact
                 title={t('manageEngineMyWorkContext', 'ManageEngine My Work Context')}
-                description={t('manageEngineMyWorkContextDesc', 'External requests and alerts that can influence your assigned work today.')}
+                description={t('manageEngineMyWorkContextDesc', 'ServiceDesk requests plus OpManager 12.8.270 services and alerts that can influence your assigned work today.')}
               />
             </div>
           </div>

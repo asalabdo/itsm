@@ -238,6 +238,81 @@ namespace ITSMBackend.Controllers
             }
         }
 
+        [HttpGet("opmanager-analytics")]
+        public async Task<IActionResult> GetOpManagerAnalytics()
+        {
+            try
+            {
+                var analytics = await _manageEngineService.GetOpManagerAnalyticsAsync();
+                return Ok(analytics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ManageEngine OpManager analytics");
+                return StatusCode(500, new { error = "Failed to fetch OpManager analytics", details = ex.Message });
+            }
+        }
+
+        [HttpGet("approvals")]
+        public async Task<IActionResult> GetApprovals()
+        {
+            try
+            {
+                var approvals = await _manageEngineService.GetApprovalItemsAsync(BuildQueryOptions());
+                return Ok(approvals);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ManageEngine approval data");
+                return StatusCode(500, new { error = "Failed to fetch approval data", details = ex.Message });
+            }
+        }
+
+        [HttpGet("changes")]
+        public async Task<IActionResult> GetChanges()
+        {
+            try
+            {
+                var changes = await _manageEngineService.GetChangeItemsAsync(BuildQueryOptions());
+                return Ok(changes);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ManageEngine change data");
+                return StatusCode(500, new { error = "Failed to fetch change data", details = ex.Message });
+            }
+        }
+
+        [HttpGet("requesters")]
+        public async Task<IActionResult> GetRequesters()
+        {
+            try
+            {
+                var requesters = await _manageEngineService.GetRequesterProfilesAsync(BuildQueryOptions());
+                return Ok(requesters);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ManageEngine requester data");
+                return StatusCode(500, new { error = "Failed to fetch requester data", details = ex.Message });
+            }
+        }
+
+        [HttpGet("knowledge-base")]
+        public async Task<IActionResult> GetKnowledgeBase()
+        {
+            try
+            {
+                var articles = await _manageEngineService.GetKnowledgeBaseItemsAsync(BuildQueryOptions());
+                return Ok(articles);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ManageEngine knowledge base data");
+                return StatusCode(500, new { error = "Failed to fetch knowledge base data", details = ex.Message });
+            }
+        }
+
         [HttpGet("unified")]
         public async Task<IActionResult> GetUnified()
         {

@@ -12,6 +12,7 @@ const CategorySelector = ({
   onServiceSelect,
   selectedModule,
   onModuleChange,
+  isReadOnly = false,
 }) => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
@@ -657,7 +658,7 @@ const CategorySelector = ({
           </p>
         </div>
 
-        {selectedModule && (
+        {selectedModule && !isReadOnly && (
           <div className={isRtl ? 'text-left' : 'text-right'}>
             <button
               type="button"
@@ -688,8 +689,9 @@ const CategorySelector = ({
               <motion.button
                 key={module.id}
                 type="button"
+                disabled={isReadOnly}
                 onClick={() => onModuleChange(module.id)}
-                className={`relative overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 group w-full ${
+                className={`relative overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 group w-full disabled:cursor-default ${
                   selectedModule === module.id
                     ? 'bg-primary/10 border border-primary shadow-elevation-2'
                     : 'bg-card border border-border hover:border-primary/40 hover:bg-primary/5'
@@ -797,14 +799,15 @@ const CategorySelector = ({
                   <motion.button
                     key={category?.id}
                     type="button"
+                    disabled={isReadOnly}
                     onClick={() => handleCategoryClick(category?.id)}
-                    className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 group w-full h-full ${
+                    className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 group w-full h-full disabled:cursor-default disabled:opacity-100 ${
                       selectedCategory === category?.id
                         ? `${category?.bgColor} ${category?.borderColor} border shadow-elevation-2`
                         : 'bg-card border border-border hover:border-primary/30 hover:bg-primary/5'
                     } ${'text-left'}`}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={isReadOnly ? undefined : { scale: 1.02, y: -2 }}
+                    whileTap={isReadOnly ? undefined : { scale: 0.98 }}
                     variants={{
                       hidden: { opacity: 0, y: 20, scale: 0.9 },
                       visible: {
@@ -897,7 +900,7 @@ const CategorySelector = ({
               </motion.div>
             </div>
 
-            {selectedCategory && (
+            {selectedCategory && !isReadOnly && (
               <div className={isRtl ? 'text-left' : 'text-right'}>
                 <button
                   type="button"
@@ -937,13 +940,15 @@ const CategorySelector = ({
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
                     {getServiceLabel(selectedService)}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => onServiceSelect(null)}
-                    className="ml-2 text-muted-foreground hover:text-foreground"
-                  >
-                    <Icon name="X" size={14} />
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => onServiceSelect(null)}
+                      className="ml-2 text-muted-foreground hover:text-foreground"
+                    >
+                      <Icon name="X" size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (

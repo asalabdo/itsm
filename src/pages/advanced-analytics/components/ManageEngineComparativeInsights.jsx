@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '../../../components/AppIcon';
-import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
+import ManageEngineMetricCard, {
+  ManageEngineZeroBadge,
+  countHiddenZeroMetrics,
+} from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
-import { summarizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -11,23 +13,41 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
-    operations: 0,
-    serviceDeskRequests: 0,
-    opManagerAlerts: 0,
+    services: 0,
+    alerts: 0,
+    criticalAlerts: 0,
+    warningAlerts: 0,
   });
+  const isMountedRef = useRef(false);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     const loadData = async () => {
       try {
         setLoading(true);
-        const response = await manageEngineAPI.getUnified().catch(() => ({ data: { summary: {} } }));
-        setSummary(summarizeManageEngineUnified(response));
+        const response = await manageEngineAPI.getOpManagerAnalytics().catch(() => ({ data: null }));
+        if (!isMountedRef.current) {
+          return;
+        }
+        setSummary({
+          services: Number(response?.data?.servicesCount || 0),
+          alerts: Number(response?.data?.alertsCount || 0),
+          criticalAlerts: Number(response?.data?.criticalAlertsCount || 0),
+          warningAlerts: Number(response?.data?.warningAlertsCount || 0),
+        });
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
     void loadData();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const openInternal = useMemo(
@@ -35,17 +55,17 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
     [internalTickets]
   );
 
-  const externalPressure = summary.operations;
-  const pressureDelta = externalPressure - openInternal;
+  const pressureDelta = summary.alerts - openInternal;
   const zeroHiddenCount = countHiddenZeroMetrics([
-    { value: summary.serviceDeskRequests },
-    { value: summary.opManagerAlerts },
+    { value: summary.services },
+    { value: summary.alerts },
+    { value: summary.criticalAlerts },
   ]);
   const comparisonLabel = pressureDelta > 0
-    ? t('externalPressureHigher', 'External pressure is higher than the current open internal backlog.')
+    ? t('externalPressureHigher', 'OpManager alert pressure is higher than the current open internal backlog.')
     : pressureDelta < 0
-      ? t('internalBacklogHigher', 'Internal backlog is still heavier than the current external feed.')
-      : t('externalPressureBalanced', 'External pressure and internal backlog are currently balanced.');
+      ? t('internalBacklogHigher', 'The internal backlog is still heavier than the current OpManager alert feed.')
+      : t('externalPressureBalanced', 'OpManager alert pressure and the internal backlog are currently balanced.');
 
   return (
     <div className="bg-card border border-border rounded-lg p-5 shadow-elevation-1">
@@ -56,7 +76,7 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
             <h3 className="font-semibold text-foreground">{t('manageEngineComparativeInsights', 'ManageEngine Comparative Insights')}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t('manageEngineComparativeInsightsDesc', 'Compare internal backlog against live external demand from ServiceDesk and OpManager.')}
+            {t('manageEngineComparativeInsightsDesc', 'Compare internal backlog against OpManager 12.8.270 services and live alert pressure.')}
           </p>
         </div>
         {!loading && zeroHiddenCount > 0 ? <ManageEngineZeroBadge label={`${zeroHiddenCount} hidden`} /> : (
@@ -72,7 +92,7 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <ManageEngineMetricCard
               label={t('openInternalTickets', 'Open internal tickets')}
               value={openInternal}
@@ -80,14 +100,19 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
               hideWhenZero={false}
             />
             <ManageEngineMetricCard
-              label={t('serviceDeskRequests', 'ServiceDesk requests')}
-              value={summary.serviceDeskRequests}
-              icon={<Icon name="ClipboardList" size={16} className="text-primary" />}
+              label={t('opManagerServices', 'OpManager services')}
+              value={summary.services}
+              icon={<Icon name="Server" size={16} className="text-primary" />}
             />
             <ManageEngineMetricCard
               label={t('opManagerAlerts', 'OpManager alerts')}
-              value={summary.opManagerAlerts}
+              value={summary.alerts}
               icon={<Icon name="Radar" size={16} className="text-primary" />}
+            />
+            <ManageEngineMetricCard
+              label={t('criticalAlerts', 'Critical alerts')}
+              value={summary.criticalAlerts}
+              icon={<Icon name="AlertTriangle" size={16} className="text-primary" />}
             />
           </div>
 
@@ -98,7 +123,7 @@ const ManageEngineComparativeInsights = ({ internalTickets = [] }) => {
             </div>
             <p className="text-sm text-muted-foreground">{comparisonLabel}</p>
             <p className="text-xs text-muted-foreground mt-2">
-              {t('totalExternalOperations', 'Total external operations')}: {summary.operations}. {t('deltaVsOpenInternalBacklog', 'Delta vs open internal backlog')}: {pressureDelta > 0 ? '+' : ''}{pressureDelta}.
+              {t('trackedOpManagerServices', 'Tracked OpManager services')}: {summary.services}. {t('warningAlerts', 'Warning alerts')}: {summary.warningAlerts}. {t('deltaVsOpenInternalBacklog', 'Delta vs open internal backlog')}: {pressureDelta > 0 ? '+' : ''}{pressureDelta}.
             </p>
           </div>
         </>

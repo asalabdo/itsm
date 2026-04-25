@@ -141,7 +141,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
           </select>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Icon name="Download" size={16} />
-            <span className="ml-2">{t('export', 'Export')}</span>
+            <span className="ms-2">{t('export', 'Export')}</span>
           </Button>
         </div>
       </div>
@@ -161,7 +161,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
           </div>
           <div className="flex items-center mt-2">
             <Icon name="TrendingUp" size={12} className="text-green-600" />
-            <span className="text-xs text-green-600 ml-1">{t('fromLastMonth', '+12.5% from last month')}</span>
+            <span className="text-xs text-green-600 ms-1">{t('fromLastMonth', '+12.5% from last month')}</span>
           </div>
         </div>
 
@@ -177,7 +177,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
           </div>
           <div className="flex items-center mt-2">
             <Icon name="TrendingUp" size={12} className="text-green-600" />
-            <span className="text-xs text-green-600 ml-1">{t('fromLastMonth', '+2.1% from last month')}</span>
+            <span className="text-xs text-green-600 ms-1">{t('fromLastMonth', '+2.1% from last month')}</span>
           </div>
         </div>
 
@@ -195,7 +195,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
           </div>
           <div className="flex items-center mt-2">
             <Icon name="TrendingDown" size={12} className="text-green-600" />
-            <span className="text-xs text-green-600 ml-1">{t('daysImproved', '-0.3 days improved')}</span>
+            <span className="text-xs text-green-600 ms-1">{t('daysImproved', '-0.3 days improved')}</span>
           </div>
         </div>
 
@@ -213,7 +213,7 @@ const PerformanceMetrics = ({ expanded = false }) => {
           </div>
           <div className="flex items-center mt-2">
             <Icon name="TrendingUp" size={12} className="text-green-600" />
-            <span className="text-xs text-green-600 ml-1">{t('fromLastMonth', '+0.1 from last month')}</span>
+            <span className="text-xs text-green-600 ms-1">{t('fromLastMonth', '+0.1 from last month')}</span>
           </div>
         </div>
       </div>

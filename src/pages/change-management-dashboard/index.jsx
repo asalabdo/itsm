@@ -127,6 +127,18 @@ const ChangeManagementDashboard = () => {
       return matchesDate && matchesType && matchesEnvironment && matchesRisk && matchesStatus && matchesPriority && matchesAssignee && matchesSearch;
     });
   }, [changes, activeFilters]);
+  const overdueChanges = filteredChanges.filter((change) => {
+    const dueDate = change?.scheduledDate ? new Date(change.scheduledDate) : null;
+    if (!dueDate || Number.isNaN(dueDate.getTime())) return false;
+    return dueDate < new Date() && !['completed', 'closed', 'implemented'].includes(String(change?.status || '').toLowerCase());
+  }).length;
+  const changeQueueCue = refreshing
+    ? t('refreshing', 'Refreshing...')
+    : overdueChanges > 0
+      ? `${overdueChanges} ${t('changesOverdue', 'changes overdue')}`
+      : filteredChanges.length > 0
+        ? t('changeQueueHealthy', 'Change queue healthy')
+        : t('noChangesFound', 'No changes found');
 
   const getViewModeIcon = (mode) => {
     switch (mode) {
@@ -154,6 +166,20 @@ const ChangeManagementDashboard = () => {
               <p className="text-muted-foreground mt-2">
                 {t('changeManagementDashboardDescription', 'Monitor change success rates, approval workflows, and deployment pipeline performance')}
               </p>
+              <div
+                className={`mt-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
+                  refreshing
+                    ? 'border-border bg-muted text-muted-foreground'
+                    : overdueChanges > 0
+                      ? 'border-warning/20 bg-warning/10 text-warning'
+                      : filteredChanges.length > 0
+                        ? 'border-success/20 bg-success/10 text-success'
+                        : 'border-border bg-muted text-muted-foreground'
+                }`}
+                aria-live="polite"
+              >
+                {changeQueueCue}
+              </div>
             </div>
             
             <div className={`flex items-center ${isArabic ? 'space-x-reverse' : ''} space-x-4`}>

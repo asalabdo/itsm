@@ -312,7 +312,7 @@ const ManagerDashboard = () => {
         <div className="mb-6 md:mb-8">
           <ManageEngineOnPremSnapshot
             title={t('manageEngineManagerContext', 'ManageEngine Manager Context')}
-            description={t('manageEngineManagerContextDesc', 'External ServiceDesk demand and OpManager monitoring pressure alongside team workload.')}
+            description={t('manageEngineManagerContextDesc', 'ServiceDesk request demand plus OpManager 12.8.270 services and alerts alongside team workload.')}
           />
         </div>
 

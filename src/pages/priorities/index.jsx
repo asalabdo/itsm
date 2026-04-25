@@ -106,7 +106,7 @@ const PrioritiesPage = () => {
           </div>
         </section>
 
-        <ManageEngineOnPremSnapshot
+        <ManageEngineOnPremSnapshot 
           compact
           title={t('manageEnginePrioritySignals', 'ManageEngine Priority Signals')}
           description={t('manageEnginePrioritySignalsDesc', 'Use ServiceDesk request priority and OpManager alarm pressure to validate local priority targets.')}

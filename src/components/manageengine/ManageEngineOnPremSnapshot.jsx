@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Icon from '../AppIcon';
 import Button from '../ui/Button';
 import { manageEngineAPI } from '../../services/api';
-import { normalizeManageEngineUnified, summarizeManageEngineUnified } from '../../services/manageEngineDataUtils';
+import { normalizeManageEngineUnified, summarizeManageEngineUnified, summarizeOpManager270 } from '../../services/manageEngineDataUtils';
 import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from './ManageEngineMetricCard';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -16,14 +16,15 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
     catalog: 0,
     operations: 0,
     serviceDeskRequests: 0,
+    opManagerServices: 0,
     opManagerAlerts: 0,
   });
   const [latestItems, setLatestItems] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
   const zeroHiddenCount = countHiddenZeroMetrics([
     { value: summary.serviceDeskRequests },
+    { value: summary.opManagerServices },
     { value: summary.opManagerAlerts },
-    { value: summary.catalog },
   ]);
 
   const loadData = useCallback(async () => {
@@ -34,7 +35,12 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
       const unified = normalizeManageEngineUnified(unifiedRes);
-      setSummary(summarizeManageEngineUnified(unifiedRes));
+      const unifiedSummary = summarizeManageEngineUnified(unifiedRes);
+      const opManagerSummary = summarizeOpManager270(unifiedRes);
+      setSummary({
+        ...unifiedSummary,
+        opManagerServices: opManagerSummary.services,
+      });
       setLatestItems(unified.operations.slice(0, compact ? 2 : 4));
       setSyncStatus(syncRes?.data || null);
     } finally {
@@ -54,7 +60,7 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
   }, [loadData]);
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
+    <section className="hidden rounded-2xl border border-border bg-card p-5 shadow-elevation-1" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className={`flex items-start justify-between gap-3 ${compact ? 'mb-3' : 'mb-5'}`}>
         <div>
           <div className={`flex items-center gap-2 text-primary`}>
@@ -64,7 +70,7 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
             </h2>
           </div>
           <p className={`mt-1 text-sm text-muted-foreground`}>
-            {description || t('manageEngineOnPremSnapshotDesc', 'Live ServiceDesk Plus API v3 and OpManager context for this workspace.')}
+            {description || t('manageEngineOnPremSnapshotDesc', 'Live ServiceDesk Plus API v3 and OpManager 12.8.270 context for this workspace.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -83,14 +89,8 @@ const ManageEngineOnPremSnapshot = ({ title, description, compact = false }) => 
         <div className="space-y-4">
           <div className={`grid gap-3 ${compact ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'}`}>
             <ManageEngineMetricCard label={t('serviceDeskRequests', 'ServiceDesk Requests')} value={summary.serviceDeskRequests} icon={<Icon name="ClipboardList" size={16} className="text-primary" />} />
+            <ManageEngineMetricCard label={t('opManagerServices', 'OpManager Services')} value={summary.opManagerServices} icon={<Icon name="Server" size={16} className="text-primary" />} />
             <ManageEngineMetricCard label={t('opManagerAlerts', 'OpManager Alerts')} value={summary.opManagerAlerts} icon={<Icon name="Radar" size={16} className="text-primary" />} />
-            {!compact && (
-              <ManageEngineMetricCard
-                label={t('externalCatalog', 'External Catalog')}
-                value={summary.catalog}
-                icon={<Icon name="Layers3" size={16} className="text-primary" />}
-              />
-            )}
             {!compact && (
               <ManageEngineMetricCard
                 label={t('syncHealth', 'Sync Health')}

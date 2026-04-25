@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+  import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import { useLanguage } from '../../context/LanguageContext';
@@ -15,8 +15,23 @@ import EmployeeLookup from './components/EmployeeLookup';
 import FileUploader from './components/FileUploader';
 import RoutingPreview from './components/RoutingPreview';
 import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
+import TicketDuplicateSuggestions from '../../components/tickets/TicketDuplicateSuggestions';
+import TicketQuickPresetGrid from '../../components/tickets/TicketQuickPresetGrid';
+import TicketRecentReusePanel from '../../components/tickets/TicketRecentReusePanel';
 import { slaAPI, ticketsAPI } from '../../services/api';
 import { getErpDepartmentOptions, loadErpDepartmentDirectory } from '../../services/organizationUnits';
+import {
+  getLocalizedTicketQuickPreset,
+  getLocalizedTicketQuickPresetById,
+  getTicketServiceDefaults,
+  TICKET_DEPARTMENT_KEYS,
+  TICKET_QUICK_PRESETS,
+} from '../../services/ticketDepartmentDefaults';
+import {
+  getPortalIncidentDefaults,
+  isPortalQuickPresetEntry,
+  isPortalIncidentEntry,
+} from './portalIncidentSeed';
 
 const DRAFT_KEY = 'itsm-ticket-creation-draft-v2';
 
@@ -35,33 +50,7 @@ const initialFormData = {
   attachments: [],
 };
 
-const quickPresets = [
-  { title: 'إعادة تعيين كلمة المرور', module: 'it-support', category: 'access-management', service: { id: 'am-reset-password', nameEn: 'Password Reset Request' }, subject: 'إعادة تعيين كلمة المرور', description: 'لا يمكن للمستخدم الوصول إلى الحساب ويحتاج إلى إعادة تعيين موثقة لكلمة المرور.', priority: 'high', impact: 'high', urgency: 'high', department: 'it' },
-  { title: 'جهاز جديد', module: 'it-support', category: 'technical-support', service: { id: 'ts-new-device', nameEn: 'Request New Device' }, subject: 'طلب لابتوب جديد', description: 'يلزم جهاز بديل أو جديد حتى يتمكن المستخدم من متابعة العمل.', priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' },
-  { title: 'انقطاع الشبكة', module: 'dg-assistant', category: 'noc-requests', service: { id: 'noc-service', nameEn: 'Request NOC Service' }, subject: 'مشكلة في الاتصال بالشبكة', description: 'توجد بلاغات عن انقطاع في الشبكة أو تدهور كبير في الاتصال.', priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'network' },
-];
-
-const serviceDefaults = (serviceId) => {
-  if (!serviceId) return null;
-  const map = {
-    'am-reset-password': { priority: 'high', impact: 'high', urgency: 'high', department: 'it' },
-    'am-new-account': { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' },
-    'ts-new-device': { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' },
-    'ts-network-connection': { priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'network' },
-    'noc-service': { priority: 'high', impact: 'high', urgency: 'high', department: 'network' },
-    'noc-ports': { priority: 'high', impact: 'high', urgency: 'high', department: 'network' },
-    'cs-data-breach': { priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'security' },
-    'sr-onboarding': { priority: 'high', impact: 'high', urgency: 'high', department: 'it' },
-    'sr-offboarding': { priority: 'urgent', impact: 'critical', urgency: 'immediate', department: 'it' },
-  };
-  if (map[serviceId]) return map[serviceId];
-  if (serviceId.startsWith('cs-')) return { priority: 'high', impact: 'high', urgency: 'high', department: 'security' };
-  if (serviceId.startsWith('noc-') || serviceId.startsWith('net-')) return { priority: 'high', impact: 'high', urgency: 'high', department: 'network' };
-  if (serviceId.startsWith('dev-') || serviceId.startsWith('qa-') || serviceId.startsWith('dt-')) return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'application' };
-  if (serviceId.startsWith('hr') || serviceId.startsWith('ehr-') || serviceId.startsWith('hrs-')) return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'hr' };
-  if (serviceId.startsWith('ms-')) return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'facilities' };
-  return { priority: 'medium', impact: 'medium', urgency: 'medium', department: 'it' };
-};
+const serviceDefaults = (serviceId) => getTicketServiceDefaults(serviceId);
 
 const priorityLabelMap = { urgent: 'عاجل', high: 'عالية', medium: 'متوسطة', low: 'منخفضة' };
 const urgencyScaleMap = {
@@ -92,10 +81,16 @@ const steps = [
 ];
 
 const TicketCreation = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [erpDepartments, setErpDepartments] = useState([]);
+  const [draftHydrated, setDraftHydrated] = useState(false);
+  const quickPresets = useMemo(
+    () => TICKET_QUICK_PRESETS.map((preset) => getLocalizedTicketQuickPreset(preset, language)),
+    [language],
+  );
   
   // Dynamic option arrays using translations
   const priorityOptions = [
@@ -134,6 +129,13 @@ const TicketCreation = () => {
   const [recentTicketsLoading, setRecentTicketsLoading] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [showRecentTickets, setShowRecentTickets] = useState(false);
+  const portalIncidentMode = isPortalIncidentEntry(location.state);
+  const portalQuickPresetMode = isPortalQuickPresetEntry(location.state);
+  const portalIncidentDefaults = useMemo(() => ({ ...initialFormData, ...getPortalIncidentDefaults() }), []);
+  const portalQuickPreset = useMemo(
+    () => (portalQuickPresetMode ? getLocalizedTicketQuickPresetById(location.state?.quickPresetId, language) : null),
+    [language, location.state, portalQuickPresetMode],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -180,16 +182,39 @@ const TicketCreation = () => {
   const selectedDepartmentLabel = departmentOptions.find((option) => option.value === formData.department)?.label || resolveDepartmentLabel(formData.department) || '-';
 
   useEffect(() => {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return;
-    try {
-      const parsed = JSON.parse(raw);
-      if (parsed?.formData) setFormData({ ...initialFormData, ...parsed.formData });
-      if (typeof parsed?.currentStep === 'number') setCurrentStep(Math.max(0, Math.min(3, parsed.currentStep)));
-    } catch {
-      localStorage.removeItem(DRAFT_KEY);
+    if (portalIncidentMode) {
+      setFormData(portalIncidentDefaults);
+      setCurrentStep(0);
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData: portalIncidentDefaults, currentStep: 0 }));
+      setDraftHydrated(true);
+      return;
     }
-  }, []);
+
+    if (portalQuickPreset && !portalIncidentMode) {
+      const presetFormData = {
+        ...initialFormData,
+        module: portalQuickPreset.module,
+        category: portalQuickPreset.category,
+        service: portalQuickPreset.service,
+        subject: portalQuickPreset.subject,
+        description: portalQuickPreset.description,
+        priority: portalQuickPreset.priority,
+        impact: portalQuickPreset.impact,
+        urgency: portalQuickPreset.urgency,
+        department: portalQuickPreset.department,
+      };
+      setFormData(presetFormData);
+      setCurrentStep(3);
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData: presetFormData, currentStep: 3 }));
+      setDraftHydrated(true);
+      return;
+    }
+
+    // A direct visit to /ticket-creation should start from a clean draft instead of
+    // restoring the last saved form from a previous session.
+    localStorage.removeItem(DRAFT_KEY);
+    setDraftHydrated(true);
+  }, [portalIncidentDefaults, portalIncidentMode, portalQuickPreset]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -246,6 +271,17 @@ const TicketCreation = () => {
 
     loadRecentTickets();
   }, []);
+
+  useEffect(() => {
+    if (!draftHydrated || !portalIncidentMode) return;
+    setCurrentStep(0);
+    setFormData((prev) => ({
+      ...portalIncidentDefaults,
+      employee: prev?.employee || null,
+      attachments: [],
+    }));
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData: portalIncidentDefaults, currentStep: 0 }));
+  }, [draftHydrated, portalIncidentMode, portalIncidentDefaults]);
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -334,7 +370,10 @@ const TicketCreation = () => {
   };
 
   const handleReset = () => {
-    setFormData(initialFormData);
+    const resetFormData = portalIncidentMode
+      ? { ...initialFormData, ...getPortalIncidentDefaults() }
+      : initialFormData;
+    setFormData(resetFormData);
     setErrors({});
     setCurrentStep(0);
     setCreatedTicketId(null);
@@ -361,7 +400,7 @@ const TicketCreation = () => {
         description: formData.description.trim(),
         priority: priorityLabelMap[formData.priority] || 'Medium',
         category: formData.category,
-        department: formData.department || selectedDepartmentLabel || resolveDepartmentLabel('it'),
+        department: formData.department || selectedDepartmentLabel || resolveDepartmentLabel(TICKET_DEPARTMENT_KEYS.IT),
         dueDate: formData.dueDate || null,
         requestedById: formData.employee?.id ? Number(formData.employee.id) : null,
         urgency,
@@ -454,7 +493,7 @@ const TicketCreation = () => {
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEngineTicketIntakeContext', 'ManageEngine Ticket Intake Context')}
-              description={t('manageEngineTicketIntakeContextDesc', 'ServiceDesk catalog and OpManager alarms provide on-prem context before users submit a new ticket.')}
+              description={t('manageEngineTicketIntakeContextDesc', 'ServiceDesk catalog and requests plus OpManager 12.8.270 alerts provide on-prem context before users submit a new ticket.')}
             />
 
             <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] items-start">
@@ -550,105 +589,86 @@ const TicketCreation = () => {
               </aside>
 
               <div className="space-y-6">
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowQuickStart((prev) => !prev)}
-                    className={`inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors `}
-                  >
-                    <Icon name="Zap" size={16} className="text-primary" />
-                    {showQuickStart ? t('hideQuickStart', 'Hide Quick Start') : t('showQuickStart', 'Show Quick Start')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowRecentTickets((prev) => !prev)}
-                    className={`inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors `}
-                  >
-                    <Icon name="RotateCcw" size={16} className="text-primary" />
-                    {showRecentTickets ? t('hideRecentTickets', 'Hide Recent Tickets') : t('showRecentTickets', 'Show Recent Tickets')}
-                  </button>
-                </div>
-
-                {showQuickStart && (
-                  <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-                    <div className={`flex items-center justify-between gap-4 mb-4 `}>
-                      <div className={'text-left'}>
-                        <h2 className="text-base font-semibold text-foreground">{t('quickStart', 'Quick Start')}</h2>
-                        <p className="text-xs text-muted-foreground">{t('quickStartDesc', 'Pick a common ticket type and skip most of the setup.')}</p>
-                      </div>
-                      <div className="text-xs text-muted-foreground">{progressPct.toFixed(0)}% {t('complete', 'complete')}</div>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden mb-4"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} /></div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {quickPresets.map((preset) => (
-                        <button key={preset.title} type="button" onClick={() => applyPreset(preset)} className={`rounded-xl border border-border bg-background p-4 text-left hover:border-primary/40 hover:shadow-elevation-2 transition-all`}>
-                          <div className={`flex items-center justify-between gap-2 mb-2 `}><div className={`font-semibold text-foreground text-left`}>{preset.title}</div><Icon name="Zap" size={16} className="text-primary shrink-0" /></div>
-                          <div className={`text-xs text-muted-foreground line-clamp-2 text-left`}>{preset.subject}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
+                {!portalIncidentMode && (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowQuickStart((prev) => !prev)}
+                      className={`inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors `}
+                    >
+                      <Icon name="Zap" size={16} className="text-primary" />
+                      {showQuickStart ? t('hideQuickStart', 'Hide Quick Start') : t('showQuickStart', 'Show Quick Start')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowRecentTickets((prev) => !prev)}
+                      className={`inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-colors `}
+                    >
+                      <Icon name="RotateCcw" size={16} className="text-primary" />
+                      {showRecentTickets ? t('hideRecentTickets', 'Hide Recent Tickets') : t('showRecentTickets', 'Show Recent Tickets')}
+                    </button>
+                  </div>
                 )}
 
-                {showRecentTickets && (
-                  <section className="bg-card border border-border rounded-2xl p-4 md:p-6 shadow-elevation-1">
-                    <div className={`flex items-center justify-between gap-3 mb-4 `}>
-                      <div className={'text-left'}>
-                        <h2 className="text-base font-semibold text-foreground">{t('recentTickets', 'Recent Tickets')}</h2>
-                        <p className="text-xs text-muted-foreground">{t('recentTicketsDesc', 'Reuse a recent request as a starting point.')}</p>
-                      </div>
-                      {recentTicketsLoading && <span className="text-xs text-muted-foreground">{t('loading', 'Loading...')}</span>}
+                {!portalIncidentMode && showQuickStart && (
+                  <>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
                     </div>
-                    <div className="space-y-2">
-                      {selectedRecentTickets.length > 0 ? selectedRecentTickets.map((ticket) => (
-                        <button
-                          key={ticket?.id}
-                          type="button"
-                          onClick={() => applyPreset({
-                            title: ticket?.title || 'Recent ticket',
-                            module: formData.module || 'it-support',
-                            category: ticket?.category || formData.category,
-                            service: formData.service || null,
-                            subject: ticket?.title || '',
-                            description: ticket?.description || '',
-                            priority: (String(ticket?.priority || '').toLowerCase() || formData.priority || 'medium'),
-                            impact: formData.impact || 'medium',
-                            urgency: formData.urgency || 'medium',
-                            department: formData.department || 'it',
-                          })}
-                          className={`w-full text-left rounded-xl border border-border bg-background p-3 hover:border-primary/40 hover:shadow-elevation-2 transition-all`}
-                        >
-                          <div className={`flex items-center justify-between gap-3 `}>
-                            <div className={`min-w-0 text-left`}>
-                              <div className={`text-sm font-semibold text-foreground truncate text-left`}>{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
-                              <div className={`text-xs text-muted-foreground truncate text-left`}>{ticket?.title || t('untiledTicket', 'Untitled ticket')}</div>
-                            </div>
-                            <Icon name="RotateCcw" size={16} className="text-primary shrink-0" />
-                          </div>
-                        </button>
-                      )) : (
-                        <p className="text-sm text-muted-foreground">{t('noRecentTickets', 'No recent tickets to reuse yet.')}</p>
-                      )}
-                    </div>
-                  </section>
+                    <TicketQuickPresetGrid
+                      presets={quickPresets}
+                      onSelect={applyPreset}
+                      title={t('quickStart', 'Quick Start')}
+                      description={t('quickStartDesc', 'Pick a common ticket type and skip most of the setup.')}
+                      progressLabel={`${progressPct.toFixed(0)}% ${t('complete', 'complete')}`}
+                    />
+                  </>
+                )}
+
+                {!portalIncidentMode && showRecentTickets && (
+                  <TicketRecentReusePanel
+                    tickets={selectedRecentTickets}
+                    loading={recentTicketsLoading}
+                    title={t('recentTickets', 'Recent Tickets')}
+                    description={t('recentTicketsDesc', 'Reuse a recent request as a starting point.')}
+                    emptyLabel={t('noRecentTickets', 'No recent tickets to reuse yet.')}
+                    onSelect={(ticket) => applyPreset({
+                      title: ticket?.title || 'Recent ticket',
+                      module: formData.module || 'it-support',
+                      category: ticket?.category || formData.category,
+                      service: formData.service || null,
+                      subject: ticket?.title || '',
+                      description: ticket?.description || '',
+                      priority: (String(ticket?.priority || '').toLowerCase() || formData.priority || 'medium'),
+                      impact: formData.impact || 'medium',
+                      urgency: formData.urgency || 'medium',
+                      department: formData.department || 'it',
+                    })}
+                  />
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {currentStep === 0 && renderCard(t('step1Scope', 'Step 1 - Scope'), t('chooseModuleCategoryService', 'Choose the module, category, and service.'), 'Layers3', (
                     <div className="space-y-3">
                       <CategorySelector
+                        isReadOnly={portalIncidentMode}
                         selectedModule={formData.module}
                         onModuleChange={(module) => {
+                          if (portalIncidentMode) return;
                           setFormData((prev) => ({ ...initialFormData, module, employee: prev.employee }));
                           setErrors((prev) => ({ ...prev, module: '', category: '', service: '' }));
                         }}
                         selectedCategory={formData.category}
                         onCategoryChange={(category) => {
+                          if (portalIncidentMode) return;
                           setFormData((prev) => ({ ...prev, category, service: null, priority: '', impact: '', urgency: '', department: '' }));
                           setErrors((prev) => ({ ...prev, category: '', service: '' }));
                         }}
                         selectedService={formData.service}
-                        onServiceSelect={applyServiceDefaults}
+                        onServiceSelect={(service) => {
+                          if (portalIncidentMode) return;
+                          applyServiceDefaults(service);
+                        }}
                       />
                       {errors.module && <p className="text-sm text-error">{errors.module}</p>}
                       {errors.category && <p className="text-sm text-error">{errors.category}</p>}
@@ -660,35 +680,14 @@ const TicketCreation = () => {
                     <div className="space-y-4">
                       <EmployeeLookup selectedEmployee={formData.employee} onEmployeeSelect={(employee) => setField('employee', employee)} />
                       <Input label={t('subject', 'Title')} type="text" placeholder={t('titlePlaceholder', 'Short, action-oriented title')} value={formData.subject} onChange={(e) => setField('subject', e.target.value)} required error={errors.subject} />
-                      {duplicateTickets.length > 0 && (
-                        <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
-                          <div className={`flex items-start gap-3 `}>
-                            <Icon name="AlertTriangle" size={18} className="text-warning mt-0.5" />
-                            <div className={`min-w-0 text-left`}>
-                              <div className="text-sm font-semibold text-foreground">{t('possibleDuplicate', 'Possible duplicate detected')}</div>
-                              <p className="text-xs text-muted-foreground">{t('duplicateWarning', 'We found similar recent tickets. Reusing one can save a few steps.')}</p>
-                              <div className="mt-3 space-y-2">
-                                {duplicateTickets.slice(0, 3).map((ticket) => (
-                                  <div key={ticket?.id} className={`flex items-center justify-between gap-3 rounded-lg bg-background/70 border border-border px-3 py-2 `}>
-                                    <div className={`min-w-0 text-left`}>
-                                      <div className={`text-xs font-semibold text-foreground truncate text-left`}>{ticket?.ticketNumber || `TKT-${ticket?.id}`}</div>
-                                      <div className={`text-xs text-muted-foreground truncate text-left`}>{ticket?.title || t('untiledTicket', 'Untitled ticket')}</div>
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => navigate(ticket?.id ? `/ticket-details/${ticket.id}` : '/ticket-management-center')}
-                                    >
-                                      {t('open', 'Open')}
-                                    </Button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      <TicketDuplicateSuggestions
+                        tickets={duplicateTickets.slice(0, 3)}
+                        title={t('possibleDuplicate', 'Possible duplicate detected')}
+                        description={t('duplicateWarning', 'We found similar recent tickets. Reusing one can save a few steps.')}
+                        openLabel={t('open', 'Open')}
+                        untitledLabel={t('untiledTicket', 'Untitled ticket')}
+                        onOpen={(ticket) => navigate(ticket?.id ? `/ticket-details/${ticket.id}` : '/ticket-management-center')}
+                      />
                       <div>
                         <label className="block text-sm font-medium text-foreground mb-2" dir={isRtl ? 'rtl' : 'ltr'}>
                           {t('description', 'Description')} <span className="text-error">*</span>

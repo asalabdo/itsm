@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import Button from '../../components/ui/Button';
@@ -6,7 +6,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Icon from '../../components/AppIcon';
 import ManageEngineOnPremSnapshot from '../../components/manageengine/ManageEngineOnPremSnapshot';
-import { usersAPI, sessionAPI, organizationUnitAPI } from '../../services/api';
+import { usersAPI, sessionAPI, organizationUnitAPI, manageEngineAPI } from '../../services/api';
 import { formatLocalizedValue, getLocalizedDisplayName, getNameParts, getPreferredLanguage } from '../../services/displayValue';
 import { ORG_UNIT_SOURCES, groupByOrganizationUnit, getOrganizationUnitLabel } from '../../services/organizationUnits';
 import { useLanguage } from '../../context/LanguageContext';
@@ -221,6 +221,107 @@ const extractItems = (response) => {
   return Array.isArray(items) ? items : [];
 };
 
+const normalizeLookupText = (value) => {
+  const text = formatApiValue(value).trim().toLowerCase();
+  return text
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s._-]+/g, ' ')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const buildSuggestedUsername = (value) => {
+  const normalized = normalizeLookupText(value).replace(/\s+/g, '.');
+  return normalized.replace(/[^a-z0-9.]/g, '').replace(/\.{2,}/g, '.').replace(/^\./, '').replace(/\.$/, '').slice(0, 64);
+};
+
+const splitDisplayName = (value) => {
+  const normalized = formatApiValue(value).trim();
+  if (!normalized) {
+    return { firstName: '', lastName: '' };
+  }
+
+  const parts = normalized.split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) {
+    return { firstName: normalized, lastName: '' };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' '),
+  };
+};
+
+const getRequesterDisplayName = (profile) =>
+  formatApiValue(profile?.displayName || profile?.name || profile?.metadata?.requester || profile?.metadata?.requested_by || profile?.metadata?.technician || profile?.externalId);
+
+const getRequesterMetadataValue = (profile, keys = []) => {
+  const metadata = profile?.metadata || profile?.Metadata || {};
+  for (const key of keys) {
+    const direct = formatApiValue(profile?.[key] || profile?.[key?.toLowerCase?.()] || '');
+    if (direct) {
+      return direct;
+    }
+
+    const metadataValue = formatApiValue(metadata?.[key] || metadata?.[key?.toLowerCase?.()] || '');
+    if (metadataValue) {
+      return metadataValue;
+    }
+  }
+
+  return '';
+};
+
+const getRequesterContactIdentity = (profile) => ({
+  email: getRequesterMetadataValue(profile, ['email', 'emailAddress', 'email_address', 'mail']),
+  username: getRequesterMetadataValue(profile, ['userName', 'username', 'loginName', 'login_name']),
+  fullName: getRequesterDisplayName(profile),
+});
+
+const findMatchingLocalUser = (profile, localUsers = []) => {
+  const requester = getRequesterContactIdentity(profile);
+  const requesterName = normalizeLookupText(requester.fullName);
+  const requesterUsername = normalizeLookupText(requester.username);
+  const requesterEmail = normalizeLookupText(requester.email);
+
+  return localUsers.find((user) => {
+    const userNameCandidates = [
+      user?.username,
+      user?.email,
+      user?.fullName,
+      [user?.firstName, user?.lastName].filter(Boolean).join(' '),
+      user?.name,
+    ]
+      .map((value) => normalizeLookupText(value))
+      .filter(Boolean);
+
+    return userNameCandidates.some((candidate) =>
+      candidate === requesterName ||
+      candidate === requesterUsername ||
+      candidate === requesterEmail
+    );
+  }) || null;
+};
+
+const buildRequesterForm = (profile) => {
+  const displayName = getRequesterDisplayName(profile);
+  const splitName = splitDisplayName(displayName);
+  const requester = getRequesterContactIdentity(profile);
+  return {
+    ...defaultForm,
+    username: buildSuggestedUsername(requester.username || displayName || profile?.externalId || 'requester'),
+    email: requester.email,
+    firstName: splitName.firstName,
+    lastName: splitName.lastName,
+    role: profile?.role === 'Technician' ? 'Technician' : 'EndUser',
+    department: profile?.role || 'ServiceDesk',
+    jobTitle: profile?.role || 'Requester',
+    isActive: true,
+  };
+};
+
 const loadOrganizationUnitUsers = async () => {
   const responses = await Promise.all(
     ORG_UNIT_SOURCES.map((source) => organizationUnitAPI.getUsers(source.id, 100, 0))
@@ -283,7 +384,7 @@ const roleOptions = [
 
 const UserManagement = () => {
   const { language } = useLanguage();
-  const t = (key, fallback) => getTranslation(language, key, fallback);
+  const t = useCallback((key, fallback) => getTranslation(language, key, fallback), [language]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -297,6 +398,9 @@ const UserManagement = () => {
   const [sessionInfo, setSessionInfo] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [sessionError, setSessionError] = useState('');
+  const [requesters, setRequesters] = useState([]);
+  const [requestersLoading, setRequestersLoading] = useState(true);
+  const [requestersError, setRequestersError] = useState('');
   const localizedRoleOptions = [
     { value: 'all', label: t('allRoles', 'All Roles') },
     { value: 'EndUser', label: t('endUser', 'End User') },
@@ -305,12 +409,7 @@ const UserManagement = () => {
     { value: 'Administrator', label: t('administrator', 'Administrator') },
   ];
 
-  useEffect(() => {
-    fetchUsers();
-    fetchSessionInfo();
-  }, []);
-
-  const fetchSessionInfo = async () => {
+  const fetchSessionInfo = useCallback(async () => {
     try {
       setSessionLoading(true);
       setSessionError('');
@@ -322,9 +421,9 @@ const UserManagement = () => {
     } finally {
       setSessionLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -351,7 +450,29 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  const fetchRequesters = useCallback(async () => {
+    try {
+      setRequestersLoading(true);
+      setRequestersError('');
+      const res = await manageEngineAPI.getRequesters();
+      const raw = res?.data?.result?.items ?? res?.data?.result ?? res?.data?.items ?? res?.data ?? [];
+      setRequesters(Array.isArray(raw) ? raw : []);
+    } catch (err) {
+      setRequestersError(t('failedToLoadRequesters', 'Could not load ManageEngine requesters right now.'));
+      console.error('Failed to fetch ManageEngine requesters:', err);
+      setRequesters([]);
+    } finally {
+      setRequestersLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchSessionInfo();
+    fetchRequesters();
+  }, [fetchUsers, fetchSessionInfo, fetchRequesters]);
 
   const filteredUsers = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -430,7 +551,7 @@ const UserManagement = () => {
   const sessionPermissions = getPermissionList();
   const sessionUser = getSessionUser();
 
-  const openEditor = (user = null) => {
+  const openEditor = (user = null, overrideForm = null) => {
     setSelectedUser(user);
     setForm(user ? {
       username: user.username || '',
@@ -443,7 +564,7 @@ const UserManagement = () => {
       phoneNumber: user.phoneNumber || '',
       isActive: user.isActive ?? true,
       password: '',
-    } : defaultForm);
+    } : (overrideForm || defaultForm));
     setFormError('');
     setEditorOpen(true);
   };
@@ -529,6 +650,32 @@ const UserManagement = () => {
     }
   };
 
+  const requesterCards = useMemo(() => {
+    return (requesters || []).map((profile) => {
+      const matchedUser = findMatchingLocalUser(profile, users);
+      return {
+        profile,
+        matchedUser,
+        displayName: getRequesterDisplayName(profile) || t('unknownRequester', 'Unknown requester'),
+        role: formatApiValue(profile?.role) || t('requester', 'Requester'),
+        referenceCount: Number(profile?.referenceCount || profile?.ReferenceCount || 0),
+        lastSeenAt: profile?.lastSeenAt || profile?.LastSeenAt || null,
+      };
+    });
+  }, [requesters, users, t]);
+
+  const matchedRequestersCount = requesterCards.filter((card) => Boolean(card.matchedUser)).length;
+  const unmatchedRequestersCount = requesterCards.length - matchedRequestersCount;
+
+  const openRequesterInEditor = (card) => {
+    if (card?.matchedUser) {
+      openEditor(card.matchedUser);
+      return;
+    }
+
+    openEditor(null, buildRequesterForm(card?.profile || {}));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -571,8 +718,84 @@ const UserManagement = () => {
         <ManageEngineOnPremSnapshot
           compact
           title={t('manageEngineUserContext', 'ManageEngine User Context')}
-          description={t('manageEngineUserContextDesc', 'Keep user administration aligned with ServiceDesk requester demand and OpManager operational ownership.')}
+          description={t('manageEngineUserContextDesc', 'Keep user administration aligned with ServiceDesk requester demand plus OpManager 12.8.270 service ownership and alerts.')}
         />
+
+        <section className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-elevation-1">
+          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <Icon name="Users" size={14} />
+                {t('manageEngineRequesters', 'ManageEngine Requesters')}
+              </div>
+              <h2 className="mt-3 text-lg font-semibold text-foreground">{t('manageEngineRequesterSync', 'Requester Sync')}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t('manageEngineRequesterSyncDesc', 'Use exact ServiceDesk requester, approver, and technician identities as a safe starting point for local user setup.')}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-3 sm:w-[420px]">
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="text-xs text-muted-foreground">{t('requesters', 'Requesters')}</div>
+                <div className="mt-1 text-xl font-semibold text-foreground">{requesters.length}</div>
+              </div>
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="text-xs text-muted-foreground">{t('matched', 'Matched')}</div>
+                <div className="mt-1 text-xl font-semibold text-foreground">{matchedRequestersCount}</div>
+              </div>
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="text-xs text-muted-foreground">{t('unmatched', 'Unmatched')}</div>
+                <div className="mt-1 text-xl font-semibold text-foreground">{unmatchedRequestersCount}</div>
+              </div>
+            </div>
+          </div>
+
+          {requestersError ? (
+            <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+              {requestersError}
+            </div>
+          ) : null}
+
+          <div className="mt-4">
+            {requestersLoading ? (
+              <div className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+                {t('loadingRequesters', 'Loading ManageEngine requesters...')}
+              </div>
+            ) : requesterCards.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+                {t('noRequestersFound', 'No ManageEngine requester identities were returned yet.')}
+              </div>
+            ) : (
+              <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+                {requesterCards.slice(0, 9).map((card) => (
+                  <article key={`${card.role}-${card.displayName}-${card.profile?.externalId || card.profile?.ExternalId || card.referenceCount}`} className="rounded-xl border border-border bg-background p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-foreground">{card.displayName}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {card.role} {card.referenceCount ? `• ${card.referenceCount} ${t('references', 'references')}` : ''}
+                        </div>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${card.matchedUser ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>
+                        {card.matchedUser ? t('matched', 'Matched') : t('prefill', 'Prefill')}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                      <div>{card.matchedUser ? `${t('linkedUser', 'Linked user')}: ${formatApiValue(card.matchedUser?.username) || formatApiValue(card.matchedUser?.fullName) || t('unknownUser', 'Unknown user')}` : t('readyToCreate', 'Ready to prefill a new local user account.')}</div>
+                      {card.lastSeenAt ? <div>{new Date(card.lastSeenAt).toLocaleString()}</div> : null}
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <Button variant={card.matchedUser ? 'outline' : 'default'} size="sm" onClick={() => openRequesterInEditor(card)}>
+                        {card.matchedUser ? t('openUser', 'Open user') : t('createFromRequester', 'Create from requester')}
+                      </Button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-lg border border-border bg-card p-4">

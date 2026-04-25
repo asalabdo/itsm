@@ -156,6 +156,12 @@ const TicketManagementCenter = () => {
   const normalizedCurrentUserName = String(currentUser?.name || '').trim().toLowerCase();
   const normalizedCurrentUserUsername = String(currentUser?.username || '').trim().toLowerCase();
   const normalizedCurrentUserId = currentUser?.id != null ? String(currentUser.id) : '';
+  const overdueCount = Number(stats?.overdue || 0);
+  const queueHealthCue = loading
+    ? 'Loading ticket posture'
+    : overdueCount > 0
+      ? `${overdueCount} tickets need SLA attention`
+      : 'All tracked tickets are on schedule';
 
   const isCurrentUserTicket = useCallback((ticket) => {
     const assignedName = String(ticket?.assignee || '').trim().toLowerCase();
@@ -543,6 +549,18 @@ const TicketManagementCenter = () => {
               <div>
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">{t('ticketManagementCenter', 'Ticket Management Center')}</h1>
                 <p className="text-sm md:text-base text-muted-foreground">{t('manageTrackTickets', 'Manage and track all support tickets across your organization')}</p>
+                <div
+                  className={`mt-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
+                    overdueCount > 0
+                      ? 'border-warning/20 bg-warning/10 text-warning'
+                      : loading
+                        ? 'border-border bg-muted text-muted-foreground'
+                        : 'border-success/20 bg-success/10 text-success'
+                  }`}
+                  aria-live="polite"
+                >
+                  {queueHealthCue}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -576,7 +594,7 @@ const TicketManagementCenter = () => {
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEngineTicketQueueContext', 'ManageEngine Ticket Queue Context')}
-              description={t('manageEngineTicketQueueContextDesc', 'On-prem ServiceDesk requests and OpManager alerts beside the local ticket queue.')}
+              description={t('manageEngineTicketQueueContextDesc', 'On-prem ServiceDesk requests plus OpManager 12.8.270 alerts beside the local ticket queue.')}
             />
             <SearchBar
               onSearch={handleSearch}

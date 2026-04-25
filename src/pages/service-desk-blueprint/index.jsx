@@ -184,7 +184,7 @@ const ServiceDeskBlueprint = () => {
             <ManageEngineOnPremSnapshot
               compact
               title="ManageEngine On-Prem Operating Model"
-              description="Live ServiceDesk Plus 15.1 API v3 and OpManager signals mapped into the blueprint so the target model stays tied to real integration health."
+              description="Live ServiceDesk Plus 15.1 API v3 requests plus OpManager 12.8.270 services and alerts mapped into the blueprint so the target model stays tied to real integration health."
             />
           </div>
 

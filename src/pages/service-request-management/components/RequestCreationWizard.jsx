@@ -201,7 +201,7 @@ const RequestCreationWizard = ({ onClose }) => {
                     <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
                       <Icon name={service?.icon} size={20} />
                     </div>
-                    <h4 className="ml-3 font-medium text-foreground">{service?.name}</h4>
+                    <h4 className="ms-3 font-medium text-foreground">{service?.name}</h4>
                   </div>
                   <p className="text-xs text-muted-foreground capitalize mb-2">
                     {service?.category} • {service?.fields?.length} fields required
@@ -233,7 +233,7 @@ const RequestCreationWizard = ({ onClose }) => {
             <div className="space-y-4 max-h-96 overflow-y-auto">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  {isArabic ? 'عنوان الطلب' : 'Request Title'} <span className="text-red-500 ml-1">*</span>
+                  {isArabic ? 'عنوان الطلب' : 'Request Title'} <span className="text-red-500 ms-1">*</span>
                 </label>
                 <Input
                   type="text"
@@ -248,7 +248,7 @@ const RequestCreationWizard = ({ onClose }) => {
                   <div key={field?.name || field?.label || `field-${index}`}>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       {field?.label}
-                      {field?.required && <span className="text-red-500 ml-1">*</span>}
+                      {field?.required && <span className="text-red-500 ms-1">*</span>}
                     </label>
                   
                   {field?.type === 'text' && (
@@ -318,7 +318,7 @@ const RequestCreationWizard = ({ onClose }) => {
             <div className="bg-muted rounded-lg p-4">
               <div className="flex items-center mb-4">
                 <Icon name={selectedService?.icon} size={24} />
-                <div className="ml-3">
+                <div className="ms-3">
                   <h4 className="font-medium text-foreground">{selectedService?.name}</h4>
                   <p className="text-sm text-muted-foreground capitalize">{selectedService?.category}</p>
                 </div>
@@ -345,7 +345,7 @@ const RequestCreationWizard = ({ onClose }) => {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start">
                 <Icon name="Info" size={16} className="text-yellow-600 mt-0.5" />
-                <div className="ml-3">
+                <div className="ms-3">
                   <h5 className="text-sm font-medium text-yellow-800">Important Information</h5>
                   <ul className="text-xs text-yellow-700 mt-1 space-y-1">
                     <li>• Your request will be reviewed by the appropriate team</li>
@@ -393,14 +393,14 @@ const RequestCreationWizard = ({ onClose }) => {
                     onClick={() => navigate(`/service-request-management?view=requests${submittedRequest?.requestNumber ? `&request=${encodeURIComponent(submittedRequest.requestNumber)}` : ''}`)}
                   >
                     <Icon name="List" size={16} />
-                    <span className="ml-1">{isArabic ? 'تتبع الطلب' : 'Track Request'}</span>
+                    <span className="ms-1">{isArabic ? 'تتبع الطلب' : 'Track Request'}</span>
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => navigate(submittedRequest?.requestNumber ? `/fulfillment-center?request=${encodeURIComponent(submittedRequest.requestNumber)}` : '/fulfillment-center')}
                   >
                     <Icon name="ArrowRight" size={16} />
-                    <span className="ml-1">{isArabic ? 'فتح مركز التنفيذ' : 'Open Fulfillment Center'}</span>
+                    <span className="ms-1">{isArabic ? 'فتح مركز التنفيذ' : 'Open Fulfillment Center'}</span>
                   </Button>
                 </div>
               </div>
@@ -476,7 +476,7 @@ const RequestCreationWizard = ({ onClose }) => {
           {currentStep > 1 && currentStep < 4 && (
             <Button variant="outline" onClick={handleBack}>
               <Icon name="ChevronLeft" size={16} />
-              <span className="ml-1">Back</span>
+              <span className="ms-1">Back</span>
             </Button>
           )}
         </div>
@@ -500,7 +500,7 @@ const RequestCreationWizard = ({ onClose }) => {
               disabled={loading}
             >
               <Icon name="Send" size={16} />
-              <span className="ml-1">Submit Request</span>
+              <span className="ms-1">Submit Request</span>
             </Button>
           )}
 
@@ -508,7 +508,7 @@ const RequestCreationWizard = ({ onClose }) => {
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => navigate('/service-request-management?view=requests')}>
                 <Icon name="List" size={16} />
-                <span className="ml-1">View Requests</span>
+                <span className="ms-1">View Requests</span>
               </Button>
               <Button variant="default" onClick={onClose}>
                 <span>Close</span>

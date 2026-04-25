@@ -1,4 +1,3 @@
-import React from 'react';
 import Icon from '../AppIcon';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTranslation } from '../../services/i18n';
@@ -38,12 +37,18 @@ const WorkflowStatusStrip = ({
   lastAction = 'Waiting for next action',
   activeStep = 0,
   steps = defaultSteps,
+  deploymentReadiness,
   onShowAll,
 }) => {
   const { language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const resolvedSteps = Array.isArray(steps) && steps.length > 0 ? steps : defaultSteps;
   const translatedSteps = resolvedSteps.map(step => getStepTranslation(step, t));
+  const readinessToneClasses = {
+    destructive: 'border-destructive/20 bg-destructive/10 text-destructive',
+    warning: 'border-amber-500/20 bg-amber-500/10 text-amber-700',
+    success: 'border-success/20 bg-success/10 text-success',
+  };
 
   return (
     <section className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
@@ -59,6 +64,14 @@ const WorkflowStatusStrip = ({
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {deploymentReadiness && (
+              <div
+                className={`px-3 py-2 rounded-xl border text-xs font-semibold uppercase tracking-[0.18em] ${readinessToneClasses[deploymentReadiness.tone] || readinessToneClasses.success}`}
+                title={deploymentReadiness.description}
+              >
+                {deploymentReadiness.label}
+              </div>
+            )}
             <div className="px-3 py-2 rounded-xl bg-background border border-border">
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t('dynamicService', 'Service')}</p>
               <p className="text-sm font-semibold text-foreground">{service}</p>

@@ -116,6 +116,15 @@ const CustomerPortal = () => {
     void loadCustomerTickets();
   }, [loadCustomerTickets]);
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      void loadCustomerTickets();
+    };
+
+    window.addEventListener('itsm:refresh', handleRefresh);
+    return () => window.removeEventListener('itsm:refresh', handleRefresh);
+  }, [loadCustomerTickets]);
+
   const handleDismissWelcome = () => {
     setShowWelcomeBanner(false);
     sessionStorage.setItem('hasSeenWelcomeBanner', 'true');
@@ -211,7 +220,7 @@ const CustomerPortal = () => {
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEnginePortalContext', 'ManageEngine Service Context')}
-              description={t('manageEnginePortalContextDesc', 'Current external service demand and monitoring alerts from the on-prem ITSM platform.')}
+              description={t('manageEnginePortalContextDesc', 'Current ServiceDesk requests plus OpManager 12.8.270 services and alerts from the on-prem ITSM platform.')}
             />
           </div>
 
@@ -236,7 +245,7 @@ const CustomerPortal = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <TicketCreationCard />
-                    <QuickActionsPanel />
+                    <QuickActionsPanel tickets={tickets} />
                   </div>
                   <KnowledgeBaseSection />
                 </div>

@@ -151,7 +151,7 @@ const AutomationManagement = () => {
         <ManageEngineOnPremSnapshot
           compact
           title={t('manageEngineAutomationSignals', 'ManageEngine Automation Signals')}
-          description={t('manageEngineAutomationSignalsDesc', 'Use on-prem ServiceDesk demand and OpManager alarm volume to tune backend triggers and rules.')}
+          description={t('manageEngineAutomationSignalsDesc', 'Use on-prem ServiceDesk requests plus OpManager 12.8.270 services and alerts to tune backend triggers and rules.')}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.9fr] gap-6">

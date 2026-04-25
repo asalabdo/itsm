@@ -145,7 +145,7 @@ const ServiceCatalogHub = () => {
   const externalSummary = useMemo(() => ({
     total: filteredCatalog.filter((item) => item.isExternal).length,
     serviceDesk: filteredCatalog.filter((item) => item.isExternal && item.sourceSystem === 'ServiceDesk').length,
-    opManager: filteredCatalog.filter((item) => item.isExternal && item.sourceSystem === 'OpManager').length,
+    opManagerServices: filteredCatalog.filter((item) => item.isExternal && item.sourceSystem === 'OpManager' && item.sourceType === 'service').length,
   }), [filteredCatalog]);
 
   return (
@@ -209,7 +209,7 @@ const ServiceCatalogHub = () => {
               ServiceDesk: {externalSummary.serviceDesk}
             </span>
             <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-              OpManager: {externalSummary.opManager}
+              {t('opManagerServices', 'OpManager services')}: {externalSummary.opManagerServices}
             </span>
           </div>
 

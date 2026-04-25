@@ -162,7 +162,8 @@ const AR_FALLBACKS = {
   'Service Requests': 'طلبات الخدمة',
   'Software Licensing': 'ترخيص البرمجيات',
   'Service Desk': 'مكتب الخدمة',
-  'Security Operations': 'العمليات الأمنية'
+  'Security Operations': 'العمليات الأمنية',
+  'Loading page...': 'جارٍ تحميل الصفحة...'
 };
 
 export const getTranslation = (language, key, fallback = key) => {

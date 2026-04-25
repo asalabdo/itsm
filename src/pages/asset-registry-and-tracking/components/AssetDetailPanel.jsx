@@ -194,8 +194,8 @@ const AssetDetailPanel = ({ asset, onClose, userRole, syncStatus, onSyncAsset, i
                 disabled={isSyncingAsset}
               >
                 {isSyncingAsset
-                  ? t('creatingInManageEngine', 'Creating in ManageEngine...')
-                  : t('createInManageEngine', 'Create in ManageEngine')}
+                  ? t('syncingWithManageEngine', 'Syncing with ManageEngine...')
+                  : t('syncWithManageEngine', 'Sync with ManageEngine')}
               </Button>
             )}
 

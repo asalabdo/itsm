@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import ReportLibrarySidebar from './components/ReportLibrarySidebar';
@@ -79,13 +79,22 @@ const ReportingAndAnalyticsHub = () => {
     topPerformers: [],
     slaCompliance: null,
   });
+  const isMountedRef = useRef(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const fetchData = async (nextFilters = filters) => {
     const days = resolveDaysFromFilters(nextFilters);
-    try {
-      setLoading(true);
-      setError('');
+    setLoading(true);
+    setError('');
 
+    try {
       const [summaryRes, overviewRes, volumeRes, categoriesRes, topPerformersRes, slaRes] = await Promise.allSettled([
         dashboardAPI.getSummary(),
         reportingService.getOverview(days),
@@ -102,6 +111,10 @@ const ReportingAndAnalyticsHub = () => {
       const topPerformers = topPerformersRes.status === 'fulfilled' ? topPerformersRes.value || [] : [];
       const slaCompliance = slaRes.status === 'fulfilled' ? slaRes.value || null : null;
 
+      if (!isMountedRef.current) {
+        return;
+      }
+
       setDashboardSummary(summary);
       setAnalytics({
         overview,
@@ -112,10 +125,16 @@ const ReportingAndAnalyticsHub = () => {
       });
       setLastUpdated(new Date().toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US'));
     } catch (err) {
+      if (!isMountedRef.current) {
+        return;
+      }
+
       console.error('Failed to fetch reporting data:', err);
       setError(t('failedToLoadReports', 'Failed to load report data from the backend.'));
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 

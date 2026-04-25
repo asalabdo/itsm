@@ -218,7 +218,7 @@ const TicketChatbot = () => {
         <ManageEngineOnPremSnapshot
           compact
           title={t('manageEngineAssistantContext', 'ManageEngine Assistant Context')}
-          description={t('manageEngineAssistantContextDesc', 'Live ServiceDesk and OpManager context helps the assistant understand external demand before guiding ticket creation.')}
+          description={t('manageEngineAssistantContextDesc', 'Live ServiceDesk requests plus OpManager 12.8.270 services and alerts help the assistant guide ticket creation safely.')}
         />
 
         <div className="mt-6">

@@ -199,6 +199,14 @@ const IncidentManagementWorkflow = () => {
       : currentView === 'details' && selectedIncident
         ? 2
         : 1;
+  const overdueIncidents = activeIncidents.filter((incident) => formatSLATime(incident?.slaDueDate) === 'Overdue').length;
+  const incidentHealthCue = error
+    ? t('incidentLoadIssue', 'Incident queue needs attention')
+    : loading
+      ? t('loadingIncidents', 'Loading incidents...')
+      : overdueIncidents > 0
+        ? `${overdueIncidents} ${t('slaOverdue', 'incidents overdue')}`
+        : t('incidentQueueHealthy', 'Incident queue healthy');
 
   return (
     <>
@@ -274,6 +282,20 @@ const IncidentManagementWorkflow = () => {
               steps={workflowSteps}
               onShowAll={() => setCurrentView('dashboard')}
             />
+            <div
+              className={`mt-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
+                error
+                  ? 'border-error/20 bg-error/10 text-error'
+                  : loading
+                    ? 'border-border bg-muted text-muted-foreground'
+                    : overdueIncidents > 0
+                      ? 'border-warning/20 bg-warning/10 text-warning'
+                      : 'border-success/20 bg-success/10 text-success'
+              }`}
+              aria-live="polite"
+            >
+              {incidentHealthCue}
+            </div>
           </div>
 
           {/* Main Content */}

@@ -195,9 +195,9 @@ const ServiceRequestManagement = () => {
     };
   }, [isArabic, serviceRequests, erpDepartments]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const slaAlert = useMemo(() => {
-    const now = new Date();
-    const overdue = serviceRequests.filter((request) => {
+          const slaAlert = useMemo(() => {
+            const now = new Date();
+            const overdue = serviceRequests.filter((request) => {
       const dueDate = request?.slaDueDate ? new Date(request.slaDueDate) : null;
       if (!dueDate || Number.isNaN(dueDate.getTime())) return false;
       return dueDate < now && !['completed', 'rejected', 'closed'].includes(String(request?.status || '').toLowerCase());
@@ -210,6 +210,13 @@ const ServiceRequestManagement = () => {
     });
     return { overdue, dueSoon };
   }, [serviceRequests]);
+  const requestHealthCue = refreshing
+    ? t('refreshing', 'Refreshing...')
+    : slaAlert.overdue.length > 0
+      ? `${slaAlert.overdue.length} ${t('requestsOverdue', 'requests overdue')}`
+      : slaAlert.dueSoon.length > 0
+        ? `${slaAlert.dueSoon.length} ${t('requestsApproachingDeadline', 'requests nearing deadline')}`
+        : t('requestQueueHealthy', 'Request queue healthy');
 
   return (
     <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -248,7 +255,7 @@ const ServiceRequestManagement = () => {
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Icon name="Plus" size={16} />
-                <span className="ml-2">{t('newRequest', 'New Request')}</span>
+                <span className="ms-2">{t('newRequest', 'New Request')}</span>
               </Button>
 
               {/* View Mode Toggle */}
@@ -268,7 +275,7 @@ const ServiceRequestManagement = () => {
                     className="capitalize"
                   >
                     <Icon name={getViewModeIcon(mode)} size={16} />
-                    <span className="ml-1 hidden sm:inline">{label}</span>
+                    <span className="ms-1 hidden sm:inline">{label}</span>
                   </Button>
                 ))}
               </div>
@@ -285,7 +292,7 @@ const ServiceRequestManagement = () => {
                   size={16} 
                   className={refreshing ? 'animate-spin' : ''} 
                 />
-                <span className="ml-2 hidden sm:inline">
+                <span className="ms-2 hidden sm:inline">
                   {refreshing ? t('refreshing', 'Refreshing...') : t('refresh', 'Refresh')}
                 </span>
               </Button>
@@ -296,6 +303,20 @@ const ServiceRequestManagement = () => {
                   hour: '2-digit', 
                   minute: '2-digit' 
                 })}
+              </div>
+              <div
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
+                  refreshing
+                    ? 'border-border bg-muted text-muted-foreground'
+                    : slaAlert.overdue.length > 0
+                      ? 'border-error/20 bg-error/10 text-error'
+                      : slaAlert.dueSoon.length > 0
+                        ? 'border-warning/20 bg-warning/10 text-warning'
+                        : 'border-success/20 bg-success/10 text-success'
+                }`}
+                aria-live="polite"
+              >
+                {requestHealthCue}
               </div>
             </div>
           </div>

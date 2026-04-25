@@ -90,7 +90,7 @@ const TicketWorkflowCrud = () => {
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEngineWorkflowContext', 'ManageEngine Workflow Context')}
-              description={t('manageEngineWorkflowContextDesc', 'Tune ticket workflow definitions using live ServiceDesk request volume and OpManager alert pressure.')}
+              description={t('manageEngineWorkflowContextDesc', 'Tune ticket workflow definitions using live ServiceDesk request volume plus OpManager 12.8.270 alert pressure.')}
             />
 
             <section className="rounded-2xl border border-border bg-card p-5 md:p-6">

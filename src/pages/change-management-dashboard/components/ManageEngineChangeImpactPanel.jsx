@@ -3,7 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
-import { normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
+import { getOpManager270LatestAlerts, isOpManager270Service, normalizeManageEngineUnified, normalizeManageEngineList } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -12,6 +12,7 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
   const isArabic = String(language || '').toLowerCase().startsWith('ar');
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
+  const [changeItems, setChangeItems] = useState([]);
   const [catalogItems, setCatalogItems] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
@@ -19,14 +20,16 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [catalogRes, operationsRes, syncRes] = await Promise.all([
-        manageEngineAPI.getCatalog({ source: 'OpManager' }).catch(() => ({ data: { items: [] } })),
-        manageEngineAPI.getOperations({ source: 'OpManager', type: 'alert' }).catch(() => ({ data: { items: [] } })),
+      const [unifiedRes, changesRes, syncRes] = await Promise.all([
+        manageEngineAPI.getUnified().catch(() => ({ data: { catalog: [], operations: [] } })),
+        manageEngineAPI.getChanges({ status: 'Open' }).catch(() => ({ data: { items: [] } })),
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      setCatalogItems(normalizeManageEngineList(catalogRes).slice(0, 5));
-      setAlerts(normalizeManageEngineList(operationsRes).slice(0, 5));
+      const unified = normalizeManageEngineUnified(unifiedRes);
+      setCatalogItems(unified.catalog.filter(isOpManager270Service).slice(0, 5));
+      setAlerts(getOpManager270LatestAlerts(unifiedRes, 5));
+      setChangeItems(normalizeManageEngineList(changesRes).slice(0, 5));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);
@@ -42,6 +45,7 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
     [changes]
   );
   const zeroHiddenCount = countHiddenZeroMetrics([
+    { value: changeItems.length },
     { value: catalogItems.length },
     { value: alerts.length },
   ]);
@@ -57,7 +61,7 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
             </h3>
           </div>
           <p className={`text-sm text-muted-foreground`}>
-            {t('manageEngineChangeImpactDesc', 'Use OpManager services and alerts to understand current risk around planned and active changes.')}
+            {t('manageEngineChangeImpactDesc', 'Use live ServiceDesk changes plus OpManager 12.8.270 services and alerts to understand current risk around planned and active changes.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -74,6 +78,11 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
           value={activeChangeCount}
           icon={<Icon name="CalendarClock" size={16} className="text-primary" />}
           hideWhenZero={false}
+        />
+        <ManageEngineMetricCard
+          label={t('liveChanges', 'Live changes')}
+          value={changeItems.length}
+          icon={<Icon name="GitPullRequest" size={16} className="text-primary" />}
         />
         <ManageEngineMetricCard
           label={t('monitoredServices', 'Monitored services')}
@@ -102,6 +111,25 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <div className="rounded-lg border border-border p-4">
             <div className={`flex items-center gap-2 mb-3`}>
+              <Icon name="GitPullRequest" size={16} className="text-primary" />
+              <h4 className="font-medium text-foreground">{t('changesInScope', 'Changes in scope')}</h4>
+            </div>
+            <div className="space-y-3">
+              {changeItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t('noLiveChanges', 'No live ServiceDesk changes are available right now.')}</p>
+              ) : (
+                changeItems.map((item) => (
+                  <div key={`${item.source}-${item.externalId}`} className="rounded-lg border border-border bg-muted/10 p-3">
+                    <div className="font-medium text-foreground">{item.name}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{item.status || t('planned', 'Planned')}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border p-4">
+            <div className={`flex items-center gap-2 mb-3`}>
               <Icon name="Layers3" size={16} className="text-primary" />
               <h4 className="font-medium text-foreground">{t('servicesInScope', 'Services in scope')}</h4>
             </div>
@@ -126,7 +154,7 @@ const ManageEngineChangeImpactPanel = ({ changes = [] }) => {
             </div>
             <div className="space-y-3">
               {alerts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t('noOpManagerAlerts', 'No active OpManager alerts are visible right now.')}</p>
+                <p className="text-sm text-muted-foreground">{t('noOpManagerAlerts', 'No active OpManager 12.8.270 alerts are visible right now.')}</p>
               ) : (
                 alerts.map((alert) => (
                   <div key={`${alert.source}-${alert.externalId}`} className="rounded-lg border border-border bg-muted/10 p-3">

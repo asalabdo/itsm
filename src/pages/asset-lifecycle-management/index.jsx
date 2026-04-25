@@ -17,7 +17,6 @@ const AssetLifecycleManagement = () => {
   const navigate = useNavigate();
   const { isRtl, language } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
-  const isArabic = language === 'ar';
   const [filters, setFilters] = useState({
     search: '',
     category: 'all',
@@ -198,7 +197,7 @@ const AssetLifecycleManagement = () => {
               title={t('manageEngineAssetLifecycleContext', 'ManageEngine Asset Lifecycle Context')}
               description={t(
                 'manageEngineAssetLifecycleContextDesc',
-                'On-prem OpManager and ServiceDesk signals that can affect asset maintenance, retirement, and lifecycle risk.'
+                'On-prem ServiceDesk requests plus OpManager 12.8.270 services and alerts that can affect asset maintenance, retirement, and lifecycle risk.'
               )}
             />
           </div>

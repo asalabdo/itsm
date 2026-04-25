@@ -21,6 +21,7 @@ const ExecutiveITServiceSummary = () => {
   const isArabic = language === 'ar';
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [now, setNow] = useState(Date.now());
   const [metrics, setMetrics] = useState([]);
   const [departmentMetrics, setDepartmentMetrics] = useState([]);
   const [trendMetrics, setTrendMetrics] = useState([]);
@@ -65,6 +66,14 @@ const ExecutiveITServiceSummary = () => {
       return () => clearInterval(interval);
     }
   }, [autoRefresh]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const primaryMetrics = metrics.map(m => ({
     title: isArabic
@@ -269,6 +278,19 @@ const ExecutiveITServiceSummary = () => {
     setLastUpdated(new Date());
   };
 
+  const freshnessState = (() => {
+    if (!autoRefresh) {
+      return { label: 'Manual refresh', tone: 'muted' };
+    }
+
+    const ageMinutes = (now - new Date(lastUpdated).getTime()) / 60000;
+    if (ageMinutes < 6) {
+      return { label: 'Live', tone: 'success' };
+    }
+
+    return { label: 'Stale', tone: 'warning' };
+  })();
+
   return (
     <>
       <Helmet>
@@ -299,6 +321,27 @@ const ExecutiveITServiceSummary = () => {
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <Icon name="Clock" size={16} />
                   <span>{t('lastUpdated', 'Last Updated')}: {lastUpdated?.toLocaleTimeString()}</span>
+                </div>
+                <div
+                  className={`inline-flex items-center space-x-2 rounded-full border px-3 py-1 text-xs font-medium ${
+                    freshnessState.tone === 'success'
+                      ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+                      : freshnessState.tone === 'warning'
+                        ? 'border-amber-500/20 bg-amber-500/10 text-amber-700'
+                        : 'border-border bg-muted text-muted-foreground'
+                  }`}
+                  aria-label={`Dashboard status: ${freshnessState.label}`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      freshnessState.tone === 'success'
+                        ? 'bg-emerald-500'
+                        : freshnessState.tone === 'warning'
+                          ? 'bg-amber-500'
+                          : 'bg-muted-foreground'
+                    }`}
+                  />
+                  <span>{freshnessState.label}</span>
                 </div>
                 
                 <div className="flex items-center space-x-2">

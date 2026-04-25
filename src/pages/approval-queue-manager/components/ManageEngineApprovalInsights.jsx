@@ -11,22 +11,22 @@ const ManageEngineApprovalInsights = () => {
   const { language, isRtl } = useLanguage();
   const t = (key, fallback) => getTranslation(language, key, fallback);
   const [loading, setLoading] = useState(true);
-  const [requests, setRequests] = useState([]);
+  const [approvals, setApprovals] = useState([]);
   const [syncStatus, setSyncStatus] = useState(null);
   const zeroHiddenCount = countHiddenZeroMetrics([
-    { value: requests.length },
+    { value: approvals.length },
     { value: syncStatus?.createdCount || 0 },
   ]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [operationsRes, syncRes] = await Promise.all([
-        manageEngineAPI.getOperations({ source: 'ServiceDesk', type: 'request' }).catch(() => ({ data: { items: [] } })),
+      const [approvalsRes, syncRes] = await Promise.all([
+        manageEngineAPI.getApprovals({ status: 'Pending' }).catch(() => ({ data: { items: [] } })),
         manageEngineAPI.getSyncStatus().catch(() => ({ data: null })),
       ]);
 
-      setRequests(normalizeManageEngineList(operationsRes).slice(0, 4));
+      setApprovals(normalizeManageEngineList(approvalsRes).slice(0, 4));
       setSyncStatus(syncRes?.data || null);
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ const ManageEngineApprovalInsights = () => {
             </h3>
           </div>
           <p className={`text-sm text-muted-foreground`}>
-            {t('manageEngineApprovalInsightsDesc', 'Live ServiceDesk requests that may need follow-up while local approvals are in progress.')}
+            {t('manageEngineApprovalInsightsDesc', 'Live ServiceDesk approvals that may need follow-up while local approvals are in progress.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -61,8 +61,8 @@ const ManageEngineApprovalInsights = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <ManageEngineMetricCard
-          label={t('externalRequests', 'External requests')}
-          value={requests.length}
+          label={t('externalApprovals', 'External approvals')}
+          value={approvals.length}
           icon={<Icon name="ClipboardList" size={16} className="text-primary" />}
         />
         <ManageEngineMetricCard
@@ -82,28 +82,28 @@ const ManageEngineApprovalInsights = () => {
       <div className="space-y-3">
         {loading ? (
           <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
-            {t('loadingManageEngineRequests', 'Loading ManageEngine requests...')}
+            {t('loadingManageEngineApprovals', 'Loading ManageEngine approvals...')}
           </div>
-        ) : requests.length === 0 ? (
+        ) : approvals.length === 0 ? (
           <div className="rounded-lg border border-border border-dashed p-6 text-sm text-center text-muted-foreground">
-            {t('noManageEngineRequests', 'No external requests are available right now.')}
+            {t('noManageEngineApprovals', 'No external approvals are available right now.')}
           </div>
         ) : (
-          requests.map((request) => (
-            <div key={`${request.source}-${request.externalId}`} className="rounded-lg border border-border p-4">
+          approvals.map((approval) => (
+            <div key={`${approval.source}-${approval.externalId}`} className="rounded-lg border border-border p-4">
               <div className={`flex items-start justify-between gap-3`}>
                 <div>
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {request.source} {request.itemType}
+                    {approval.source} {approval.itemType}
                   </div>
-                  <div className="font-medium text-foreground mt-1">{request.name}</div>
+                  <div className="font-medium text-foreground mt-1">{approval.name}</div>
                 </div>
                 <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                  {request.status || t('open', 'Open')}
+                  {approval.status || t('open', 'Open')}
                 </span>
               </div>
               <p className={`text-sm text-muted-foreground mt-2 line-clamp-2`}>
-                {request.description || t('noDescriptionAvailable', 'No description available.')}
+                {approval.description || t('noDescriptionAvailable', 'No description available.')}
               </p>
             </div>
           ))

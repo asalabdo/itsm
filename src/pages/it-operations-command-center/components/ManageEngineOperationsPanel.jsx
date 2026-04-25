@@ -3,7 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import ManageEngineMetricCard, { ManageEngineZeroBadge, countHiddenZeroMetrics } from '../../../components/manageengine/ManageEngineMetricCard';
 import { manageEngineAPI } from '../../../services/api';
-import { normalizeManageEngineUnified } from '../../../services/manageEngineDataUtils';
+import { normalizeManageEngineUnified, summarizeOpManager270 } from '../../../services/manageEngineDataUtils';
 import { useLanguage } from '../../../context/LanguageContext';
 import { getTranslation } from '../../../services/i18n';
 
@@ -17,6 +17,7 @@ const ManageEngineOperationsPanel = () => {
     status: 'unknown',
   });
   const [operations, setOperations] = useState([]);
+  const [opManagerSummary, setOpManagerSummary] = useState({ services: 0, alerts: 0 });
 
   const loadData = async () => {
     try {
@@ -32,6 +33,7 @@ const ManageEngineOperationsPanel = () => {
         opManagerConnected: Boolean(connectionRes?.data?.opManagerConnected),
       });
       setOperations(normalizeManageEngineUnified(unifiedRes).operations.slice(0, 6));
+      setOpManagerSummary(summarizeOpManager270(unifiedRes));
     } finally {
       setLoading(false);
     }
@@ -48,8 +50,8 @@ const ManageEngineOperationsPanel = () => {
     return () => window.removeEventListener('itsm:refresh', handleRefresh);
   }, []);
 
-  const serviceDeskCount = operations.filter((item) => item.source === 'ServiceDesk').length;
-  const opManagerCount = operations.filter((item) => item.source === 'OpManager').length;
+  const serviceDeskCount = operations.filter((item) => item.source === 'ServiceDesk' && item.itemType === 'request').length;
+  const opManagerCount = opManagerSummary.alerts;
   const zeroHiddenCount = countHiddenZeroMetrics([{ value: serviceDeskCount }, { value: opManagerCount }]);
   const connectionLabel = (value) => (value ? t('connected', 'Connected') : t('offline', 'Offline'));
   const sourceLabel = (value) => {
@@ -73,7 +75,7 @@ const ManageEngineOperationsPanel = () => {
             <h3 className="text-lg font-semibold text-foreground">{t('manageEngineLiveOperations', 'ManageEngine Live Operations')}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t('manageEngineLiveOperationsDesc', 'ServiceDesk requests and OpManager alerts in one live operational feed.')}
+            {t('manageEngineLiveOperationsDesc', 'ServiceDesk requests and OpManager 12.8.270 alerts in one live operational feed.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -91,11 +93,17 @@ const ManageEngineOperationsPanel = () => {
           icon={<span className={`text-xs font-medium ${connection.serviceDeskConnected ? 'text-success' : 'text-error'}`}>{connectionLabel(connection.serviceDeskConnected)}</span>}
         />
         <ManageEngineMetricCard
-          label={t('opManager', 'OpManager')}
+          label={t('opManagerAlerts', 'OpManager Alerts')}
           value={opManagerCount}
           icon={<span className={`text-xs font-medium ${connection.opManagerConnected ? 'text-success' : 'text-error'}`}>{connectionLabel(connection.opManagerConnected)}</span>}
         />
       </div>
+
+      {!loading && (
+        <div className="mb-5 rounded-lg border border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+          {t('opManager270ServicesAvailable', 'OpManager 12.8.270 services available')}: <span className="font-medium text-foreground">{opManagerSummary.services}</span>
+        </div>
+      )}
 
       <div className="space-y-3">
         {loading ? (

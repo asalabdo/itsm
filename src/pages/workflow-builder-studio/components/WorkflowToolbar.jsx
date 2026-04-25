@@ -1,4 +1,3 @@
-import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -13,10 +12,19 @@ const WorkflowToolbar = ({
   onRedo,
   canUndo,
   canRedo,
-  isSaving
+  isSaving,
+  deploymentReadiness,
 }) => {
   const { language } = useLanguage();
   const isArabic = String(language || '').toLowerCase().startsWith('ar');
+  const mobileOverflowLabel = deploymentReadiness
+    ? `${isArabic ? 'خيارات إضافية' : 'More options'} - ${deploymentReadiness.label}`
+    : isArabic ? 'خيارات إضافية' : 'More options';
+  const readinessToneClasses = {
+    destructive: 'border-destructive/20 bg-destructive/10 text-destructive',
+    warning: 'border-amber-500/20 bg-amber-500/10 text-amber-700',
+    success: 'border-success/20 bg-success/10 text-success',
+  };
 
   return (
     <div className="h-16 bg-card border-b border-border px-4 md:px-6 flex items-center justify-between gap-4">
@@ -84,6 +92,15 @@ const WorkflowToolbar = ({
           {isArabic ? 'تصدير' : 'Export'}
         </Button>
 
+        {deploymentReadiness && (
+          <div
+            className={`hidden sm:inline-flex items-center rounded-xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${readinessToneClasses[deploymentReadiness.tone] || readinessToneClasses.success}`}
+            title={deploymentReadiness.description}
+          >
+            {deploymentReadiness.label}
+          </div>
+        )}
+
         <Button
           variant="default"
           size="sm"
@@ -97,7 +114,8 @@ const WorkflowToolbar = ({
 
         <button
           className="md:hidden p-2 rounded-md hover:bg-muted transition-smooth press-scale focus-ring"
-          aria-label={isArabic ? 'خيارات إضافية' : 'More options'}
+          aria-label={mobileOverflowLabel}
+          title={mobileOverflowLabel}
         >
           <Icon name="MoreVertical" size={20} />
         </button>

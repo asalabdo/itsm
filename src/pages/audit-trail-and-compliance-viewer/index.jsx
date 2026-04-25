@@ -460,7 +460,7 @@ const AuditTrailAndComplianceViewer = () => {
             <ManageEngineOnPremSnapshot
               compact
               title={t('manageEngineAuditContext', 'ManageEngine Audit Context')}
-              description={t('manageEngineAuditContextDesc', 'Live ServiceDesk and OpManager integration health for compliance reviews, external operations, and audit evidence.')}
+              description={t('manageEngineAuditContextDesc', 'Live ServiceDesk requests plus OpManager 12.8.270 services and alerts for compliance reviews, operational traceability, and audit evidence.')}
             />
 
             <div className="flex flex-col gap-6 xl:flex-row">
